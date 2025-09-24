@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CentroFormadorController;
-use App\Http\Controllers\TipoCentroFormadorController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\CentroFormadorController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TipoCentroFormadorController;
 use Illuminate\Support\Facades\Route;
 
 /*

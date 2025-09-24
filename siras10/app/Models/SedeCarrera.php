@@ -10,7 +10,9 @@ class SedeCarrera extends Model
     use HasFactory;
 
     protected $table = 'SedeCarrera';
+
     protected $primaryKey = 'idSedeCarrera';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -32,7 +34,7 @@ class SedeCarrera extends Model
     {
         return $this->belongsTo(Carrera::class, 'idCarrera', 'idCarrera');
     }
-    
+
     // Relación uno a muchos con MallaSedeCarrera
     public function mallaSedeCarreras()
     {

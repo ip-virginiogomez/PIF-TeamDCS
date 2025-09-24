@@ -10,7 +10,9 @@ class Personal extends Model
     use HasFactory;
 
     protected $table = 'Personal';
+
     protected $primaryKey = 'idPersonal';
+
     public $timestamps = false;
 
     protected $fillable = [

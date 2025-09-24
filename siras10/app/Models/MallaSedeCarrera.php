@@ -10,7 +10,9 @@ class MallaSedeCarrera extends Model
     use HasFactory;
 
     protected $table = 'MallaSedeCarrera';
+
     protected $primaryKey = 'idMallaSedeCarrera';
+
     public $timestamps = false;
 
     protected $fillable = [

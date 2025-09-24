@@ -10,7 +10,9 @@ class Ciudad extends Model
     use HasFactory;
 
     protected $table = 'Ciudad';
+
     protected $primaryKey = 'idCiudad';
+
     public $timestamps = false;
 
     protected $fillable = [

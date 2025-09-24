@@ -10,7 +10,9 @@ class MallaCurricular extends Model
     use HasFactory;
 
     protected $table = 'MallaCurricular';
+
     protected $primaryKey = 'idMallaCurricular';
+
     public $timestamps = false;
 
     protected $fillable = [

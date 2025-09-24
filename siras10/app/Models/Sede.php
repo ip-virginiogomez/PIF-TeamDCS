@@ -10,7 +10,9 @@ class Sede extends Model
     use HasFactory;
 
     protected $table = 'Sede';
+
     protected $primaryKey = 'idSede';
+
     public $timestamps = false;
 
     protected $fillable = [

@@ -10,7 +10,9 @@ class DossierGrupo extends Model
     use HasFactory;
 
     protected $table = 'DossierGrupo';
+
     protected $primaryKey = 'idDossierGrupo';
+
     public $timestamps = false;
 
     protected $fillable = [

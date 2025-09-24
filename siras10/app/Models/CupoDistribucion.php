@@ -10,7 +10,9 @@ class CupoDistribucion extends Model
     use HasFactory;
 
     protected $table = 'CupoDistribucion';
+
     protected $primaryKey = 'idCupoDistribucion';
+
     public $timestamps = false;
 
     protected $fillable = [

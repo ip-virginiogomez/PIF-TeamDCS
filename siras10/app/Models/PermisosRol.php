@@ -10,7 +10,9 @@ class PermisosRol extends Model
     use HasFactory;
 
     protected $table = 'PermisosRol';
+
     protected $primaryKey = 'idPermisosRol';
+
     public $timestamps = false;
 
     protected $fillable = [

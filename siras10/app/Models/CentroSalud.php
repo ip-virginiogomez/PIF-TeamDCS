@@ -10,7 +10,9 @@ class CentroSalud extends Model
     use HasFactory;
 
     protected $table = 'CentroSalud';
+
     protected $primaryKey = 'idCentroSalud';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -32,7 +34,7 @@ class CentroSalud extends Model
     {
         return $this->belongsTo(TipoCentroSalud::class, 'idTipoCentroSalud', 'idTipoCentroSalud');
     }
-    
+
     // Relación uno a muchos con Personal
     public function personal()
     {

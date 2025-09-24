@@ -10,7 +10,9 @@ class Asignatura extends Model
     use HasFactory;
 
     protected $table = 'Asignatura';
+
     protected $primaryKey = 'idAsignatura';
+
     public $timestamps = false;
 
     protected $fillable = [

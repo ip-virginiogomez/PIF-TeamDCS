@@ -44,7 +44,7 @@ class RegisteredUserController extends Controller
             'nombreUsuario' => $request->nombreUsuario,
             'correo' => $request->correo,
             'contrasenia' => Hash::make($request->password), // Tu columna se llama 'contrasenia'
-            'nombres' => $request->nombreUsuario, 
+            'nombres' => $request->nombreUsuario,
         ]);
 
         event(new Registered($user));

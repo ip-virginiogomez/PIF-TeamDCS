@@ -10,7 +10,9 @@ class TipoVacuna extends Model
     use HasFactory;
 
     protected $table = 'TipoVacuna';
+
     protected $primaryKey = 'idTipoVacuna';
+
     public $timestamps = false;
 
     protected $fillable = [

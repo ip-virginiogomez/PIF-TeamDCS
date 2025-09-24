@@ -10,9 +10,13 @@ class Alumno extends Model
     use HasFactory;
 
     protected $table = 'Alumno';
+
     protected $primaryKey = 'runAlumno';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [

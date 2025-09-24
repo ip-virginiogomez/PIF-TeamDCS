@@ -10,9 +10,13 @@ class DocenteCarrera extends Model
     use HasFactory;
 
     protected $table = 'DocenteCarrera';
+
     protected $primaryKey = 'idDocenteCarrera';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [

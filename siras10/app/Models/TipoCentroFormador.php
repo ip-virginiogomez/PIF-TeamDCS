@@ -10,7 +10,9 @@ class TipoCentroFormador extends Model
     use HasFactory;
 
     protected $table = 'TipoCentroFormador';
+
     protected $primaryKey = 'idTipoCentroFormador';
+
     public $timestamps = false;
 
     protected $fillable = [

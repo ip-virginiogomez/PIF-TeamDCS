@@ -10,7 +10,9 @@ class EstadoPermisos extends Model
     use HasFactory;
 
     protected $table = 'EstadoPermisos';
+
     protected $primaryKey = 'idEstadoPermisos';
+
     public $timestamps = false;
 
     protected $fillable = [

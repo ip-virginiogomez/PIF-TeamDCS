@@ -14,7 +14,7 @@ class TipoCentroFormadorController extends Controller
     {
         // Obtenemos todos los registros de la tabla y los paginamos (10 por página)
         $tipos = TipoCentroFormador::paginate(10);
-        
+
         // Retornamos la vista 'index' y le pasamos la variable 'tipos'
         return view('admin.tipos-centro.index', compact('tipos'));
     }
@@ -43,7 +43,7 @@ class TipoCentroFormadorController extends Controller
 
         // Redirigimos al usuario a la lista de tipos con un mensaje de éxito
         return redirect()->route('tipos-centro-formador.index')
-                         ->with('success', 'Tipo de Centro Formador creado exitosamente.');
+            ->with('success', 'Tipo de Centro Formador creado exitosamente.');
     }
 
     /**
@@ -80,7 +80,7 @@ class TipoCentroFormadorController extends Controller
 
         // Redirigimos a la lista con un mensaje de éxito
         return redirect()->route('tipos-centro-formador.index')
-                         ->with('success', 'Tipo de Centro Formador actualizado exitosamente.');
+            ->with('success', 'Tipo de Centro Formador actualizado exitosamente.');
     }
 
     /**
@@ -93,6 +93,6 @@ class TipoCentroFormadorController extends Controller
 
         // Redirigimos a la lista con un mensaje de éxito
         return redirect()->route('tipos-centro-formador.index')
-                         ->with('success', 'Tipo de Centro Formador eliminado exitosamente.');
+            ->with('success', 'Tipo de Centro Formador eliminado exitosamente.');
     }
 }

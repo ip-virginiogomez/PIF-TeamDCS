@@ -10,7 +10,9 @@ class Periodo extends Model
     use HasFactory;
 
     protected $table = 'Periodo';
+
     protected $primaryKey = 'idPeriodo';
+
     public $timestamps = false;
 
     protected $fillable = [

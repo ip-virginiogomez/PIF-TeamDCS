@@ -10,7 +10,9 @@ class Grupo extends Model
     use HasFactory;
 
     protected $table = 'Grupo';
+
     protected $primaryKey = 'idGrupo';
+
     public $timestamps = false;
 
     protected $fillable = [

@@ -46,7 +46,7 @@ class CentroFormadorController extends Controller
         CentroFormador::create($request->all());
 
         return redirect()->route('centros-formadores.index')
-                         ->with('success', 'Centro Formador creado exitosamente.');
+            ->with('success', 'Centro Formador creado exitosamente.');
     }
 
     /**
@@ -85,7 +85,7 @@ class CentroFormadorController extends Controller
         $centros_formadore->update($request->all());
 
         return redirect()->route('centros-formadores.index')
-                         ->with('success', 'Centro Formador actualizado exitosamente.');
+            ->with('success', 'Centro Formador actualizado exitosamente.');
     }
 
     /**
@@ -96,6 +96,6 @@ class CentroFormadorController extends Controller
         $centros_formadore->delete();
 
         return redirect()->route('centros-formadores.index')
-                         ->with('success', 'Centro Formador eliminado exitosamente.');
+            ->with('success', 'Centro Formador eliminado exitosamente.');
     }
 }

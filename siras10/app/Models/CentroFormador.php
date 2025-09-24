@@ -10,7 +10,9 @@ class CentroFormador extends Model
     use HasFactory;
 
     protected $table = 'CentroFormador';
+
     protected $primaryKey = 'idCentroFormador';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -36,7 +38,7 @@ class CentroFormador extends Model
     {
         return $this->hasMany(Sede::class, 'idCentroFormador', 'idCentroFormador');
     }
-    
+
     // Relación uno a muchos con Convenio
     public function convenios()
     {

@@ -13,9 +13,13 @@ class Usuario extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'Usuario';
+
     protected $primaryKey = 'runUsuario';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -33,13 +37,13 @@ class Usuario extends Authenticatable
     protected $hidden = [
         'contrasenia',
     ];
-    
+
     // Cambia el nombre del campo de contraseña para la autenticación
     public function getAuthPassword()
     {
         return $this->contrasenia;
     }
-    
+
     // Relación inversa con TipoPersonalSalud
     public function tipoPersonalSalud()
     {

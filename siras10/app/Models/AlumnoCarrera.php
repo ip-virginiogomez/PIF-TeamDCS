@@ -10,7 +10,9 @@ class AlumnoCarrera extends Model
     use HasFactory;
 
     protected $table = 'AlumnoCarrera';
+
     protected $primaryKey = 'idAlumnoCarrera';
+
     public $timestamps = false;
 
     protected $fillable = [

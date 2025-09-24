@@ -10,7 +10,9 @@ class VacunaAlumno extends Model
     use HasFactory;
 
     protected $table = 'VacunaAlumno';
+
     protected $primaryKey = 'idVacunaAlumno';
+
     public $timestamps = false;
 
     protected $fillable = [

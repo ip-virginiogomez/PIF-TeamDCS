@@ -10,7 +10,9 @@ class DocenteVacuna extends Model
     use HasFactory;
 
     protected $table = 'DocenteVacuna';
+
     protected $primaryKey = 'idDocenteVacuna';
+
     public $timestamps = false;
 
     protected $fillable = [

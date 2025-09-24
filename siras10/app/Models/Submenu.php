@@ -10,7 +10,9 @@ class Submenu extends Model
     use HasFactory;
 
     protected $table = 'Submenu';
+
     protected $primaryKey = 'idSubmenu';
+
     public $timestamps = false;
 
     protected $fillable = [

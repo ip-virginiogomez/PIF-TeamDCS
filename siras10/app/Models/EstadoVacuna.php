@@ -10,7 +10,9 @@ class EstadoVacuna extends Model
     use HasFactory;
 
     protected $table = 'EstadoVacuna';
+
     protected $primaryKey = 'idEstadoVacuna';
+
     public $timestamps = false;
 
     protected $fillable = [

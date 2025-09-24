@@ -10,7 +10,9 @@ class UnidadClinica extends Model
     use HasFactory;
 
     protected $table = 'UnidadClinica';
+
     protected $primaryKey = 'idUnidadClinica';
+
     public $timestamps = false;
 
     protected $fillable = [
