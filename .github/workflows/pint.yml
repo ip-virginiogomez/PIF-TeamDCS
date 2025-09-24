@@ -31,4 +31,4 @@ jobs:
         
       - name: Run Pint (fail on violations)
         run: php vendor/bin/pint --test
-        working-directory: ./siras10/
+        working-directory: ./PIF-TeamDCS/siras10/
