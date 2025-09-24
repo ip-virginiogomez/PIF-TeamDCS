@@ -32,3 +32,4 @@ jobs:
 
       - name: Run Pint (fail on violations)
         run: php vendor/bin/pint --test
+        working-directory: ./mi-proyecto/
