@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
-
+        working-directory: ./siras10/
 
       - name: Run Pint (fail on violations)
         run: php vendor/bin/pint --test
