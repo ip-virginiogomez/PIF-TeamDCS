@@ -1,7 +1,7 @@
 # SISTEMA INFORMÁTICO DE ROTACIONES ACADÉMICAS DE SALUD
 
-!<img width="800" height="348" alt="image" src="https://github.com/user-attachments/assets/38664308-8ed7-4d38-9fa4-019e05790b9f" />
-!<img width="256" height="142" alt="image" src="https://github.com/user-attachments/assets/85aa3136-cdfa-4991-b611-f5ebfb9f7d73" />
+<img width="256" height="348" alt="image" src="https://github.com/user-attachments/assets/38664308-8ed7-4d38-9fa4-019e05790b9f" />  <img width="256" height="142" alt="image" src="https://github.com/user-attachments/assets/85aa3136-cdfa-4991-b611-f5ebfb9f7d73" />
+
 
 ---
 
