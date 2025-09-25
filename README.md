@@ -21,7 +21,7 @@ de la comuna (CESFAM, CECOSF y SAR).
 
 ---
 
-#✨ Características Principales
+# ✨ Características Principales
 El sistema cuenta con varios módulos y funcionalidades clave para sus distintos usuarios:
 
   - ✅ **Gestión de Convenios***: Registro y seguimiento digital de los convenios docente-asistenciales vigentes con las distintas casas de estudio.
@@ -50,7 +50,7 @@ Este proyecto está diseñado para ser utilizado por:
 
   - **Coordinadores técnicos RAD de los Centros de Salud**: Para tener un control claro de los estudiantes que recibirán.
 
---
+---
 
 # 🛠️ Tecnologías
 Este proyecto podría ser desarrollado utilizando un stack tecnológico moderno y robusto como el siguiente:
