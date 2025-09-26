@@ -17,11 +17,17 @@ return new class extends Migration
             $table->string('correo', 45)->nullable();
             $table->string('contrasenia', 255)->nullable();
             $table->string('fechaCreacion', 45)->nullable();
-            $table->integer('idTipoPersonalSalud')->nullable();
+            $table->unsignedBigInteger('idTipoPersonalSalud')->nullable();
             $table->string('nombres', 45)->nullable();
             $table->string('apellidoPaterno', 45)->nullable();
             $table->string('apellidoMaterno', 45)->nullable();
             $table->timestamps();
+
+            $table->foreign('idTipoPersonalSalud')
+                ->references('idTipoPersonalSalud')
+                ->on('tipo_personal_salud')
+                ->onUpdate('no action')
+                ->onDelete('no action');
         });
     }
 
