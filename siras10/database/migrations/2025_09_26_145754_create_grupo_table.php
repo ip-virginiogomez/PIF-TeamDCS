@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('grupo', function (Blueprint $table) {
             $table->id('idGrupo');
             $table->unsignedBigInteger('idCupoDistribucion')->nullable();
-            $table->string('idDocenteCarrera', 15)->nullable();
+            $table->unsignedBigInteger('idDocenteCarrera')->nullable();
             $table->date('fechaCreacion')->nullable();
             $table->string('nombreGrupo', 45)->nullable();
             $table->timestamps();
