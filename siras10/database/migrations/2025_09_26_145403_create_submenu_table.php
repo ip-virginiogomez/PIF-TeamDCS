@@ -18,10 +18,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('idMenu')
-              ->references('idMenu')
-              ->on('menu')
-              ->onUpdate('no action')
-              ->onDelete('no action');
+                ->references('idMenu')
+                ->on('menu')
+                ->onUpdate('no action')
+                ->onDelete('no action');
         });
     }
 

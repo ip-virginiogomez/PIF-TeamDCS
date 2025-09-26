@@ -36,7 +36,7 @@ return new class extends Migration
                 ->on('estado_permisos')
                 ->onUpdate('no action')
                 ->onDelete('no action');
-                
+
             $table->foreign('runUsuario')
                 ->references('runUsuario')
                 ->on('usuarios')

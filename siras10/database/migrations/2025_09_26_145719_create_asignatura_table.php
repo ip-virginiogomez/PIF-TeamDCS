@@ -32,7 +32,7 @@ return new class extends Migration
                 ->on('sede_carrera')
                 ->onUpdate('no action')
                 ->onDelete('no action');
-            });
+        });
     }
 
     /**
