@@ -9,7 +9,7 @@ class DossierGrupo extends Model
 {
     use HasFactory;
 
-    protected $table = 'dossier_grupo';
+    protected $table = 'DossierGrupo';
 
     protected $primaryKey = 'idDossierGrupo';
 
