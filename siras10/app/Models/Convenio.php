@@ -9,7 +9,7 @@ class Convenio extends Model
 {
     use HasFactory;
 
-    protected $table = 'Convenio';
+    protected $table = 'convenio';
 
     protected $primaryKey = 'idConvenio';
 
