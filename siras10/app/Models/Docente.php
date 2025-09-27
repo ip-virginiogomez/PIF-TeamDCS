@@ -9,7 +9,7 @@ class Docente extends Model
 {
     use HasFactory;
 
-    protected $table = 'Docente';
+    protected $table = 'docente';
 
     protected $primaryKey = 'runDocente';
 
