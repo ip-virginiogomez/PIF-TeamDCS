@@ -9,7 +9,7 @@ class Periodo extends Model
 {
     use HasFactory;
 
-    protected $table = 'Periodo';
+    protected $table = 'periodo';
 
     protected $primaryKey = 'idPeriodo';
 

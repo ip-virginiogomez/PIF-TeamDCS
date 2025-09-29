@@ -9,7 +9,7 @@ class DocenteCarrera extends Model
 {
     use HasFactory;
 
-    protected $table = 'DocenteCarrera';
+    protected $table = 'docente_carrera';
 
     protected $primaryKey = 'idDocenteCarrera';
 

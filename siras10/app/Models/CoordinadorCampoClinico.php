@@ -9,7 +9,7 @@ class CoordinadorCampoClinico extends Model
 {
     use HasFactory;
 
-    protected $table = 'CoordinadorCampoClinico';
+    protected $table = 'coordinador_campo_clinico';
 
     protected $primaryKey = 'idCoordinador';
 

@@ -9,7 +9,7 @@ class EstadoPermisos extends Model
 {
     use HasFactory;
 
-    protected $table = 'EstadoPermisos';
+    protected $table = 'estado_permisos';
 
     protected $primaryKey = 'idEstadoPermisos';
 
