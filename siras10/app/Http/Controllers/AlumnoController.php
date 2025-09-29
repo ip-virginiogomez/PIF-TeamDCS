@@ -8,6 +8,14 @@ use Illuminate\Support\Facades\Storage; // Importante para manejar archivos
 
 class AlumnoController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:alumnos.read')->only('index');
+        $this->middleware('can:alumnos.create')->only(['create', 'store']);
+        $this->middleware('can:alumnos.update')->only(['edit', 'update']);
+        $this->middleware('can:alumnos.delete')->only('destroy');
+    }
+
     public function index()
     {
         $alumnos = Alumno::paginate(10);

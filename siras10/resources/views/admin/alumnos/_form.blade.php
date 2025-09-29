@@ -2,37 +2,37 @@
     <div>
         <label for="runAlumno" class="block text-sm font-medium text-gray-700">RUN</label>
         <input type="text" name="runAlumno" id="runAlumno" value="{{ old('runAlumno', $alumno->runAlumno ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('runAlumno')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="nombres" class="block text-sm font-medium text-gray-700">Nombres</label>
         <input type="text" name="nombres" id="nombres" value="{{ old('nombres', $alumno->nombres ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('nombres')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno</label>
         <input type="text" name="apellidoPaterno" id="apellidoPaterno" value="{{ old('apellidoPaterno', $alumno->apellidoPaterno ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('apellidoPaterno')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
         <input type="text" name="apellidoMaterno" id="apellidoMaterno" value="{{ old('apellidoMaterno', $alumno->apellidoMaterno ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('apellidoMaterno')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
         <input type="email" name="correo" id="correo" value="{{ old('correo', $alumno->correo ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('correo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="fechaNacto" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
         <input type="date" name="fechaNacto" id="fechaNacto" value="{{ old('fechaNacto', $alumno->fechaNacto ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
         @error('fechaNacto')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>

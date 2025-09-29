@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class Usuario extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    protected $table = 'usuario';
+    protected $table = 'usuarios';
 
     protected $primaryKey = 'runUsuario';
 
@@ -62,9 +63,9 @@ class Usuario extends Authenticatable
         return $this->hasMany(Personal::class, 'runUsuario', 'runUsuario');
     }
 
-    // Relación uno a muchos con PermisosRol
-    public function permisosRoles()
-    {
-        return $this->hasMany(PermisosRol::class, 'runUsuario', 'runUsuario');
-    }
+    /*
+     * NOTA: La relación 'permisosRoles' ya no es necesaria.
+     * El paquete Spatie manejará esto automáticamente con métodos como
+     * $usuario->roles y $usuario->permissions. La hemos eliminado para evitar confusiones.
+     */
 }
