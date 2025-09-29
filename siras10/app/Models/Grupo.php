@@ -9,7 +9,7 @@ class Grupo extends Model
 {
     use HasFactory;
 
-    protected $table = 'grupo';
+    protected $table = 'Grupo';
 
     protected $primaryKey = 'idGrupo';
 

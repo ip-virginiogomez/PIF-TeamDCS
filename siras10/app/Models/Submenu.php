@@ -9,7 +9,7 @@ class Submenu extends Model
 {
     use HasFactory;
 
-    protected $table = 'submenu';
+    protected $table = 'Submenu';
 
     public $timestamps = false;
 
