@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Estudiantes') }}
             </h2>
+        @can('alumnos.create')
             <a href="{{ route('alumnos.create') }}" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Crear Nuevo Estudiante
             </a>
+        @endcan
         </div>
     </x-slot>
 
@@ -45,12 +47,16 @@
                                         <td class="py-2 px-4">{{ $alumno->runAlumno }}</td>
                                         <td class="py-2 px-4">{{ $alumno->correo }}</td>
                                         <td class="py-2 px-4 flex space-x-2">
-                                            <a href="{{ route('alumnos.edit', $alumno) }}" class="text-yellow-500 hover:text-yellow-700">Editar</a>
-                                            <form action="{{ route('alumnos.destroy', $alumno) }}" method="POST" onsubmit="return confirm('¿Estás seguro?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
-                                            </form>
+                                            @can('alumnos.update')
+                                                <a href="{{ route('alumnos.edit', $alumno) }}" class="text-yellow-500 hover:text-yellow-700">Editar</a>
+                                            @endcan
+                                            @can('alumnos.delete')
+                                                <form action="{{ route('alumnos.destroy', $alumno) }}" method="POST" onsubmit="return confirm('¿Estás seguro?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
+                                                </form>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @empty

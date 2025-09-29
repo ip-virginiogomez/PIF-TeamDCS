@@ -9,11 +9,11 @@ class Submenu extends Model
 {
     use HasFactory;
 
-    protected $table = 'submenu';
-
-    protected $primaryKey = 'idSubmenu';
+    protected $table = 'Submenu';
 
     public $timestamps = false;
+
+    protected $primaryKey = 'idSubmenu';
 
     protected $fillable = [
         'nombreSubmenu',

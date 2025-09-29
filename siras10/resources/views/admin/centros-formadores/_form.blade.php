@@ -2,8 +2,8 @@
     <div>
         <label for="nombreCentroFormador" class="block text-sm font-medium text-gray-700">Nombre del Centro</label>
         <input type="text" name="nombreCentroFormador" id="nombreCentroFormador" value="{{ old('nombreCentroFormador', $centro->nombreCentroFormador ?? '') }}" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-               required>
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            required>
         @error('nombreCentroFormador')
             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
         @enderror

@@ -9,7 +9,7 @@ class TipoCentroFormador extends Model
 {
     use HasFactory;
 
-    protected $table = 'tipo_centro_formador';
+    protected $table = 'TipoCentroFormador';
 
     protected $primaryKey = 'idTipoCentroFormador';
 
@@ -18,7 +18,6 @@ class TipoCentroFormador extends Model
     protected $fillable = [
         'nombreTipo',
         'fechaCreacion',
-        'acronimo',
     ];
 
     // Relación uno a muchos con CentroFormador

@@ -9,7 +9,7 @@ class CentroFormador extends Model
 {
     use HasFactory;
 
-    protected $table = 'centro_formador';
+    protected $table = 'CentroFormador';
 
     protected $primaryKey = 'idCentroFormador';
 

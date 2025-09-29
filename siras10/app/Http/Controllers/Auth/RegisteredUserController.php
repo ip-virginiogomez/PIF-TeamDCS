@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Usuario; // <-- CAMBIO 1: Usar tu modelo
+use App\Models\Usuario;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +30,6 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // CAMBIO 2: Validar los campos de tu tabla y formulario
         $request->validate([
             'runUsuario' => ['required', 'string', 'max:10', 'unique:'.Usuario::class],
             'nombreUsuario' => ['required', 'string', 'max:45'],
@@ -38,14 +37,18 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // CAMBIO 3: Crear el usuario con las columnas correctas
         $user = Usuario::create([
             'runUsuario' => $request->runUsuario,
             'nombreUsuario' => $request->nombreUsuario,
             'correo' => $request->correo,
-            'contrasenia' => Hash::make($request->password), // Tu columna se llama 'contrasenia'
+            'contrasenia' => Hash::make($request->password),
             'nombres' => $request->nombreUsuario,
         ]);
+
+        // --- LÍNEA CLAVE QUE DEBES AÑADIR ---
+        // Asigna automáticamente el rol 'Admin' al nuevo usuario.
+        $user->assignRole('Admin');
+        // ------------------------------------
 
         event(new Registered($user));
 

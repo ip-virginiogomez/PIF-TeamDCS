@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Centros Formadores') }}
             </h2>
+        @can('centros-formadores.create')
             <a href="{{ route('centros-formadores.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Crear Nuevo
             </a>
+        @endcan
         </div>
     </x-slot>
 
@@ -39,12 +41,16 @@
                                         <td class="py-2 px-4">{{ $centro->nombreCentroFormador }}</td>
                                         <td class="py-2 px-4">{{ $centro->tipoCentroFormador->nombreTipo }}</td>
                                         <td class="py-2 px-4 flex space-x-2">
-                                            <a href="{{ route('centros-formadores.edit', $centro) }}" class="text-yellow-500 hover:text-yellow-700">Editar</a>
-                                            <form action="{{ route('centros-formadores.destroy', $centro) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este elemento?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
-                                            </form>
+                                            @can('centros-formadores.edit')
+                                                <a href="{{ route('centros-formadores.edit', $centro) }}" class="text-yellow-500 hover:text-yellow-700">Editar</a>
+                                            @endcan
+                                            @can('centros-formadores.delete')
+                                                <form action="{{ route('centros-formadores.destroy', $centro) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este elemento?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
+                                                </form>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @empty
