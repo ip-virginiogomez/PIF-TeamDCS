@@ -1,20 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TipoCentroFormadorController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
 Route::get('/', function () {
@@ -30,12 +29,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Ruta para gestionar Centros Formadores
+    // --- RUTAS PARA LOS MÓDULOS DE GESTIÓN ---
     Route::resource('centros-formadores', CentroFormadorController::class);
-    // Ruta para gestionar Tipos de Centro Formador
     Route::resource('tipos-centro-formador', TipoCentroFormadorController::class);
-    // Ruta para gestionar Alumnos
     Route::resource('alumnos', AlumnoController::class);
+    Route::resource('roles', RoleController::class);
+    Route::resource('usuarios', UsuarioController::class);
+    Route::resource('permisos', PermissionController::class);
+    Route::get('asignar-permisos', [RoleController::class, 'showPermissionMatrix'])->name('roles.permission_matrix');
+    Route::post('asignar-permisos', [RoleController::class, 'syncPermissionsFromMatrix'])->name('roles.sync_permissions');
+    Route::resource('carreras', CarreraController::class);
 });
 
 require __DIR__.'/auth.php';

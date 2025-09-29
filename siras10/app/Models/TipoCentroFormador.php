@@ -18,7 +18,6 @@ class TipoCentroFormador extends Model
     protected $fillable = [
         'nombreTipo',
         'fechaCreacion',
-        'acronimo',
     ];
 
     // Relación uno a muchos con CentroFormador

@@ -11,9 +11,9 @@ class Submenu extends Model
 
     protected $table = 'Submenu';
 
-    protected $primaryKey = 'idSubmenu';
-
     public $timestamps = false;
+
+    protected $primaryKey = 'idSubmenu';
 
     protected $fillable = [
         'nombreSubmenu',
