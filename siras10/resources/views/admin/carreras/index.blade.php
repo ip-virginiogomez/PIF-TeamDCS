@@ -5,9 +5,9 @@
                 {{ __('Gestión de Carreras') }}
             </h2>
             @can('carreras.create')
-                <a href="{{ route('carreras.create') }}" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                <button onclick="limpiarFormularioCarrera()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                     Crear Nueva Carrera
-                </a>
+                </button>
             @endcan
         </div>
     </x-slot>
@@ -34,19 +34,15 @@
                             </thead>
                             <tbody>
                                 @forelse ($carreras as $carrera)
-                                    <tr class="border-b">
+                                    <tr id="carrera-{{ $carrera->idCarrera }}" class="border-b">
                                         <td class="py-2 px-4">{{ $carrera->nombreCarrera }}</td>
                                         <td class="py-2 px-4">{{ \Carbon\Carbon::parse($carrera->fechaCreacion)->format('d-m-Y') }}</td>
                                         <td class="py-2 px-4 flex space-x-2">
                                             @can('carreras.update')
-                                                <a href="{{ route('carreras.edit', $carrera) }}" class="text-yellow-500 hover:text-yellow-700">Editar</a>
+                                                <button onclick="editarCarrera({{ $carrera->idCarrera }})" class="text-yellow-500 hover:text-yellow-700">Editar</button>
                                             @endcan
                                             @can('carreras.delete')
-                                                <form action="{{ route('carreras.destroy', $carrera) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar esta carrera?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
-                                                </form>
+                                                <button onclick="eliminarCarrera({{ $carrera->idCarrera }})" class="text-red-500 hover:text-red-700">Eliminar</button>
                                             @endcan
                                         </td>
                                     </tr>
@@ -65,4 +61,28 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para crear/editar carreras -->
+    <x-crud-modal 
+        modalId="carreraModal" 
+        formId="carreraForm" 
+        primaryKey="idCarrera"
+        title="Nueva Carrera"
+        buttonText="Guardar Carrera"
+        closeFunction="cerrarModalCarrera()">
+        
+        <!-- Nombre de la Carrera -->
+        <div class="mb-4">
+            <label for="nombreCarrera" class="block text-sm font-medium text-gray-700">Nombre de la Carrera *</label>
+            <input type="text" 
+                   id="nombreCarrera" 
+                   name="nombreCarrera" 
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                   required>
+            <div id="error-nombreCarrera" class="text-red-500 text-sm mt-1 hidden"></div>
+        </div>
+
+    </x-crud-modal>
+
+    @vite(['resources/js/carreras.js'])
 </x-app-layout>

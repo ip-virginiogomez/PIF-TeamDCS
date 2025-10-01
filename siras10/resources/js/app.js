@@ -1,4 +1,5 @@
 import './bootstrap';
+import './base-modal-manager';
 
 import Alpine from 'alpinejs';
 

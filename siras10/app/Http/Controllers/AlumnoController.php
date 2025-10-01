@@ -23,23 +23,29 @@ class AlumnoController extends Controller
         return view('admin.alumnos.index', compact('alumnos'));
     }
 
-    public function create()
-    {
-        return view('admin.alumnos.create');
-    }
-
     public function store(Request $request)
     {
-        $request->validate([
-            'runAlumno' => 'required|string|max:10|unique:Alumno,runAlumno',
-            'nombres' => 'required|string|max:100',
-            'apellidoPaterno' => 'required|string|max:45',
-            'apellidoMaterno' => 'required|string|max:45',
-            'correo' => 'required|email|max:50|unique:Alumno,correo',
-            'fechaNacto' => 'nullable|date',
-            'foto' => 'nullable|image|max:2048', // Valida que sea imagen y no pese más de 2MB
-            'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // Valida que sea pdf/doc y no pese más de 5MB
-        ]);
+        try {
+            $request->validate([
+                'runAlumno' => 'required|string|max:10|unique:Alumno,runAlumno',
+                'nombres' => 'required|string|max:100',
+                'apellidoPaterno' => 'required|string|max:45',
+                'apellidoMaterno' => 'nullable|string|max:45',
+                'correo' => 'required|email|max:50|unique:Alumno,correo',
+                'fechaNacto' => 'nullable|date',
+                'foto' => 'nullable|image|max:2048', // Valida que sea imagen y no pese más de 2MB
+                'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:5120', // Valida que sea pdf/doc y no pese más de 5MB
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errores de validación',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            throw $e;
+        }
 
         $data = $request->except(['foto', 'acuerdo']);
 
@@ -53,7 +59,15 @@ class AlumnoController extends Controller
 
         $data['fechaCreacion'] = now();
 
-        Alumno::create($data);
+        $alumno = Alumno::create($data);
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Estudiante creado exitosamente.',
+                'data' => $alumno,
+            ]);
+        }
 
         return redirect()->route('alumnos.index')
             ->with('success', 'Estudiante creado exitosamente.');
@@ -61,21 +75,32 @@ class AlumnoController extends Controller
 
     public function edit(Alumno $alumno)
     {
-        return view('admin.alumnos.edit', compact('alumno'));
+        return response()->json($alumno);
     }
 
     public function update(Request $request, Alumno $alumno)
     {
-        $request->validate([
-            'runAlumno' => 'required|string|max:10|unique:Alumno,runAlumno,'.$alumno->runAlumno.',runAlumno',
-            'nombres' => 'required|string|max:100',
-            'apellidoPaterno' => 'required|string|max:45',
-            'apellidoMaterno' => 'required|string|max:45',
-            'correo' => 'required|email|max:50|unique:Alumno,correo,'.$alumno->runAlumno.',runAlumno',
-            'fechaNacto' => 'nullable|date',
-            'foto' => 'nullable|image|max:2048',
-            'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-        ]);
+        try {
+            $request->validate([
+                'runAlumno' => 'required|string|max:10|unique:Alumno,runAlumno,'.$alumno->runAlumno.',runAlumno',
+                'nombres' => 'required|string|max:100',
+                'apellidoPaterno' => 'required|string|max:45',
+                'apellidoMaterno' => 'nullable|string|max:45',
+                'correo' => 'required|email|max:50|unique:Alumno,correo,'.$alumno->runAlumno.',runAlumno',
+                'fechaNacto' => 'nullable|date',
+                'foto' => 'nullable|image|max:2048',
+                'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errores de validación',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            throw $e;
+        }
 
         $data = $request->except(['foto', 'acuerdo']);
 
@@ -95,6 +120,14 @@ class AlumnoController extends Controller
 
         $alumno->update($data);
 
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Estudiante actualizado exitosamente.',
+                'data' => $alumno,
+            ]);
+        }
+
         return redirect()->route('alumnos.index')
             ->with('success', 'Estudiante actualizado exitosamente.');
     }
@@ -109,6 +142,13 @@ class AlumnoController extends Controller
         }
 
         $alumno->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Estudiante eliminado exitosamente.',
+            ]);
+        }
 
         return redirect()->route('alumnos.index')
             ->with('success', 'Estudiante eliminado exitosamente.');
