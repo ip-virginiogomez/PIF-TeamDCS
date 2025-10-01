@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
+use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TipoCentroFormadorController;
 use App\Http\Controllers\UsuarioController;
@@ -32,6 +33,7 @@ Route::middleware('auth')->group(function () {
     // --- RUTAS PARA LOS MÓDULOS DE GESTIÓN ---
     Route::resource('centros-formadores', CentroFormadorController::class);
     Route::resource('tipos-centro-formador', TipoCentroFormadorController::class);
+    Route::resource('centro-salud', CentroSaludController::class);
     Route::resource('alumnos', AlumnoController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('usuarios', UsuarioController::class);
