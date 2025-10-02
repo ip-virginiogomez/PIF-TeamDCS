@@ -12,12 +12,34 @@ class CarreraSeeder extends Seeder
     public function run(): void
     {
         $carreras = [
-            ['nombreCarrera' => 'Medicina', 'fechaCreacion' => now()],
-            ['nombreCarrera' => 'Enfermería', 'fechaCreacion' => now()],
-            ['nombreCarrera' => 'Obstetricia', 'fechaCreacion' => now()],
-            ['nombreCarrera' => 'Química y Farmacia', 'fechaCreacion' => now()],
-            ['nombreCarrera' => 'Terapia Ocupacional', 'fechaCreacion' => now()],
-            ['nombreCarrera' => 'Kinesiología', 'fechaCreacion' => now()],
+            [
+                'nombreCarrera' => 'Medicina',
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCarrera' => 'Enfermería',
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCarrera' => 'Obstetricia',
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCarrera' => 'Química y Farmacia',
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCarrera' => 'Terapia Ocupacional',
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCarrera' => 'Kinesiología',
+                'fechaCreacion' => now(),
+            ],
         ];
+
+        foreach ($carreras as $carrera) {
+            \App\Models\Carrera::create($carrera);
+        }
     }
 }
