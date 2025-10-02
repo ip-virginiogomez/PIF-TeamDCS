@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
             MenuAndPermissionsSeeder::class,
             CiudadSeeder::class,
             TipoCentroSaludSeeder::class,
+            CarreraSeeder::class,
+            TipoCentroFormadorSeeder::class,
+            CentroFormadorSeeder::class,
         ]);
     }
 }
