@@ -12,14 +12,45 @@ class CentroFormadorSeeder extends Seeder
     public function run(): void
     {
         //
-        $centros = [
-            ['nombreCentroFormador' => 'Universidad San Sebastián', 'idTipoCentroFormador' => 1, 'fechaCreacion' => now()],
-            ['nombreCentroFormador' => 'Universidad de Concepción', 'idTipoCentroFormador' => 1, 'fechaCreacion' => now()],
-            ['nombreCentroFormador' => 'Universidad del Desarrollo', 'idTipoCentroFormador' => 1, 'fechaCreacion' => now()],
-            ['nombreCentroFormador' => 'Universidad Católica de la Santísima Concepción', 'idTipoCentroFormador' => 1, 'fechaCreacion' => now()],
-            ['nombreCentroFormador' => 'Universidad Santo Tomás', 'idTipoCentroFormador' => 1, 'fechaCreacion' => now()],
-            ['nombreCentroFormador' => 'Instituto Profesional AIEP', 'idTipoCentroFormador' => 2, 'fechaCreacion' => now()],
-            ['nombreCentroFormador' => 'Instituto Profesional Dr. Virginio Gomez', 'idTipoCentroFormador' => 2, 'fechaCreacion' => now()],
+        $centrosFormador = [
+            [
+                'nombreCentroFormador' => 'Universidad San Sebastián',
+                'idTipoCentroFormador' => 1,
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCentroFormador' => 'Universidad de Concepción',
+                'idTipoCentroFormador' => 1,
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCentroFormador' => 'Universidad del Desarrollo',
+                'idTipoCentroFormador' => 1,
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCentroFormador' => 'Universidad Católica de la Santísima Concepción',
+                'idTipoCentroFormador' => 1,
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCentroFormador' => 'Universidad Santo Tomás',
+                'idTipoCentroFormador' => 1,
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCentroFormador' => 'Instituto Profesional AIEP',
+                'idTipoCentroFormador' => 2,
+                'fechaCreacion' => now(),
+            ],
+            [
+                'nombreCentroFormador' => 'Instituto Profesional Dr. Virginio Gomez',
+                'idTipoCentroFormador' => 2,
+                'fechaCreacion' => now(),
+            ],
         ];
+        foreach ($centrosFormador as $centro) {
+            \App\Models\CentroFormador::create($centro);
+        }
     }
 }

@@ -17,7 +17,7 @@ class TipoPersonalSalud extends Model
 
     protected $fillable = [
         'cargo',
-        'descipcion',
+        'descripcion',
         'fechaCreacion',
     ];
 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('centro_formador', function (Blueprint $table) {
             $table->id('idCentroFormador');
-            $table->string('nombreCentroFormador', 45)->nullable();
+            $table->string('nombreCentroFormador', 100)->nullable();
             $table->unsignedBigInteger('idTipoCentroFormador');
             $table->date('fechaCreacion')->nullable();
             $table->timestamps();
