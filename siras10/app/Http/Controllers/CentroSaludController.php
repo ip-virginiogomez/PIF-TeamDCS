@@ -38,13 +38,11 @@ class CentroSaludController extends Controller
         $validator = Validator::make($request->all(), [
             'nombreCentro' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
-            'numContacto' => 'required|string|max:20',
             'idCiudad' => 'required|exists:ciudad,idCiudad',
             'idTipoCentroSalud' => 'required|exists:tipo_centro_salud,idTipoCentroSalud',
         ], [
             'nombreCentro.required' => 'El nombre del centro es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
-            'numContacto.required' => 'El número de contacto es obligatorio.',
             'idCiudad.required' => 'Debe seleccionar una ciudad.',
             'idCiudad.exists' => 'La ciudad seleccionada no es válida.',
             'idTipoCentroSalud.required' => 'Debe seleccionar un tipo de centro.',
@@ -103,13 +101,11 @@ class CentroSaludController extends Controller
         $validator = Validator::make($request->all(), [
             'nombreCentro' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
-            'numContacto' => 'required|string|max:20',
             'idCiudad' => 'required|exists:ciudad,idCiudad',
             'idTipoCentroSalud' => 'required|exists:tipo_centro_salud,idTipoCentroSalud',
         ], [
             'nombreCentro.required' => 'El nombre del centro es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
-            'numContacto.required' => 'El número de contacto es obligatorio.',
             'idCiudad.required' => 'Debe seleccionar una ciudad.',
             'idCiudad.exists' => 'La ciudad seleccionada no es válida.',
             'idTipoCentroSalud.required' => 'Debe seleccionar un tipo de centro.',

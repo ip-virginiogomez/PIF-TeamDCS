@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             CarreraSeeder::class,
             TipoCentroFormadorSeeder::class,
             CentroFormadorSeeder::class,
+            CentroSaludSeeder::class,
         ]);
     }
 }

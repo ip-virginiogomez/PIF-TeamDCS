@@ -29,7 +29,6 @@
                                     <th class="py-2 px-4 text-left">Dirección</th>
                                     <th class="py-2 px-4 text-left">Ciudad</th>
                                     <th class="py-2 px-4 text-left">Tipo</th>
-                                    <th class="py-2 px-4 text-left">Contacto</th>
                                     <th class="py-2 px-4 text-left">Acciones</th>
                                 </tr>
                             </thead>
@@ -61,7 +60,6 @@
                                             </span>
                                             <div class="text-xs text-gray-500">{{ $centro->tipoCentroSalud->nombreTipo ?? 'N/A' }}</div>
                                         </td>
-                                        <td class="py-2 px-4 text-sm">{{ $centro->numContacto }}</td>
                                         <td class="py-2 px-4 flex space-x-2">
                                             <button onclick="editarCentro({{ $centro->idCentroSalud }})" class="text-yellow-500 hover:text-yellow-700">
                                                 Editar
@@ -103,6 +101,17 @@
                                     <input type="hidden" id="method" name="_method" value="POST">
                                     
                                     <div class="mb-4">
+                                        <label for="idTipoCentroSalud" class="block text-sm font-medium text-gray-700">Tipo de Centro *</label>
+                                        <select class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="idTipoCentroSalud" name="idTipoCentroSalud" required>
+                                            <option value="">Seleccione un tipo</option>
+                                            @foreach($tiposCentro as $tipo)
+                                            <option value="{{ $tipo->idTipoCentroSalud }}">{{ $tipo->acronimo }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="text-red-500 text-sm mt-1 hidden" id="error-idTipoCentroSalud"></div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
                                         <label for="nombreCentro" class="block text-sm font-medium text-gray-700">Nombre del Centro *</label>
                                         <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="nombreCentro" name="nombreCentro" required>
                                         <div class="text-red-500 text-sm mt-1 hidden" id="error-nombreCentro"></div>
@@ -115,12 +124,6 @@
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="numContacto" class="block text-sm font-medium text-gray-700">Teléfono de Contacto *</label>
-                                        <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="numContacto" name="numContacto" required>
-                                        <div class="text-red-500 text-sm mt-1 hidden" id="error-numContacto"></div>
-                                    </div>
-
-                                    <div class="mb-4">
                                         <label for="idCiudad" class="block text-sm font-medium text-gray-700">Ciudad *</label>
                                         <select class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="idCiudad" name="idCiudad" required>
                                             <option value="">Seleccione una ciudad</option>
@@ -129,17 +132,6 @@
                                             @endforeach
                                         </select>
                                         <div class="text-red-500 text-sm mt-1 hidden" id="error-idCiudad"></div>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label for="idTipoCentroSalud" class="block text-sm font-medium text-gray-700">Tipo de Centro *</label>
-                                        <select class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="idTipoCentroSalud" name="idTipoCentroSalud" required>
-                                            <option value="">Seleccione un tipo</option>
-                                            @foreach($tiposCentro as $tipo)
-                                            <option value="{{ $tipo->idTipoCentroSalud }}">{{ $tipo->nombreTipo }} ({{ $tipo->acronimo }})</option>
-                                            @endforeach
-                                        </select>
-                                        <div class="text-red-500 text-sm mt-1 hidden" id="error-idTipoCentroSalud"></div>
                                     </div>
                                 </form>
                             </div>

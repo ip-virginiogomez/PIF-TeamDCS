@@ -14,7 +14,6 @@ class CentroSaludManager extends BaseModalManager {
             fields: [
                 'nombreCentro',
                 'direccion',
-                'numContacto',
                 'idCiudad',
                 'idTipoCentroSalud'
             ]
@@ -36,7 +35,6 @@ class CentroSaludManager extends BaseModalManager {
                 method: 'PUT',
                 nombreCentro: data.nombreCentro,
                 direccion: data.direccion,
-                numContacto: data.numContacto,
                 idCiudad: data.idCiudad,
                 idTipoCentroSalud: data.idTipoCentroSalud
             });
