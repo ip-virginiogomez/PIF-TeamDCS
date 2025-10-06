@@ -108,7 +108,7 @@ class RoleController extends Controller
     {
         // 1. Validamos que nos llegue el RUN del usuario
         $request->validate([
-            'user_run' => 'required|exists:Usuario,runUsuario',
+            'user_run' => 'required|exists:usuarios,runUsuario',
             'permissions' => 'nullable|array',
         ]);
 

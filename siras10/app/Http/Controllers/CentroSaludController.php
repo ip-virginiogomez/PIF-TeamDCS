@@ -26,29 +26,29 @@ class CentroSaludController extends Controller
 
         $query = CentroSalud::query();
 
-        if(strpos($sortBy, '.') !== false) {
+        if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
-            if($tableRelacion === 'ciudad'){
+            if ($tableRelacion === 'ciudad') {
                 $query->join('ciudad', 'centro_salud.idCiudad', '=', 'ciudad.idCiudad')
-                      ->orderBy('ciudad.'.$columna, $sortDirection)
-                      ->select('centro_salud.*');
+                    ->orderBy('ciudad.'.$columna, $sortDirection)
+                    ->select('centro_salud.*');
             }
-            if($tableRelacion === 'tipo_centro_salud'){
+            if ($tableRelacion === 'tipo_centro_salud') {
                 $query->join('tipo_centro_salud', 'centro_salud.idTipoCentroSalud', '=', 'tipo_centro_salud.idTipoCentroSalud')
-                      ->orderBy('tipo_centro_salud.'.$columna, $sortDirection)
-                      ->select('centro_salud.*');
+                    ->orderBy('tipo_centro_salud.'.$columna, $sortDirection)
+                    ->select('centro_salud.*');
             }
         } else {
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $centrosSalud = $query->with(['ciudad','tipoCentroSalud'])->paginate(10);
+        $centrosSalud = $query->with(['ciudad', 'tipoCentroSalud'])->paginate(10);
 
         if ($request->ajax()) {
             return view('centro-salud._tabla', [
                 'centrosSalud' => $centrosSalud,
                 'sortBy' => $sortBy,
-                'sortDirection' => $sortDirection
+                'sortDirection' => $sortDirection,
             ])->render();
         }
 
@@ -60,7 +60,7 @@ class CentroSaludController extends Controller
             'ciudades' => $ciudades,
             'tiposCentro' => $tiposCentro,
             'sortBy' => $sortBy,
-            'sortDirection' => $sortDirection
+            'sortDirection' => $sortDirection,
         ]);
     }
 
