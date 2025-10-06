@@ -13,13 +13,55 @@ class CentroSaludController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $centrosSalud = CentroSalud::with(['ciudad', 'tipoCentroSalud'])->get();
+        $columnasDisponibles = ['idCentroSalud', 'nombreCentro', 'direccion', 'ciudad.nombreCiudad', 'tipo_centro_salud.acronimo'];
+
+        $sortBy = request()->get('sort_by', 'idCentroSalud');
+        $sortDirection = request()->get('sort_direction', 'asc');
+
+        if (! in_array($sortBy, $columnasDisponibles)) {
+            $sortBy = 'idCentroSalud';
+        }
+
+        $query = CentroSalud::query();
+
+        if (strpos($sortBy, '.') !== false) {
+            [$tableRelacion, $columna] = explode('.', $sortBy);
+            if ($tableRelacion === 'ciudad') {
+                $query->join('ciudad', 'centro_salud.idCiudad', '=', 'ciudad.idCiudad')
+                    ->orderBy('ciudad.'.$columna, $sortDirection)
+                    ->select('centro_salud.*');
+            }
+            if ($tableRelacion === 'tipo_centro_salud') {
+                $query->join('tipo_centro_salud', 'centro_salud.idTipoCentroSalud', '=', 'tipo_centro_salud.idTipoCentroSalud')
+                    ->orderBy('tipo_centro_salud.'.$columna, $sortDirection)
+                    ->select('centro_salud.*');
+            }
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $centrosSalud = $query->with(['ciudad', 'tipoCentroSalud'])->paginate(10);
+
+        if ($request->ajax()) {
+            return view('centro-salud._tabla', [
+                'centrosSalud' => $centrosSalud,
+                'sortBy' => $sortBy,
+                'sortDirection' => $sortDirection,
+            ])->render();
+        }
+
         $ciudades = Ciudad::all();
         $tiposCentro = TipoCentroSalud::all();
 
-        return view('centro-salud.index', compact('centrosSalud', 'ciudades', 'tiposCentro'));
+        return view('centro-salud.index', [
+            'centrosSalud' => $centrosSalud,
+            'ciudades' => $ciudades,
+            'tiposCentro' => $tiposCentro,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+        ]);
     }
 
     /**
@@ -38,13 +80,11 @@ class CentroSaludController extends Controller
         $validator = Validator::make($request->all(), [
             'nombreCentro' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
-            'numContacto' => 'required|string|max:20',
             'idCiudad' => 'required|exists:ciudad,idCiudad',
             'idTipoCentroSalud' => 'required|exists:tipo_centro_salud,idTipoCentroSalud',
         ], [
             'nombreCentro.required' => 'El nombre del centro es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
-            'numContacto.required' => 'El número de contacto es obligatorio.',
             'idCiudad.required' => 'Debe seleccionar una ciudad.',
             'idCiudad.exists' => 'La ciudad seleccionada no es válida.',
             'idTipoCentroSalud.required' => 'Debe seleccionar un tipo de centro.',
@@ -103,13 +143,11 @@ class CentroSaludController extends Controller
         $validator = Validator::make($request->all(), [
             'nombreCentro' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
-            'numContacto' => 'required|string|max:20',
             'idCiudad' => 'required|exists:ciudad,idCiudad',
             'idTipoCentroSalud' => 'required|exists:tipo_centro_salud,idTipoCentroSalud',
         ], [
             'nombreCentro.required' => 'El nombre del centro es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
-            'numContacto.required' => 'El número de contacto es obligatorio.',
             'idCiudad.required' => 'Debe seleccionar una ciudad.',
             'idCiudad.exists' => 'La ciudad seleccionada no es válida.',
             'idTipoCentroSalud.required' => 'Debe seleccionar un tipo de centro.',

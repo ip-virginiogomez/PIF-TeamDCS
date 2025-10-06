@@ -34,9 +34,9 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'runUsuario' => 'required|string|max:10|unique:Usuario,runUsuario',
-            'nombreUsuario' => 'required|string|max:45|unique:Usuario,nombreUsuario',
-            'correo' => 'required|email|max:45|unique:Usuario,correo',
+            'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario',
+            'nombreUsuario' => 'required|string|max:45|unique:usuarios,nombreUsuario',
+            'correo' => 'required|email|max:45|unique:usuarios,correo',
             'contrasenia' => 'required|string|min:8|confirmed',
             'nombres' => 'required|string|max:45',
             'apellidoPaterno' => 'required|string|max:45',
@@ -64,16 +64,16 @@ class UsuarioController extends Controller
     {
         $roles = Role::all();
 
-        return view('admin.usuarios.edit', compact('usuario', 'roles'));
+        return view('admin.usuarios.edit', compact('usuarios', 'roles'));
     }
 
     public function update(Request $request, Usuario $usuario)
     {
 
         $request->validate([
-            'runUsuario' => 'required|string|max:10|unique:Usuario,runUsuario,'.$usuario->runUsuario.',runUsuario',
-            'nombreUsuario' => 'required|string|max:45|unique:Usuario,nombreUsuario,'.$usuario->runUsuario.',runUsuario',
-            'correo' => 'required|email|max:45|unique:Usuario,correo,'.$usuario->runUsuario.',runUsuario',
+            'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario,'.$usuario->runUsuario.',runUsuario',
+            'nombreUsuario' => 'required|string|max:45|unique:usuarios,nombreUsuario,'.$usuario->runUsuario.',runUsuario',
+            'correo' => 'required|email|max:45|unique:usuarios,correo,'.$usuario->runUsuario.',runUsuario',
             'contrasenia' => 'nullable|string|min:8|confirmed',
             'nombres' => 'required|string|max:45',
             'apellidoPaterno' => 'required|string|max:45',
