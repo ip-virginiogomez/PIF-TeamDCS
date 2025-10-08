@@ -11,7 +11,7 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     <form action="{{ route('roles.store') }}" method="POST">
                         @csrf
-                        @include('admin.roles._form')
+                        @include('roles._form')
                     </form>
                 </div>
             </div>
