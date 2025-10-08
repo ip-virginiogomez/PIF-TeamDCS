@@ -19,7 +19,7 @@ class TipoCentroFormadorController extends Controller
     {
         $tipos = TipoCentroFormador::paginate(10);
 
-        return view('admin.tipos-centro.index', compact('tipos'));
+        return view('tipos-centro.index', compact('tipos'));
     }
 
     public function create()

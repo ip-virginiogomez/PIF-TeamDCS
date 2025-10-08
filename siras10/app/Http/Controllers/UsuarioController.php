@@ -21,14 +21,14 @@ class UsuarioController extends Controller
     {
         $usuarios = Usuario::with('roles')->paginate(10);
 
-        return view('admin.usuarios.index', compact('usuarios'));
+        return view('usuarios.index', compact('usuarios'));
     }
 
     public function create()
     {
         $roles = Role::all();
 
-        return view('admin.usuarios.create', compact('roles'));
+        return view('usuarios.create', compact('roles'));
     }
 
     public function store(Request $request)
@@ -64,7 +64,7 @@ class UsuarioController extends Controller
     {
         $roles = Role::all();
 
-        return view('admin.usuarios.edit', compact('usuarios', 'roles'));
+        return view('usuarios.edit', compact('usuario', 'roles'));
     }
 
     public function update(Request $request, Usuario $usuario)

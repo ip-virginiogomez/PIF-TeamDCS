@@ -20,7 +20,7 @@ class AlumnoController extends Controller
     {
         $alumnos = Alumno::paginate(10);
 
-        return view('admin.alumnos.index', compact('alumnos'));
+        return view('alumnos.index', compact('alumnos'));
     }
 
     public function store(Request $request)

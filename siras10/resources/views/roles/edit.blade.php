@@ -12,7 +12,7 @@
                     <form action="{{ route('roles.update', $role) }}" method="POST">
                         @csrf
                         @method('PUT')
-                        @include('admin.roles._form', ['role' => $role])
+                        @include('roles._form', ['role' => $role])
                     </form>
                 </div>
             </div>

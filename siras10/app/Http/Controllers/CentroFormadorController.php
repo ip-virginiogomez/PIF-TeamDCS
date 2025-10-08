@@ -20,14 +20,14 @@ class CentroFormadorController extends Controller
     {
         $centros = CentroFormador::with('tipoCentroFormador')->paginate(10);
 
-        return view('admin.centros-formadores.index', compact('centros'));
+        return view('centros-formadores.index', compact('centros'));
     }
 
     public function create()
     {
         $tipos = TipoCentroFormador::all();
 
-        return view('admin.centros-formadores.create', compact('tipos'));
+        return view('centros-formadores.create', compact('tipos'));
     }
 
     public function store(Request $request)
@@ -45,14 +45,14 @@ class CentroFormadorController extends Controller
 
     public function show(CentroFormador $centros_formadore)
     {
-        return view('admin.centros-formadores.show', compact('centros_formadore'));
+        return view('centros-formadores.show', compact('centros_formadore'));
     }
 
     public function edit(CentroFormador $centros_formadore)
     {
         $tipos = TipoCentroFormador::all();
 
-        return view('admin.centros-formadores.edit', compact('centros_formadore', 'tipos'));
+        return view('centros-formadores.edit', compact('centros_formadore', 'tipos'));
     }
 
     public function update(Request $request, CentroFormador $centros_formadore)

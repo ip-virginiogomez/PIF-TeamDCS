@@ -14,6 +14,6 @@ class PermissionController extends Controller
     {
         $permisos = Permission::orderBy('name')->paginate(20); // Ordenamos alfabéticamente
 
-        return view('admin.permisos.index', compact('permisos'));
+        return view('permisos.index', compact('permisos'));
     }
 }
