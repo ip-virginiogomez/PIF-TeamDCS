@@ -64,7 +64,7 @@ class UsuarioController extends Controller
     {
         $roles = Role::all();
 
-        return view('usuarios.edit', compact('usuarios', 'roles'));
+        return view('usuarios.edit', compact('usuario', 'roles'));
     }
 
     public function update(Request $request, Usuario $usuario)
