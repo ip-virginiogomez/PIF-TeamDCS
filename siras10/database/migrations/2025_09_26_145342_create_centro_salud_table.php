@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('idCiudad')->nullable();
             $table->unsignedBigInteger('idTipoCentroSalud')->nullable();
             $table->string('nombreCentro', 45)->nullable();
-            $table->integer('numContacto')->nullable();
             $table->timestamps();
 
             $table->foreign('idCiudad')

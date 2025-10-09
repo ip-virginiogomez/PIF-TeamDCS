@@ -14,16 +14,29 @@ class CentroSaludManager extends BaseModalManager {
             fields: [
                 'nombreCentro',
                 'direccion',
-                'numContacto',
                 'idCiudad',
                 'idTipoCentroSalud'
             ]
         });
     }
 
-    /**
-     * Sobrescribe el método de edición para mapear correctamente los datos
-     */
+    mostrarModal() {
+        const modal = document.getElementById(this.config.modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+    }
+
+    cerrarModal() {
+        const modal = document.getElementById(this.config.modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto'; 
+        }
+        this.limpiarFormulario();
+    }
+
     async editarRegistro(id) {
         this.editando = true;
 
@@ -36,7 +49,6 @@ class CentroSaludManager extends BaseModalManager {
                 method: 'PUT',
                 nombreCentro: data.nombreCentro,
                 direccion: data.direccion,
-                numContacto: data.numContacto,
                 idCiudad: data.idCiudad,
                 idTipoCentroSalud: data.idTipoCentroSalud
             });
@@ -103,6 +115,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Crear funciones globales para compatibilidad
     window.centroSaludManager.createGlobalFunctions();
+
+    const tablaContainer = document.getElementById('tabla-container');
+    if (!tablaContainer) {
+        return;
+    }
+
+    const cargarTabla = async (url) => {
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const html = await response.text();
+            tablaContainer.innerHTML = html;
+        } catch (error) {
+            console.error('Error al cargar la tabla:', error);
+            alert('Ocurrio un error al intentar ordenar la tabla.');
+        }
+
+    }
+
+    tablaContainer.addEventListener('click', function (event) {
+        
+        const target = event.target.closest('.sort-link, .pagination a');
+
+        if (!target) {
+            return;
+        }
+        event.preventDefault(); 
+        const url = target.href;
+        window.history.pushState({ path: url }, '', url);
+
+        cargarTabla(url);
+    });
+
+    window.addEventListener('popstate', function () {
+        cargarTabla(location.href);
+    });
 });
 
 // Funciones específicas para Centro de Salud (compatibilidad)
