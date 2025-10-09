@@ -12,18 +12,13 @@ class DocenteManager extends BaseModalManager {
             baseUrl: '/docentes',
             primaryKey: 'runDocente',
             fields: [
+                'runDocente',
                 'nombresDocente',
                 'apellidoPaterno',
                 'apellidoMaterno',
                 'fechaNacto',
                 'correo',
-                'profesion',
-                'foto',
-                'curriculum',
-                'certSuperInt',
-                'certRCP',
-                'certIAAS',
-                'acuerdo'
+                'profesion'
             ]
         });
     }
@@ -34,28 +29,33 @@ class DocenteManager extends BaseModalManager {
     limpiarFormulario() {
         super.limpiarFormulario();
 
-        const runInputVisible = document.getElementById('runDocenteVisible');
-        const runInputHidden = document.getElementById('runDocente');
+        this.editando = false;
+
+        // ✅ ADAPTADO DE ALUMNOS: Habilitar y resetear estilos del RUN cuando se crea nuevo
+        const runInput = document.getElementById('runDocenteVisible');
+        const runHidden = document.getElementById('runDocente');
         const runHelpText = document.getElementById('run-help-text');
 
-        if (runInputVisible) {
-            runInputVisible.disabled = false;
-            runInputVisible.style.backgroundColor = '';
-            runInputVisible.style.cursor = '';
+        if (runInput) {
+            runInput.disabled = false;
+            runInput.style.backgroundColor = '';
+            runInput.style.cursor = '';
 
-            // Sincronizar con el campo oculto
-            runInputVisible.addEventListener('input', (e) => {
-                if (runInputHidden) {
-                    runInputHidden.value = e.target.value;
+            // ✅ IGUAL QUE ALUMNOS: Agregar event listener para sincronización
+            runInput.addEventListener('input', (e) => {
+                // Sincronizar con el campo oculto
+                if (runHidden) {
+                    runHidden.value = e.target.value;
                 }
             });
+
+            // ✅ IGUAL QUE ALUMNOS: Ocultar texto de ayuda
+            if (runHelpText) {
+                runHelpText.classList.add('hidden');
+            }
         }
 
-        if (runHelpText) {
-            runHelpText.classList.add('hidden');
-        }
-
-        // Ocultar previsualizaciones de documentos
+        // ✅ ADAPTADO DE ALUMNOS: Ocultar previsualizaciones de documentos
         const documentFields = ['foto', 'curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo'];
         documentFields.forEach(field => {
             const previewDiv = document.getElementById(`${field}-actual`);
@@ -69,49 +69,25 @@ class DocenteManager extends BaseModalManager {
      * Sobrescribe el método de edición para mapear correctamente los datos
      */
     async editarRegistro(runDocente) {
-        console.log('=== DEBUG EDITAR DOCENTE ===');
-        console.log('RUN recibido:', runDocente);
-        console.log('Base URL:', this.config.baseUrl);
+        this.editando = true;
 
-        const encodedRun = encodeURIComponent(runDocente);
-        console.log('RUN codificado:', encodedRun);
-
-        const url = `${this.config.baseUrl}/${encodedRun}/edit`;
-        console.log('URL final generada:', url);
-
-        // Verificar si la URL existe haciendo una petición de prueba
         try {
-            console.log('Haciendo petición a:', url);
-
-            const response = await fetch(url, {
-                method: 'GET',
+            // ✅ IGUAL QUE ALUMNOS: Codificar el RUN para URL
+            const encodedRun = encodeURIComponent(runDocente);
+            const response = await fetch(`${this.config.baseUrl}/${encodedRun}/edit`, {
                 headers: {
                     'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
 
-            console.log('Response recibida:', {
-                status: response.status,
-                statusText: response.statusText,
-                headers: response.headers.get('content-type')
-            });
-
-            if (response.status === 405) {
-                console.error('ERROR 405: Método no permitido');
-                console.log('Verifica que la ruta GET /docentes/{docente}/edit exista');
-                return;
-            }
-
             if (!response.ok) {
-                console.error('Error HTTP:', response.status, response.statusText);
-                return;
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('Data recibida:', data);
 
+            // ✅ ADAPTADO DE ALUMNOS: setFormValues con campos específicos de docentes
             this.setFormValues({
                 runDocente: data.runDocente,
                 method: 'PUT',
@@ -121,66 +97,52 @@ class DocenteManager extends BaseModalManager {
                 fechaNacto: data.fechaNacto,
                 correo: data.correo,
                 profesion: data.profesion
+                // No incluimos archivos porque no se pueden pre-llenar
             });
 
-            // Manejar el campo RUN visible - formatearlo automáticamente
+            // ✅ IGUAL QUE ALUMNOS: Establecer el RUN en el campo visible también
             const runInputVisible = document.getElementById('runDocenteVisible');
-            if (runInputVisible && data.runDocente) {
-                // Formatear el RUN para mostrarlo
-                const formattedRun = this.formatRun(data.runDocente);
-                runInputVisible.value = formattedRun;
-                runInputVisible.disabled = true;
-                runInputVisible.style.backgroundColor = '#f3f4f6';
-                runInputVisible.style.cursor = 'not-allowed';
+            if (runInputVisible) {
+                runInputVisible.value = data.runDocente;
             }
 
-            // Mostrar documentos existentes
+            // ✅ IGUAL QUE ALUMNOS: Deshabilitar completamente el campo RUN visible en modo edición
+            const runHelpText = document.getElementById('run-help-text');
+            if (runInputVisible) {
+                runInputVisible.disabled = true;
+                runInputVisible.style.backgroundColor = '#f3f4f6'; // Color gris claro para indicar que no es editable
+                runInputVisible.style.cursor = 'not-allowed';
+
+                // Mostrar texto de ayuda
+                if (runHelpText) {
+                    runHelpText.classList.remove('hidden');
+                }
+            }
+
+            // ✅ ADAPTADO DE ALUMNOS: Mostrar archivos actuales si existen
             const documentFields = ['foto', 'curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo'];
             documentFields.forEach(field => {
                 if (data[field]) {
-                    const previewDiv = document.getElementById(`${field}-actual`);
-                    if (previewDiv) {
-                        const link = previewDiv.querySelector('a');
-                        if (link) {
-                            link.href = `/storage/${data[field]}`;
-                            link.textContent = data[field].split('/').pop();
-                        }
-                        previewDiv.classList.remove('hidden');
+                    const actualDiv = document.getElementById(`${field}-actual`);
+                    const link = document.getElementById(`${field}-link`);
+                    if (actualDiv && link) {
+                        link.href = `/storage/${data[field]}`;
+                        link.textContent = data[field].split('/').pop(); // Solo el nombre del archivo
+                        actualDiv.classList.remove('hidden');
+                    } else if (actualDiv) {
+                        actualDiv.classList.add('hidden');
                     }
                 }
             });
-
-            const runHelpText = document.getElementById('run-help-text');
-            if (runHelpText) {
-                runHelpText.classList.remove('hidden');
-            }
 
             this.setModalTitle('Editar Docente');
             this.setButtonText('Actualizar Docente');
             this.mostrarModal();
 
         } catch (error) {
-            console.error('Error completo:', error);
-            this.showAlert('Error', 'No se pudo cargar el docente: ' + error.message, 'error');
+            console.error('Error:', error); // ✅ IGUAL QUE ALUMNOS
+            this.showAlert('Error', 'No se pudo cargar los datos del docente', 'error'); // ✅ ADAPTADO
         }
-    }
-
-    /**
-     * Formatear RUN para visualización
-     */
-    formatRun(run) {
-        if (!run) return run;
-
-        // Limpiar el RUN (solo números y K)
-        const cleanRun = run.replace(/[^0-9kK]/g, '').toUpperCase();
-
-        if (cleanRun.length < 2) return cleanRun;
-
-        // Aplicar el mismo formato que en alumnos
-        return cleanRun
-            .replace(/^(\d{1,2})(\d{3})(\d{3})(\w{1})$/, '$1.$2.$3-$4')
-            .replace(/^(\d{1,2})(\d{3})(\d{1,3})$/, '$1.$2.$3')
-            .replace(/^(\d{1,2})(\d{1,3})$/, '$1.$2');
     }
 
     /**
@@ -228,41 +190,34 @@ class DocenteManager extends BaseModalManager {
     }
 
     /**
-     * Manejar envío del formulario
+     * Manejar envío del formulario - ADAPTADO DE ALUMNOS
      */
     async handleFormSubmit(e) {
         e.preventDefault();
 
-        const formData = new FormData(this.form);
-        const method = document.getElementById('method')?.value || 'POST';
+        // ✅ IGUAL QUE ALUMNOS: Asegurar que el campo oculto tenga el valor correcto del RUN
+        const runInputVisible = document.getElementById('runDocenteVisible');
+        const runInputHidden = document.getElementById('runDocente');
 
-        // DEBUG
-        console.log('=== FORM SUBMIT DEBUG ===');
-        console.log('Método:', method);
-
-        let url = this.config.baseUrl;
-
-        if (method === 'PUT') {
-            // Para actualización, necesitamos el RUN del docente
-            const runDocente = formData.get('runDocente') || document.getElementById('runDocente')?.value;
-            console.log('RUN para actualizar:', runDocente);
-
-            if (!runDocente) {
-                this.showAlert('Error', 'No se pudo obtener el RUN del docente', 'error');
-                return;
-            }
-
-            url += `/${encodeURIComponent(runDocente)}`;
-            // Laravel espera _method=PUT en el FormData para simular PUT con POST
-            formData.append('_method', 'PUT');
+        if (runInputVisible && runInputHidden && !this.editando) {
+            // Solo para crear nuevos docentes, sincronizar el valor
+            runInputHidden.value = runInputVisible.value;
         }
 
-        console.log('URL final:', url);
-        console.log('Método HTTP real:', method === 'PUT' ? 'POST' : method);
+        const formData = new FormData(this.form);
+        const runDocente = document.getElementById(this.config.primaryKey).value; // ✅ IGUAL QUE ALUMNOS
+        const method = document.getElementById('method').value; // ✅ IGUAL QUE ALUMNOS
+
+        let url = this.config.baseUrl;
+        if (method === 'PUT') {
+            // ✅ IGUAL QUE ALUMNOS: Codificar el RUN para URL
+            const encodedRun = encodeURIComponent(runDocente);
+            url += `/${encodedRun}`;
+        }
 
         try {
             const response = await fetch(url, {
-                method: method === 'PUT' ? 'POST' : method, // Laravel routing
+                method: 'POST', // ✅ IGUAL QUE ALUMNOS: Siempre POST (Laravel maneja PUT con _method)
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -271,23 +226,24 @@ class DocenteManager extends BaseModalManager {
                 }
             });
 
-            console.log('Response status:', response.status);
-
+            // ✅ IGUAL QUE ALUMNOS: Verificar si la respuesta es exitosa
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            // ✅ IGUAL QUE ALUMNOS: Verificar content-type
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('La respuesta no es JSON válido');
             }
 
             const data = await response.json();
+            console.log('Response data:', data); // ✅ IGUAL QUE ALUMNOS: Debug
 
             if (data.success) {
                 await this.showAlert('¡Éxito!', data.message, 'success');
                 this.cerrarModal();
-                location.reload();
+                location.reload(); // ✅ IGUAL QUE ALUMNOS: Recargar para mostrar el nuevo docente
             } else {
                 if (data.errors) {
                     this.showValidationErrors(data.errors);
@@ -297,7 +253,7 @@ class DocenteManager extends BaseModalManager {
             }
 
         } catch (error) {
-            console.error('Error completo:', error);
+            console.error('Error completo:', error); // ✅ IGUAL QUE ALUMNOS
             this.showAlert('Error', `Error al procesar la solicitud: ${error.message}`, 'error');
         }
     }
@@ -333,30 +289,9 @@ class DocenteManager extends BaseModalManager {
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function () {
     window.docenteManager = new DocenteManager();
+
+    // ✅ AGREGAR: Crear funciones globales para compatibilidad (como en alumnos)
     window.docenteManager.createGlobalFunctions();
-
-    // Validación del RUN en tiempo real (igual que en alumnos)
-    /*
-    const runInput = document.getElementById('runDocenteVisible');
-    if (runInput) {
-        runInput.addEventListener('input', function (e) {
-            const run = e.target.value.replace(/[^0-9kK]/g, '');
-            if (run.length > 0) {
-                const formatted = run
-                    .replace(/^(\d{1,2})(\d{3})(\d{3})(\w{1})$/, '$1.$2.$3-$4')
-                    .replace(/^(\d{1,2})(\d{3})(\d{1,3})$/, '$1.$2.$3')
-                    .replace(/^(\d{1,2})(\d{1,3})$/, '$1.$2');
-                e.target.value = formatted;
-            }
-
-            // Sincronizar con campo oculto
-            const hiddenRun = document.getElementById('runDocente');
-            if (hiddenRun) {
-                hiddenRun.value = e.target.value;
-            }
-        });
-    }
-    */
 });
 
 // Funciones globales para compatibilidad
