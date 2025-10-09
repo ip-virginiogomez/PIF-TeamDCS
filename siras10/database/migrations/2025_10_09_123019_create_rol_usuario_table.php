@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('permisos_rol', function (Blueprint $table) {
-            $table->id('idPermisosRol');
-            $table->unsignedBigInteger('idPermisos')->nullable();
+        Schema::create('rol_usuario', function (Blueprint $table) {
+            $table->id('idRolUsuario');
+            $table->string('runUsuario', 10)->nullable();
             $table->unsignedBigInteger('idRol')->nullable();
             $table->timestamps();
 
-            $table->foreign('idPermisos')
-                ->references('idPermisos')
-                ->on('permisos')
+            $table->foreign('runUsuario')
+                ->references('runUsuario')
+                ->on('usuarios')
                 ->onUpdate('no action')
                 ->onDelete('no action');
 
@@ -36,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('permisos_rol');
+        Schema::dropIfExists('rol_usuario');
     }
 };

@@ -47,11 +47,10 @@ class UsuarioController extends Controller
         $usuario = Usuario::create([
             'runUsuario' => $request->runUsuario,
             'nombreUsuario' => $request->nombreUsuario,
-            'correo' => $request->correo,
-            'contrasenia' => Hash::make($request->contrasenia),
-            'nombres' => $request->nombres,
             'apellidoPaterno' => $request->apellidoPaterno,
             'apellidoMaterno' => $request->apellidoMaterno,
+            'correo' => $request->correo,
+            'contrasenia' => Hash::make($request->contrasenia),
             'fechaCreacion' => now(),
         ]);
 

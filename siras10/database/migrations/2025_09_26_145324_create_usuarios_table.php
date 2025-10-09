@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('usuarios', function (Blueprint $table) {
             $table->string('runUsuario', 10)->primary();
             $table->string('nombreUsuario', 45)->nullable();
+            $table->string('apellidoPaterno', 45)->nullable();
+            $table->string('apellidoMaterno', 45)->nullable();
             $table->string('correo', 45)->nullable();
+            $table->string('telefono', 15)->nullable();
             $table->string('contrasenia', 255)->nullable();
             $table->string('fechaCreacion', 45)->nullable();
             $table->unsignedBigInteger('idTipoPersonalSalud')->nullable();
-            $table->string('nombres', 45)->nullable();
-            $table->string('apellidoPaterno', 45)->nullable();
-            $table->string('apellidoMaterno', 45)->nullable();
             $table->timestamps();
 
             $table->foreign('idTipoPersonalSalud')
