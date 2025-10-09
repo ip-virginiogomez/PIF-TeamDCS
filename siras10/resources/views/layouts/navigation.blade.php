@@ -1,4 +1,5 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
@@ -7,28 +8,43 @@
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
                 </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <!-- Navigation Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <!-- ===== INICIO: MENÚ DE GESTIÓN ACADÉMICA ===== -->
-                    @can('alumnos.read')
+
+                    <!-- Menú desplegable de Gestión Académica -->
+                    @canany(['alumnos.read', 'docentes.read', 'carreras.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
                                 <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                                     <div>Gestión Académica</div>
-                                    <div class="ms-1"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
                                 </button>
                             </x-slot>
                             <x-slot name="content">
+                                @can('alumnos.read')
                                 <x-dropdown-link :href="route('alumnos.index')">{{ __('Alumnos') }}</x-dropdown-link>
+                                @endcan
+
+                                @can('docentes.read')
+                                <x-dropdown-link :href="route('docentes.index')">{{ __('Docentes') }}</x-dropdown-link>
+                                @endcan
+
+                                @can('carreras.read')
                                 <x-dropdown-link :href="route('carreras.index')">{{ __('Carreras') }}</x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
-                    @endcan
-                    <!-- ===== FIN: MENÚ DE GESTIÓN ACADÉMICA ===== -->
+                    @endcanany
+
                     <!-- ===== INICIO: MENÚ DE GESTIÓN CENTRO FORMADOR ===== -->
                     @canany(['centros-formadores.read', 'tipos-centro-formador.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -132,15 +148,31 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            @can('alumnos.read')
-                <div class="px-4 pt-3 pb-1 text-xs text-gray-400">Gestión Académica</div>
-                <x-responsive-nav-link :href="route('alumnos.index')" :active="request()->routeIs('alumnos.index')">{{ __('Alumnos') }}</x-responsive-nav-link>
-            @endcan
+            <!-- Gestión Académica - Responsive -->
+            @canany(['alumnos.read', 'docentes.read', 'carreras.read'])
+            <div class="border-t border-gray-200 pt-2">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {{ __('Gestión Académica') }}
+                </div>
+                
+                @can('alumnos.read')
+                <x-responsive-nav-link :href="route('alumnos.index')" :active="request()->routeIs('alumnos.*')" class="pl-6">
+                    {{ __('Alumnos') }}
+                </x-responsive-nav-link>
+                @endcan
 
-            @canany(['centros-formadores.read', 'tipos-centro-formador.read'])
-                <div class="px-4 pt-3 pb-1 text-xs text-gray-400">Gestión Centro Formador</div>
-                <x-responsive-nav-link :href="route('centros-formadores.index')" :active="request()->routeIs('centros-formadores.index')">{{ __('Centros Formadores') }}</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('tipos-centro-formador.index')" :active="request()->routeIs('tipos-centro-formador.index')">{{ __('Tipos de Centro') }}</x-responsive-nav-link>
+                @can('docentes.read')
+                <x-responsive-nav-link :href="route('docentes.index')" :active="request()->routeIs('docentes.*')" class="pl-6">
+                    {{ __('Docentes') }}
+                </x-responsive-nav-link>
+                @endcan
+
+                @can('carreras.read')
+                <x-responsive-nav-link :href="route('carreras.index')" :active="request()->routeIs('carreras.*')" class="pl-6">
+                    {{ __('Carreras') }}
+                </x-responsive-nav-link>
+                @endcan
+            </div>
             @endcanany
 
             <div class="px-4 pt-3 pb-1 text-xs text-gray-400">Gestión de Salud</div>
