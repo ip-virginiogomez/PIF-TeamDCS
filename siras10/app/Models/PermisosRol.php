@@ -19,7 +19,6 @@ class PermisosRol extends Model
         'idPermisos',
         'idRol',
         'idEstadoPermisos',
-        'runUsuario',
     ];
 
     // Relación inversa con Permisos
@@ -38,11 +37,5 @@ class PermisosRol extends Model
     public function estadoPermiso()
     {
         return $this->belongsTo(EstadoPermisos::class, 'idEstadoPermisos', 'idEstadoPermisos');
-    }
-
-    // Relación inversa con Usuario
-    public function usuario()
-    {
-        return $this->belongsTo(Usuario::class, 'runUsuario', 'runUsuario');
     }
 }

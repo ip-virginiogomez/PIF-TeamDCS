@@ -17,16 +17,9 @@ class Permisos extends Model
 
     protected $fillable = [
         'nombrePermisos',
-        'idSubmenu',
         'fechaCreacion',
         'decripcion',
     ];
-
-    // Relación inversa con Submenu
-    public function submenu()
-    {
-        return $this->belongsTo(Submenu::class, 'idSubmenu', 'idSubmenu');
-    }
 
     // Relación uno a muchos con PermisosRol
     public function permisosRoles()
