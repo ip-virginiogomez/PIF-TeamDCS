@@ -18,7 +18,7 @@ class RoleController extends Controller
     {
         $roles = Role::paginate(10);
 
-        return view('admin.roles.index', compact('roles'));
+        return view('roles.index', compact('roles'));
     }
 
     /**
@@ -26,7 +26,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return view('admin.roles.create');
+        return view('roles.create');
     }
 
     /**
@@ -48,7 +48,7 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        return view('admin.roles.edit', compact('role'));
+        return view('roles.edit', compact('role'));
     }
 
     /**
@@ -98,7 +98,7 @@ class RoleController extends Controller
             $selectedUser = Usuario::where('runUsuario', $request->input('user_run'))->first();
         }
 
-        return view('admin.roles.permission-matrix', compact('roles', 'menus', 'permissions', 'selectedRole', 'selectedUser'));
+        return view('roles.permission-matrix', compact('roles', 'menus', 'permissions', 'selectedRole', 'selectedUser'));
     }
 
     /**

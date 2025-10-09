@@ -1,8 +1,8 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
-        <label for="nombres" class="block text-sm font-medium text-gray-700">Nombres</label>
-        <input type="text" name="nombres" id="nombres" value="{{ old('nombres', $usuario->nombres ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-        @error('nombres')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+        <label for="nombreUsuario" class="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
+        <input type="text" name="nombreUsuario" id="nombreUsuario" value="{{ old('nombreUsuario', $usuario->nombreUsuario ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+        @error('nombreUsuario')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno</label>
@@ -18,11 +18,6 @@
         <label for="runUsuario" class="block text-sm font-medium text-gray-700">RUN</label>
         <input type="text" name="runUsuario" id="runUsuario" value="{{ old('runUsuario', $usuario->runUsuario ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('runUsuario')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-    </div>
-    <div>
-        <label for="nombreUsuario" class="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
-        <input type="text" name="nombreUsuario" id="nombreUsuario" value="{{ old('nombreUsuario', $usuario->nombreUsuario ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-        @error('nombreUsuario')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
