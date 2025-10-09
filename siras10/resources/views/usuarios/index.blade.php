@@ -41,7 +41,7 @@
                                 @forelse ($usuarios as $usuario)
                                     <tr class="border-b">
                                         <td class="py-2 px-4">{{ $usuario->runUsuario }}</td>
-                                        <td class="py-2 px-4">{{ $usuario->nombres }} {{ $usuario->apellidoPaterno }}</td>
+                                        <td class="py-2 px-4">{{ $usuario->nombreUsuario }} {{ $usuario->apellidoPaterno }}</td>
                                         <td class="py-2 px-4">{{ $usuario->correo }}</td>
                                         <td class="py-2 px-4">
                                             @foreach ($usuario->roles as $role)
