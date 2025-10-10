@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sede;
 use App\Models\CentroFormador;
+use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -19,7 +19,7 @@ class SedeController extends Controller
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idSede';
         }
-        
+
         $query = Sede::query();
 
         if (strpos($sortBy, '.') !== false) {
@@ -70,7 +70,7 @@ class SedeController extends Controller
             'nombreSede' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
-            'fechaCreacion' => 'required|date',
+            'fechaCreacion' => 'nullable|date',
             'numContacto' => 'nullable|string|max:20',
         ], [
             'nombreSede.required' => 'El nombre de la sede es obligatorio.',

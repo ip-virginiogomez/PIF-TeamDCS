@@ -58,6 +58,7 @@
                             <x-slot name="content">
                                 <x-dropdown-link :href="route('centros-formadores.index')">{{ __('Centros Formadores') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('tipos-centro-formador.index')">{{ __('Tipos de Centro') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('sede.index')">{{ __('Sedes') }}</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
