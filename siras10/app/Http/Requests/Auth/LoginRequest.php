@@ -26,9 +26,9 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        // CAMBIO: Se valida 'nombreUsuario' en lugar de 'email'.
+        // CAMBIO: Se valida 'correo' en lugar de 'nombreUsuario'.
         return [
-            'nombreUsuario' => ['required', 'string'],
+            'correo' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,13 +42,14 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // CAMBIO: Se intenta autenticar con 'nombreUsuario' y 'password'.
-        if (! Auth::attempt(['nombreUsuario' => $this->input('nombreUsuario'), 'password' => $this->input('password')], $this->boolean('remember'))) {
+        // CAMBIO: Se intenta autenticar con 'correo' y 'password'.
+        // Laravel usará 'contrasenia' automáticamente gracias al método getAuthPassword() en tu modelo Usuario.
+        if (! Auth::attempt(['correo' => $this->input('correo'), 'password' => $this->input('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                // CAMBIO: El error se asocia al campo 'nombreUsuario'.
-                'nombreUsuario' => trans('auth.failed'),
+                // CAMBIO: El error se asocia al campo 'correo'.
+                'correo' => trans('auth.failed'),
             ]);
         }
 
@@ -71,8 +72,8 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            // CAMBIO: El error de "demasiados intentos" se asocia a 'nombreUsuario'.
-            'nombreUsuario' => trans('auth.throttle', [
+            // CAMBIO: El error de "demasiados intentos" se asocia a 'correo'.
+            'correo' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -84,7 +85,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        // CAMBIO: La clave para limitar intentos se genera con 'nombreUsuario' en lugar de 'email'.
-        return Str::transliterate(Str::lower($this->input('nombreUsuario')).'|'.$this->ip());
+        // CAMBIO: La clave para limitar intentos se genera con 'correo'.
+        return Str::transliterate(Str::lower($this->input('correo')).'|'.$this->ip());
     }
 }
