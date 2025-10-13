@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Gestión de Centros de Sedes') }}
+            <h2 class="font-semibold text-xl text-white leading-tight">
+                {{ __('Gestión de Sedes') }}
             </h2>
-            <button id="btn-nueva-sede" data-modal-target="sedeModal" data-modal-toggle="sedeModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+            <button onclick="limpiarFormulario()" data-modal-target="sedeModal" data-modal-toggle="sedeModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Sede
             </button>
         </div>

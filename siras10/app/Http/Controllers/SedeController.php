@@ -11,7 +11,7 @@ class SedeController extends Controller
 {
     public function index(Request $request)
     {
-        $columnasDisponibles = ['idSede', 'nombreSede', 'direccion', 'centroFormador.nombreCentro', 'fechaCreacion', 'numContacto'];
+        $columnasDisponibles = ['idSede', 'nombreSede', 'direccion', 'centroFormador.nombreCentroFormador', 'fechaCreacion', 'numContacto'];
 
         $sortBy = request()->get('sort_by', 'idSede');
         $sortDirection = request()->get('sort_direction', 'asc');
@@ -77,7 +77,6 @@ class SedeController extends Controller
             'direccion.required' => 'La dirección es obligatoria.',
             'idCentroFormador.required' => 'Debe seleccionar un centro formador.',
             'idCentroFormador.exists' => 'El centro formador seleccionado no es válido.',
-            'fechaCreacion.required' => 'La fecha de creación es obligatoria.',
             'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
             'numContacto.max' => 'El número de contacto no puede exceder 20 caracteres.',
         ]);
@@ -90,7 +89,13 @@ class SedeController extends Controller
         }
 
         try {
-            $sede = Sede::create($request->all());
+            $data = $request->all();
+
+            if (empty($data['fechaCreacion'])) {
+                $data['fechaCreacion'] = now()->format('Y-m-d');
+            }
+
+            $sede = Sede::create($data);
             $sede->load(['centroFormador']);
 
             return response()->json([
@@ -135,14 +140,13 @@ class SedeController extends Controller
             'nombreSede' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
-            'fechaCreacion' => 'required|date',
+            'fechaCreacion' => 'nullable|date',
             'numContacto' => 'nullable|string|max:20',
         ], [
             'nombreSede.required' => 'El nombre de la sede es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
             'idCentroFormador.required' => 'Debe seleccionar un centro formador.',
             'idCentroFormador.exists' => 'El centro formador seleccionado no es válido.',
-            'fechaCreacion.required' => 'La fecha de creación es obligatoria.',
             'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
             'numContacto.max' => 'El número de contacto no puede exceder 20 caracteres.',
         ]);
