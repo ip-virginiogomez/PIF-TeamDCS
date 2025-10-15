@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('centro_salud', function (Blueprint $table) {
             $table->id('idCentroSalud');
             $table->string('direccion', 100)->nullable();
+            $table->string('director', 100)->nullable(); // NUEVO CAMPO
+            $table->string('correoDirector', 100)->nullable(); // NUEVO CAMPO    
             $table->unsignedBigInteger('idCiudad')->nullable();
             $table->unsignedBigInteger('idTipoCentroSalud')->nullable();
             $table->string('nombreCentro', 45)->nullable();

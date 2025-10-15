@@ -26,14 +26,14 @@ class DocentesController extends Controller
     public function store(Request $request)
     {
         try {
-            // ✅ IGUAL QUE ALUMNOS: Validar directamente y capturar excepción
+            // Validar directamente y capturar excepción
             $request->validate([
                 'runDocente' => 'required|string|max:12|unique:docente,runDocente',
                 'nombresDocente' => 'required|string|max:100',
                 'apellidoPaterno' => 'required|string|max:45',
                 'apellidoMaterno' => 'nullable|string|max:45',
                 'correo' => 'required|email|max:50|unique:docente,correo',
-                'fechaNacto' => 'required|date', // ✅ CAMBIO: required como en alumnos
+                'fechaNacto' => 'required|date',
                 'profesion' => 'required|string|max:100',
                 'foto' => 'nullable|image|max:2048',
                 'curriculum' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
@@ -43,7 +43,7 @@ class DocentesController extends Controller
                 'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // ✅ IGUAL QUE ALUMNOS: Manejar errores de validación
+            // Manejar errores de validación
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -54,10 +54,10 @@ class DocentesController extends Controller
             throw $e;
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Usar except() para excluir archivos
+        // Usar except() para excluir archivos
         $data = $request->except(['foto', 'curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo']);
 
-        // ✅ IGUAL QUE ALUMNOS: Manejar archivos individualmente con hasFile()
+        // Manejar archivos individualmente con hasFile()
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('docentes/fotos', 'public');
         }
@@ -82,13 +82,13 @@ class DocentesController extends Controller
             $data['acuerdo'] = $request->file('acuerdo')->store('docentes/acuerdos', 'public');
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Agregar fecha de creación
+        // Agregar fecha de creación
         $data['fechaCreacion'] = now();
 
-        // ✅ IGUAL QUE ALUMNOS: Crear registro
+        // Crear registro
         $docente = Docente::create($data);
 
-        // ✅ IGUAL QUE ALUMNOS: Respuesta JSON para AJAX
+        // Respuesta JSON para AJAX
         if (request()->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -97,28 +97,28 @@ class DocentesController extends Controller
             ]);
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Redirección para requests normales
+        // Redirección para requests normales
         return redirect()->route('docentes.index')
             ->with('success', 'Docente creado exitosamente.');
     }
 
     public function edit(Docente $docente)
     {
-        // ✅ IGUAL QUE ALUMNOS: Simple retorno JSON
+        // Simple retorno JSON
         return response()->json($docente);
     }
 
     public function update(Request $request, Docente $docente)
     {
         try {
-            // ✅ IGUAL QUE ALUMNOS: Validar directamente y capturar excepción
+            // Validar directamente y capturar excepción
             $request->validate([
                 'runDocente' => 'required|string|max:12|unique:docente,runDocente,'.$docente->runDocente.',runDocente',
                 'nombresDocente' => 'required|string|max:100',
                 'apellidoPaterno' => 'required|string|max:45',
                 'apellidoMaterno' => 'nullable|string|max:45',
                 'correo' => 'required|email|max:50|unique:docente,correo,'.$docente->runDocente.',runDocente',
-                'fechaNacto' => 'required|date', // ✅ CAMBIO: required como en alumnos
+                'fechaNacto' => 'required|date', 
                 'profesion' => 'required|string|max:100',
                 'foto' => 'nullable|image|max:2048',
                 'curriculum' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
@@ -128,7 +128,7 @@ class DocentesController extends Controller
                 'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // ✅ IGUAL QUE ALUMNOS: Manejar errores de validación
+            // Manejar errores de validación
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -139,10 +139,10 @@ class DocentesController extends Controller
             throw $e;
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Usar except() para excluir archivos
+        // Usar except() para excluir archivos
         $data = $request->except(['foto', 'curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo']);
 
-        // ✅ IGUAL QUE ALUMNOS: Manejar archivos individualmente
+        // Manejar archivos individualmente
         if ($request->hasFile('foto')) {
             if ($docente->foto) {
                 Storage::disk('public')->delete($docente->foto);
@@ -185,10 +185,10 @@ class DocentesController extends Controller
             $data['acuerdo'] = $request->file('acuerdo')->store('docentes/acuerdos', 'public');
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Actualizar
+        // Actualizar
         $docente->update($data);
 
-        // ✅ IGUAL QUE ALUMNOS: Respuesta JSON para AJAX
+        // Respuesta JSON para AJAX
         if (request()->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -197,14 +197,14 @@ class DocentesController extends Controller
             ]);
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Redirección para requests normales
+        // Redirección para requests normales
         return redirect()->route('docentes.index')
             ->with('success', 'Docente actualizado exitosamente.');
     }
 
     public function destroy(Docente $docente)
     {
-        // ✅ ADAPTADO DE ALUMNOS: Eliminar archivos individualmente
+        // Eliminar archivos individualmente
         if ($docente->foto) {
             Storage::disk('public')->delete($docente->foto);
         }
@@ -226,7 +226,7 @@ class DocentesController extends Controller
 
         $docente->delete();
 
-        // ✅ IGUAL QUE ALUMNOS: Respuesta JSON para AJAX
+        // Respuesta JSON para AJAX
         if (request()->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -234,7 +234,7 @@ class DocentesController extends Controller
             ]);
         }
 
-        // ✅ IGUAL QUE ALUMNOS: Redirección para requests normales
+        // Redirección para requests normales
         return redirect()->route('docentes.index')
             ->with('success', 'Docente eliminado exitosamente.');
     }

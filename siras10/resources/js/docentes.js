@@ -31,7 +31,7 @@ class DocenteManager extends BaseModalManager {
 
         this.editando = false;
 
-        // ✅ ADAPTADO DE ALUMNOS: Habilitar y resetear estilos del RUN cuando se crea nuevo
+        // Habilitar y resetear estilos del RUN cuando se crea nuevo
         const runInput = document.getElementById('runDocenteVisible');
         const runHidden = document.getElementById('runDocente');
         const runHelpText = document.getElementById('run-help-text');
@@ -41,7 +41,7 @@ class DocenteManager extends BaseModalManager {
             runInput.style.backgroundColor = '';
             runInput.style.cursor = '';
 
-            // ✅ IGUAL QUE ALUMNOS: Agregar event listener para sincronización
+            // Agregar event listener para sincronización
             runInput.addEventListener('input', (e) => {
                 // Sincronizar con el campo oculto
                 if (runHidden) {
@@ -49,13 +49,13 @@ class DocenteManager extends BaseModalManager {
                 }
             });
 
-            // ✅ IGUAL QUE ALUMNOS: Ocultar texto de ayuda
+            // Ocultar texto de ayuda
             if (runHelpText) {
                 runHelpText.classList.add('hidden');
             }
         }
 
-        // ✅ ADAPTADO DE ALUMNOS: Ocultar previsualizaciones de documentos
+        // Ocultar previsualizaciones de documentos
         const documentFields = ['foto', 'curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo'];
         documentFields.forEach(field => {
             const previewDiv = document.getElementById(`${field}-actual`);
@@ -72,7 +72,7 @@ class DocenteManager extends BaseModalManager {
         this.editando = true;
 
         try {
-            // ✅ IGUAL QUE ALUMNOS: Codificar el RUN para URL
+            // Codificar el RUN para URL
             const encodedRun = encodeURIComponent(runDocente);
             const response = await fetch(`${this.config.baseUrl}/${encodedRun}/edit`, {
                 headers: {
@@ -87,7 +87,7 @@ class DocenteManager extends BaseModalManager {
 
             const data = await response.json();
 
-            // ✅ ADAPTADO DE ALUMNOS: setFormValues con campos específicos de docentes
+            // setFormValues con campos específicos de docentes
             this.setFormValues({
                 runDocente: data.runDocente,
                 method: 'PUT',
@@ -100,13 +100,13 @@ class DocenteManager extends BaseModalManager {
                 // No incluimos archivos porque no se pueden pre-llenar
             });
 
-            // ✅ IGUAL QUE ALUMNOS: Establecer el RUN en el campo visible también
+            // Establecer el RUN en el campo visible también
             const runInputVisible = document.getElementById('runDocenteVisible');
             if (runInputVisible) {
                 runInputVisible.value = data.runDocente;
             }
 
-            // ✅ IGUAL QUE ALUMNOS: Deshabilitar completamente el campo RUN visible en modo edición
+            // Deshabilitar completamente el campo RUN visible en modo edición
             const runHelpText = document.getElementById('run-help-text');
             if (runInputVisible) {
                 runInputVisible.disabled = true;
@@ -119,7 +119,7 @@ class DocenteManager extends BaseModalManager {
                 }
             }
 
-            // ✅ ADAPTADO DE ALUMNOS: Mostrar archivos actuales si existen
+            // Mostrar archivos actuales si existen
             const documentFields = ['foto', 'curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo'];
             documentFields.forEach(field => {
                 if (data[field]) {
@@ -140,8 +140,8 @@ class DocenteManager extends BaseModalManager {
             this.mostrarModal();
 
         } catch (error) {
-            console.error('Error:', error); // ✅ IGUAL QUE ALUMNOS
-            this.showAlert('Error', 'No se pudo cargar los datos del docente', 'error'); // ✅ ADAPTADO
+            console.error('Error:', error); 
+            this.showAlert('Error', 'No se pudo cargar los datos del docente', 'error'); 
         }
     }
 
@@ -190,12 +190,12 @@ class DocenteManager extends BaseModalManager {
     }
 
     /**
-     * Manejar envío del formulario - ADAPTADO DE ALUMNOS
+     * Manejar envío del formulario
      */
     async handleFormSubmit(e) {
         e.preventDefault();
 
-        // ✅ IGUAL QUE ALUMNOS: Asegurar que el campo oculto tenga el valor correcto del RUN
+        // Asegurar que el campo oculto tenga el valor correcto del RUN
         const runInputVisible = document.getElementById('runDocenteVisible');
         const runInputHidden = document.getElementById('runDocente');
 
@@ -205,19 +205,19 @@ class DocenteManager extends BaseModalManager {
         }
 
         const formData = new FormData(this.form);
-        const runDocente = document.getElementById(this.config.primaryKey).value; // ✅ IGUAL QUE ALUMNOS
-        const method = document.getElementById('method').value; // ✅ IGUAL QUE ALUMNOS
+        const runDocente = document.getElementById(this.config.primaryKey).value;
+        const method = document.getElementById('method').value;
 
         let url = this.config.baseUrl;
         if (method === 'PUT') {
-            // ✅ IGUAL QUE ALUMNOS: Codificar el RUN para URL
+            // Codificar el RUN para URL
             const encodedRun = encodeURIComponent(runDocente);
             url += `/${encodedRun}`;
         }
 
         try {
             const response = await fetch(url, {
-                method: 'POST', // ✅ IGUAL QUE ALUMNOS: Siempre POST (Laravel maneja PUT con _method)
+                method: 'POST', // Siempre POST (Laravel maneja PUT con _method)
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -226,24 +226,24 @@ class DocenteManager extends BaseModalManager {
                 }
             });
 
-            // ✅ IGUAL QUE ALUMNOS: Verificar si la respuesta es exitosa
+            // Verificar si la respuesta es exitosa
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // ✅ IGUAL QUE ALUMNOS: Verificar content-type
+            // Verificar content-type
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('La respuesta no es JSON válido');
             }
 
             const data = await response.json();
-            console.log('Response data:', data); // ✅ IGUAL QUE ALUMNOS: Debug
+            console.log('Response data:', data); // Debug
 
             if (data.success) {
                 await this.showAlert('¡Éxito!', data.message, 'success');
                 this.cerrarModal();
-                location.reload(); // ✅ IGUAL QUE ALUMNOS: Recargar para mostrar el nuevo docente
+                location.reload(); // Recargar para mostrar el nuevo docente
             } else {
                 if (data.errors) {
                     this.showValidationErrors(data.errors);
@@ -253,7 +253,7 @@ class DocenteManager extends BaseModalManager {
             }
 
         } catch (error) {
-            console.error('Error completo:', error); // ✅ IGUAL QUE ALUMNOS
+            console.error('Error completo:', error); 
             this.showAlert('Error', `Error al procesar la solicitud: ${error.message}`, 'error');
         }
     }
@@ -290,7 +290,7 @@ class DocenteManager extends BaseModalManager {
 document.addEventListener('DOMContentLoaded', function () {
     window.docenteManager = new DocenteManager();
 
-    // ✅ AGREGAR: Crear funciones globales para compatibilidad (como en alumnos)
+    // Crear funciones globales para compatibilidad
     window.docenteManager.createGlobalFunctions();
 });
 

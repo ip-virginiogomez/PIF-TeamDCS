@@ -5,7 +5,6 @@
                 {{ __('Gestión de Docentes') }}
             </h2>
         @can('docentes.create')
-            <!-- ✅ CAMBIAR: Usar la misma función que alumnos -->
             <button onclick="limpiarFormularioDocente()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Crear Nuevo Docente
             </button>
@@ -51,11 +50,9 @@
                                         <td class="py-2 px-4">{{ $docente->profesion }}</td>
                                         <td class="py-2 px-4 flex space-x-2">
                                             @can('docentes.update')
-                                                <!-- ✅ CAMBIAR: Usar la misma función que alumnos -->
                                                 <button onclick="editarDocente('{{ $docente->runDocente }}')" class="text-yellow-500 hover:text-yellow-700">Editar</button>
                                             @endcan
                                             @can('docentes.delete')
-                                                <!-- ✅ CAMBIAR: Usar la misma función que alumnos -->
                                                 <button onclick="eliminarDocente('{{ $docente->runDocente }}')" class="text-red-500 hover:text-red-700">Eliminar</button>
                                             @endcan
                                         </td>
@@ -85,9 +82,8 @@
         buttonText="Guardar Docente"
         closeFunction="cerrarModalDocente()">
         
-        <!-- ✅ SIMPLIFICAR: Igual que alumnos, sin form anidado -->
         
-        <!-- RUN del Docente - IGUAL QUE ALUMNOS -->
+        <!-- RUN del Docente -->
         <div class="mb-4">
             <label for="runDocenteVisible" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" 
@@ -96,7 +92,6 @@
                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                    placeholder="Ej: 12345678-9"
                    required>
-            <!-- ✅ AGREGAR: Texto de ayuda como en alumnos -->
             <div id="run-help-text" class="text-xs text-amber-600 mt-1 hidden">
                 El RUN no puede modificarse al editar un docente existente
             </div>
@@ -157,7 +152,7 @@
             <div id="error-correo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Profesión - ESPECÍFICO DE DOCENTES -->
+        <!-- Profesión -->
         <div class="mb-4">
             <label for="profesion" class="block text-sm font-medium text-gray-700">Profesión *</label>
             <input type="text" 
@@ -168,7 +163,7 @@
             <div id="error-profesion" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Foto - IGUAL QUE ALUMNOS -->
+        <!-- Foto -->
         <div class="mb-4">
             <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
             <input type="file" 
@@ -179,7 +174,7 @@
             <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Curriculum - ESTILO ALUMNOS -->
+        <!-- Curriculum -->
         <div class="mb-4">
             <label for="curriculum" class="block text-sm font-medium text-gray-700">Curriculum Vitae</label>
             <div id="curriculum-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -195,7 +190,7 @@
             <div id="error-curriculum" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Certificado Superintendencia - ESTILO ALUMNOS -->
+        <!-- Certificado Superintendencia -->
         <div class="mb-4">
             <label for="certSuperInt" class="block text-sm font-medium text-gray-700">Certificado Superintendencia</label>
             <div id="certSuperInt-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -211,7 +206,7 @@
             <div id="error-certSuperInt" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Certificado RCP - ESTILO ALUMNOS -->
+        <!-- Certificado RCP -->
         <div class="mb-4">
             <label for="certRCP" class="block text-sm font-medium text-gray-700">Certificado RCP</label>
             <div id="certRCP-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -227,7 +222,7 @@
             <div id="error-certRCP" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Certificado IAAS - ESTILO ALUMNOS -->
+        <!-- Certificado IAAS -->
         <div class="mb-4">
             <label for="certIAAS" class="block text-sm font-medium text-gray-700">Certificado IAAS</label>
             <div id="certIAAS-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -243,7 +238,7 @@
             <div id="error-certIAAS" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Acuerdo - IGUAL QUE ALUMNOS -->
+        <!-- Acuerdo -->
         <div class="mb-4">
             <label for="acuerdo" class="block text-sm font-medium text-gray-700">Documento de Acuerdo</label>
             <div id="acuerdo-actual" class="mb-2 text-sm text-blue-600 hidden">

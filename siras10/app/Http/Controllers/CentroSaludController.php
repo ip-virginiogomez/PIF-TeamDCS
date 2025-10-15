@@ -15,7 +15,10 @@ class CentroSaludController extends Controller
      */
     public function index(Request $request)
     {
-        $columnasDisponibles = ['idCentroSalud', 'nombreCentro', 'direccion', 'ciudad.nombreCiudad', 'tipo_centro_salud.acronimo'];
+        $columnasDisponibles = [
+            'idCentroSalud', 'nombreCentro', 'direccion', 'director',  // Agregado 'director'
+            'ciudad.nombreCiudad', 'tipo_centro_salud.acronimo'
+        ];
 
         $sortBy = request()->get('sort_by', 'idCentroSalud');
         $sortDirection = request()->get('sort_direction', 'asc');
@@ -80,11 +83,16 @@ class CentroSaludController extends Controller
         $validator = Validator::make($request->all(), [
             'nombreCentro' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
+            'director' => 'required|string|max:255',                           // NUEVA VALIDACIÓN
+            'correoDirector' => 'required|email|max:255',                      // NUEVA VALIDACIÓN
             'idCiudad' => 'required|exists:ciudad,idCiudad',
             'idTipoCentroSalud' => 'required|exists:tipo_centro_salud,idTipoCentroSalud',
         ], [
             'nombreCentro.required' => 'El nombre del centro es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
+            'director.required' => 'El nombre del director es obligatorio.',                    // NUEVO MENSAJE
+            'correoDirector.required' => 'El correo del director es obligatorio.',              // NUEVO MENSAJE
+            'correoDirector.email' => 'El correo del director debe tener un formato válido.',   // NUEVO MENSAJE
             'idCiudad.required' => 'Debe seleccionar una ciudad.',
             'idCiudad.exists' => 'La ciudad seleccionada no es válida.',
             'idTipoCentroSalud.required' => 'Debe seleccionar un tipo de centro.',
@@ -143,11 +151,16 @@ class CentroSaludController extends Controller
         $validator = Validator::make($request->all(), [
             'nombreCentro' => 'required|string|max:255',
             'direccion' => 'required|string|max:500',
+            'director' => 'required|string|max:255',                           // NUEVA VALIDACIÓN
+            'correoDirector' => 'required|email|max:255',                      // NUEVA VALIDACIÓN
             'idCiudad' => 'required|exists:ciudad,idCiudad',
             'idTipoCentroSalud' => 'required|exists:tipo_centro_salud,idTipoCentroSalud',
         ], [
             'nombreCentro.required' => 'El nombre del centro es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
+            'director.required' => 'El nombre del director es obligatorio.',                    // NUEVO MENSAJE
+            'correoDirector.required' => 'El correo del director es obligatorio.',              // NUEVO MENSAJE
+            'correoDirector.email' => 'El correo del director debe tener un formato válido.',   // NUEVO MENSAJE
             'idCiudad.required' => 'Debe seleccionar una ciudad.',
             'idCiudad.exists' => 'La ciudad seleccionada no es válida.',
             'idTipoCentroSalud.required' => 'Debe seleccionar un tipo de centro.',
