@@ -14,29 +14,30 @@ class CentroSaludManager extends BaseModalManager {
             fields: [
                 'nombreCentro',
                 'direccion',
+                'director',
+                'correoDirector',
                 'idCiudad',
                 'idTipoCentroSalud'
             ]
         });
     }
 
-    mostrarModal() {
-        const modal = document.getElementById(this.config.modalId);
-        if (modal) {
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; 
-        }
+    /**
+     * Sobrescribir limpiarFormulario
+     */
+    limpiarFormulario() {
+        super.limpiarFormulario();
+
+        this.editando = false;
+
+        // Resetear títulos para nuevo registro
+        this.setModalTitle('Nuevo Centro de Salud');
+        this.setButtonText('Guardar Centro de Salud');
     }
 
-    cerrarModal() {
-        const modal = document.getElementById(this.config.modalId);
-        if (modal) {
-            modal.classList.add('hidden');
-            document.body.style.overflow = 'auto'; 
-        }
-        this.limpiarFormulario();
-    }
-
+    /**
+     * Sobrescribir editarRegistro
+     */
     async editarRegistro(id) {
         this.editando = true;
 
@@ -49,6 +50,8 @@ class CentroSaludManager extends BaseModalManager {
                 method: 'PUT',
                 nombreCentro: data.nombreCentro,
                 direccion: data.direccion,
+                director: data.director || '',
+                correoDirector: data.correoDirector || '',
                 idCiudad: data.idCiudad,
                 idTipoCentroSalud: data.idTipoCentroSalud
             });
@@ -91,11 +94,11 @@ class CentroSaludManager extends BaseModalManager {
                 const data = await response.json();
 
                 if (data.success) {
-                    const row = document.getElementById(`centro-${id}`);
-                    if (row) {
-                        row.remove();
-                    }
-                    this.showAlert('¡Eliminado!', data.message, 'success');
+                    await this.showAlert('¡Eliminado!', data.message, 'success');
+
+                    // ✅ CAMBIAR: Actualizar tabla en lugar de recargar
+                    await this.actualizarTabla();
+
                 } else {
                     this.showAlert('Error', data.message, 'error');
                 }
@@ -106,57 +109,143 @@ class CentroSaludManager extends BaseModalManager {
             }
         }
     }
-}
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function () {
-    // Crear instancia global del manager
-    window.centroSaludManager = new CentroSaludManager();
+    /**
+     * Manejar envío del formulario - SIN RECARGAR PÁGINA
+     */
+    async handleFormSubmit(e) {
+        e.preventDefault();
 
-    // Crear funciones globales para compatibilidad
-    window.centroSaludManager.createGlobalFunctions();
+        const formData = new FormData(this.form);
+        const centroId = document.getElementById(this.config.primaryKey).value;
+        const method = document.getElementById('method').value;
 
-    const tablaContainer = document.getElementById('tabla-container');
-    if (!tablaContainer) {
-        return;
-    }
+        let url = this.config.baseUrl;
+        if (method === 'PUT') {
+            url += `/${centroId}`;
+        }
 
-    const cargarTabla = async (url) => {
         try {
             const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
                 headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
-            const html = await response.text();
-            tablaContainer.innerHTML = html;
-        } catch (error) {
-            console.error('Error al cargar la tabla:', error);
-            alert('Ocurrio un error al intentar ordenar la tabla.');
-        }
 
+            // Verificar respuesta
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Verificar content-type
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta no es JSON válido');
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (data.success) {
+                await this.showAlert('¡Éxito!', data.message, 'success');
+                this.cerrarModal();
+
+                // ✅ CAMBIAR: En lugar de recargar, actualizar la tabla dinámicamente
+                await this.actualizarTabla();
+
+            } else {
+                if (data.errors) {
+                    this.showValidationErrors(data.errors);
+                } else {
+                    this.showAlert('Error', data.message || 'Error desconocido', 'error');
+                }
+            }
+
+        } catch (error) {
+            console.error('Error completo:', error);
+            this.showAlert('Error', `Error al procesar la solicitud: ${error.message}`, 'error');
+        }
     }
 
-    tablaContainer.addEventListener('click', function (event) {
-        
-        const target = event.target.closest('.sort-link, .pagination a');
+    /**
+     * ✅ NUEVO MÉTODO: Actualizar tabla sin recargar página
+     */
+    async actualizarTabla() {
+        try {
+            const tablaContainer = document.getElementById('tabla-container');
+            if (tablaContainer) {
+                // Obtener la URL actual con sus parámetros de ordenamiento
+                const currentUrl = new URL(window.location);
 
-        if (!target) {
-            return;
+                const response = await fetch(currentUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const html = await response.text();
+                    tablaContainer.innerHTML = html;
+                    console.log('Tabla actualizada exitosamente');
+                }
+            }
+        } catch (error) {
+            console.error('Error al actualizar la tabla:', error);
+            // Si falla la actualización dinámica, recargar como fallback
+            location.reload();
         }
-        event.preventDefault(); 
-        const url = target.href;
-        window.history.pushState({ path: url }, '', url);
+    }
+}
 
-        cargarTabla(url);
-    });
+// Inicialización simple
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Inicializando CentroSaludManager...');
 
-    window.addEventListener('popstate', function () {
-        cargarTabla(location.href);
-    });
+    // Crear instancia global del manager
+    window.centroSaludManager = new CentroSaludManager();
+
+    // Crear funciones globales
+    window.centroSaludManager.createGlobalFunctions();
+
+    // FUNCIONALIDAD DE TABLA (mantener la existente)
+    const tablaContainer = document.getElementById('tabla-container');
+    if (tablaContainer) {
+        const cargarTabla = async (url) => {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const html = await response.text();
+                tablaContainer.innerHTML = html;
+            } catch (error) {
+                console.error('Error al cargar la tabla:', error);
+                alert('Ocurrió un error al intentar ordenar la tabla.');
+            }
+        };
+
+        tablaContainer.addEventListener('click', function (event) {
+            const target = event.target.closest('.sort-link, .pagination a');
+            if (!target) return;
+
+            event.preventDefault();
+            const url = target.href;
+            window.history.pushState({ path: url }, '', url);
+            cargarTabla(url);
+        });
+
+        window.addEventListener('popstate', function () {
+            cargarTabla(location.href);
+        });
+    }
 });
 
-// Funciones específicas para Centro de Salud (compatibilidad)
+// Funciones globales para compatibilidad
 window.limpiarFormulario = () => window.centroSaludManager?.limpiarFormulario();
 window.editarCentro = (id) => window.centroSaludManager?.editarRegistro(id);
 window.eliminarCentro = (id) => window.centroSaludManager?.eliminarRegistro(id);
