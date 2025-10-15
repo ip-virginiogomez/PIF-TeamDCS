@@ -17,7 +17,7 @@ class CentroSaludController extends Controller
     {
         $columnasDisponibles = [
             'idCentroSalud', 'nombreCentro', 'direccion', 'director',  // Agregado 'director'
-            'ciudad.nombreCiudad', 'tipo_centro_salud.acronimo'
+            'ciudad.nombreCiudad', 'tipo_centro_salud.acronimo',
         ];
 
         $sortBy = request()->get('sort_by', 'idCentroSalud');

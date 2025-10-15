@@ -20,6 +20,7 @@ class CentroSaludSeeder extends Seeder
 
         if ($ciudades->isEmpty() || $tiposCentro->isEmpty()) {
             $this->command->info('Por favor, ejecuta primero los seeders de Ciudad y TipoCentroSalud');
+
             return;
         }
 

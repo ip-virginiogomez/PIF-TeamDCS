@@ -118,7 +118,7 @@ class DocentesController extends Controller
                 'apellidoPaterno' => 'required|string|max:45',
                 'apellidoMaterno' => 'nullable|string|max:45',
                 'correo' => 'required|email|max:50|unique:docente,correo,'.$docente->runDocente.',runDocente',
-                'fechaNacto' => 'required|date', 
+                'fechaNacto' => 'required|date',
                 'profesion' => 'required|string|max:100',
                 'foto' => 'nullable|image|max:2048',
                 'curriculum' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
