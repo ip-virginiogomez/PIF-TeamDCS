@@ -71,14 +71,20 @@ class SedeController extends Controller
             'direccion' => 'required|string|max:500',
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
             'fechaCreacion' => 'nullable|date',
-            'numContacto' => 'nullable|string|max:20',
+            'numContacto' => [
+                'nullable',
+                'string',
+                'max:12',
+                'regex:/^\+[0-9]{1,11}$/',
+            ],
         ], [
             'nombreSede.required' => 'El nombre de la sede es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
             'idCentroFormador.required' => 'Debe seleccionar un centro formador.',
             'idCentroFormador.exists' => 'El centro formador seleccionado no es válido.',
             'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
-            'numContacto.max' => 'El número de contacto no puede exceder 20 caracteres.',
+            'numContacto.max' => 'El número de contacto debe tener exactamente 12 caracteres.',
+            'numContacto.regex' => 'El número de contacto debe tener el formato +[código de país][número].',
         ]);
 
         if ($validator->fails()) {
@@ -141,14 +147,20 @@ class SedeController extends Controller
             'direccion' => 'required|string|max:500',
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
             'fechaCreacion' => 'nullable|date',
-            'numContacto' => 'nullable|string|max:20',
+            'numContacto' => [
+                'nullable',
+                'string',
+                'max:12',
+                'regex:/^\+[0-9]{1,11}$/',
+            ],
         ], [
             'nombreSede.required' => 'El nombre de la sede es obligatorio.',
             'direccion.required' => 'La dirección es obligatoria.',
             'idCentroFormador.required' => 'Debe seleccionar un centro formador.',
             'idCentroFormador.exists' => 'El centro formador seleccionado no es válido.',
             'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
-            'numContacto.max' => 'El número de contacto no puede exceder 20 caracteres.',
+            'numContacto.max' => 'El número de contacto debe tener exactamente 12 caracteres.',
+            'numContacto.regex' => 'El número de contacto debe tener el formato +[código de país][número].',
         ]);
 
         if ($validator->fails()) {
