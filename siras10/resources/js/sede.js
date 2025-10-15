@@ -2,6 +2,7 @@
  * Sede Manager
  * Extiende BaseModalManager para funcionalidad específica de sedes
  */
+import { validarTelefono } from "./validators"; 
 
 class SedeManager extends BaseModalManager {
     constructor() {
@@ -19,6 +20,32 @@ class SedeManager extends BaseModalManager {
                 'numContacto'
             ]
         });
+        this.initValidations();
+    }
+
+    initValidations() {
+        const form = document.getElementById(this.config.formId);
+        if (!form) return;
+
+        form.addEventListener('submit', (event) => {
+            this.limpiarErrores();
+            
+            let esValido = true;
+            
+            const numContactoInput = form.querySelector('[name="numContacto"]');
+            if (numContactoInput && !validarTelefonoInternacional(numContactoInput.value)) {
+                esValido = false;
+                this.mostrarErrorCampo(numContactoInput, 'El formato debe ser + seguido de hasta 11 dígitos.');
+            }
+
+            if (!esValido) {
+                event.preventDefault();            }
+        });
+    }
+    limpiarErrores() {
+        const form = document.getElementById(this.config.formId);
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
     }
 
     async editarRegistro(id) {

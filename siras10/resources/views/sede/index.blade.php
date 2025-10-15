@@ -64,11 +64,11 @@
 
         <div class="mb-4">
             <label for="numContacto" class="block text-sm font-medium text-gray-700">Número de Contacto *</label>
-            <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="numContacto" name="numContacto" required>
+            <input type="text" placeholder="+12345678901" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="numContacto" name="numContacto" required>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-numContacto"></div>
         </div>
         <div class="mb-4" id="fechaCreacion-container"></div>
     </x-crud-modal>
 
-    @vite(['resources/js/sede.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>
