@@ -18,9 +18,38 @@ class AlumnoController extends Controller
 
     public function index()
     {
-        $alumnos = Alumno::paginate(10);
+        $columnasDisponibles = ['runAlumno', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
 
-        return view('alumnos.index', compact('alumnos'));
+        $sortBy = request()->get('sort_by', 'runAlumno');
+        $sortDirection = request()->get('sort_direction', 'asc');
+
+        if (! in_array($sortBy, $columnasDisponibles)) {
+            $sortBy = 'runAlumno';
+        }
+
+        $query = Alumno::query();
+
+        if (strpos($sortBy, '.') !== false) {
+            [$tableRelacion, $columna] = explode('.', $sortBy);
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $alumnos = $query->paginate(10);
+        
+        if (request()->ajax()) {
+            return view('alumnos._tabla', [
+                'alumnos' => $alumnos,
+                'sortBy' => $sortBy,
+                'sortDirection' => $sortDirection,
+            ])->render();
+        }
+
+        return view('alumnos.index', [
+            'alumnos' => $alumnos,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+        ]);
     }
 
     public function store(Request $request)

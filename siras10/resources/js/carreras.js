@@ -1,3 +1,4 @@
+import BaseModalManager from './base-modal-manager.js';
 /**
  * Carrera Manager
  * Extiende BaseModalManager para funcionalidad específica de carreras
@@ -9,6 +10,7 @@ class CarreraManager extends BaseModalManager {
             modalId: 'carreraModal',
             formId: 'carreraForm',
             entityName: 'Carrera',
+            entityGender: 'f',
             baseUrl: '/carreras',
             primaryKey: 'idCarrera',
             fields: [
@@ -17,108 +19,44 @@ class CarreraManager extends BaseModalManager {
         });
     }
 
-    /**
-     * Sobrescribe el método de edición para mapear correctamente los datos
-     */
-    async editarRegistro(id) {
-        this.editando = true;
+    showValidationErrors(errors) {
+        this.clearValidationErrors();
+        for (const field in errors) {
+            const input = this.form.querySelector(`[name="${field}"]`);
+            const errorDiv = document.getElementById(`error-${field}`);
+            const errorMessage = errors[field][0];
 
-        try {
-            const response = await fetch(`${this.config.baseUrl}/${id}/edit`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (input) {
+                input.classList.add('border-red-500'); 
             }
 
-            const data = await response.json();
-
-            this.setFormValues({
-                idCarrera: data.idCarrera,
-                method: 'PUT',
-                nombreCarrera: data.nombreCarrera
-            });
-
-            this.setModalTitle('Editar Carrera');
-            this.setButtonText('Actualizar Carrera');
-            this.mostrarModal();
-
-        } catch (error) {
-            console.error('Error:', error);
-            this.showAlert('Error', 'No se pudo cargar los datos de la carrera', 'error');
+            if (errorDiv) {
+                errorDiv.textContent = errorMessage;
+                errorDiv.classList.remove('hidden');
+            }
         }
     }
 
-    /**
-     * Sobrescribe el método de eliminación para usar el ID correcto
-     */
-    async eliminarRegistro(id) {
-        const result = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: 'Esta acción eliminará permanentemente la carrera',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
+    clearValidationErrors() {
+        this.form.querySelectorAll('.border-red-500').forEach(el => {
+            el.classList.remove('border-red-500');
         });
-
-        if (result.isConfirmed) {
-            try {
-                const response = await fetch(`${this.config.baseUrl}/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    const row = document.getElementById(`carrera-${id}`);
-                    if (row) {
-                        row.remove();
-                    }
-                    this.showAlert('¡Eliminado!', data.message, 'success');
-                } else {
-                    this.showAlert('Error', data.message, 'error');
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                this.showAlert('Error', 'No se pudo eliminar la carrera', 'error');
-            }
-        }
+        
+        this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+        });
     }
 
-    /**
-     * Callback que se ejecuta después de una operación exitosa
-     */
-    onSuccess(data) {
-        this.cerrarModal();
-        location.reload(); // Recargar para mostrar los cambios
+    validate() {
+        this.clearValidationErrors();
+        let esValido = true;
+        return esValido;
     }
 }
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function () {
-    // Crear instancia global del manager
-    window.carreraManager = new CarreraManager();
-
-    // Crear funciones globales para compatibilidad
-    window.carreraManager.createGlobalFunctions();
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('carreraForm')) {
+        new CarreraManager();
+    }
 });
-
-// Funciones específicas para Carreras (compatibilidad)
-window.limpiarFormularioCarrera = () => window.carreraManager?.limpiarFormulario();
-window.editarCarrera = (id) => window.carreraManager?.editarRegistro(id);
-window.eliminarCarrera = (id) => window.carreraManager?.eliminarRegistro(id);
-window.cerrarModalCarrera = () => window.carreraManager?.cerrarModal();

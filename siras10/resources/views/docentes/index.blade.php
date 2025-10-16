@@ -256,5 +256,5 @@
 
     </x-crud-modal>
 
-    @vite(['resources/js/docentes.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>
