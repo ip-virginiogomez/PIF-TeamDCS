@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Gestión de Sedes') }}
             </h2>
-            <button onclick="limpiarFormulario()" data-modal-target="sedeModal" data-modal-toggle="sedeModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+            <button data-modal-target="sedeModal" data-modal-toggle="sedeModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Sede
             </button>
         </div>
@@ -36,8 +36,7 @@
         modalId="sedeModal" 
         formId="sedeForm" 
         title="Nueva Sede"
-        primaryKey="sedeId"
-        closeFunction="cerrarModal()">
+        primaryKey="sedeId">
         
         <div class="mb-4">
             <label for="idCentroFormador" class="block text-sm font-medium text-gray-700">Centro Formador *</label>
@@ -64,7 +63,7 @@
 
         <div class="mb-4">
             <label for="numContacto" class="block text-sm font-medium text-gray-700">Número de Contacto *</label>
-            <input type="text" placeholder="+12345678901" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="numContacto" name="numContacto" required>
+            <input type="text" placeholder="+12345678901" maxlength="12" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="numContacto" name="numContacto">
             <div class="text-red-500 text-sm mt-1 hidden" id="error-numContacto"></div>
         </div>
         <div class="mb-4" id="fechaCreacion-container"></div>

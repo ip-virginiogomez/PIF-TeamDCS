@@ -60,10 +60,10 @@
                     @endif
                 </td>
                 <td class="py-2 px-4 flex space-x-2">
-                    <button onclick="editarSede({{ $sede->idSede }})" class="text-yellow-500 hover:text-yellow-700">
+                    <button data-action="edit" data-id="{{ $sede->idSede }}" class="text-yellow-500 hover:text-yellow-700">
                         <i class="fas fa-edit"></i> Editar
                     </button>
-                    <button onclick="eliminarSede({{ $sede->idSede }})" class="text-red-500 hover:text-red-700">
+                    <button data-action="delete" data-id="{{ $sede->idSede }}" class="text-red-500 hover:text-red-700">
                         <i class="fas fa-trash"></i> Eliminar
                     </button>
                 </td>
