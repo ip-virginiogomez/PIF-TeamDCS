@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('direccion', 100)->nullable();
             $table->unsignedBigInteger('idCentroFormador');
             $table->date('fechaCreacion')->nullable();
-            $table->integer('numContacto')->nullable();
+            $table->string('numContacto', 12)->nullable();
             $table->timestamps();
 
             $table->foreign('idCentroFormador')
