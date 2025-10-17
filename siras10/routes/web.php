@@ -10,6 +10,7 @@ use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DocentesController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SedeController;
 use App\Http\Controllers\TipoCentroFormadorController;
 use App\Http\Controllers\TipoPracticaController;
 use App\Http\Controllers\UnidadClinicaController;
@@ -38,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- RUTAS PARA LOS MÓDULOS DE GESTIÓN ---
     Route::resource('centros-formadores', CentroFormadorController::class);
     Route::resource('tipos-centro-formador', TipoCentroFormadorController::class);
+    Route::resource('sede', SedeController::class);
     Route::resource('centro-salud', CentroSaludController::class);
     Route::resource('alumnos', AlumnoController::class);
     Route::resource('roles', RoleController::class);
