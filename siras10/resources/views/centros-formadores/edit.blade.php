@@ -12,7 +12,7 @@
                     <form action="{{ route('centros-formadores.update', $centros_formadore) }}" method="POST">
                         @csrf
                         @method('PUT')
-                        @include('admin.centros-formadores._form', ['centro' => $centros_formadore])
+                        @include('centros-formadores._form', ['centro' => $centros_formadore])
                     </form>
                 </div>
             </div>
