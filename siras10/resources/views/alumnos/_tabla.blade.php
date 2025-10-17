@@ -36,7 +36,7 @@
                 <td class="py-2 px-4">
                     <div class="flex items-center space-x-3">
                         <div>
-                            <span class="font-medium">{{ $alumno->foto }}</span>
+                            <img src="{{ asset('storage/' . $alumno->foto) }}" alt="Foto del Alumno"> 
                         </div>
                     </div>
                 </td>
@@ -74,6 +74,14 @@
                             <span class="font-medium">{{ $alumno->correo }}</span>
                         </div>
                     </div>
+                </td>
+                <td class="py-2 px-4 flex space-x-2">
+                    <button data-action="edit" data-id="{{ $alumno->runAlumno }}" class="text-yellow-500 hover:text-yellow-700">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button data-action="delete" data-id="{{ $alumno->runAlumno }}" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
                 </td>
             </tr>
             @empty

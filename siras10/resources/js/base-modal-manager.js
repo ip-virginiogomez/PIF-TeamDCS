@@ -153,7 +153,7 @@ export default class BaseModalManager {
         if (this.form) this.form.reset();
         
         const pkInput = this.form.querySelector(`[name="${this.config.primaryKey}"]`);
-        if (pkInput) pkInput.remove();
+        // if (pkInput) pkInput.remove();
 
         const articulo = (this.config.entityGender === 'f') ? 'Nueva' : 'Nuevo';
 

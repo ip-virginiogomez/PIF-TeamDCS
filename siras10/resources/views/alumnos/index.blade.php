@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-white leading-tight">
-                {{ __('Gestión de Estudiantes') }}
+                {{ __('Gestión de Alumnos') }}
             </h2>
              <button data-modal-target="alumnoModal" data-modal-toggle="alumnoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
-                Nuevo Estudiante
+                Nuevo Alumno
             </button>
         </div>  
     </x-slot>
@@ -32,21 +32,17 @@
         </div>
     </div>
 
-    <!-- Modal para crear/editar alumnos -->
     <x-crud-modal 
         modalId="alumnoModal" 
         formId="alumnoForm" 
         primaryKey="runAlumno"
-        title="Nuevo Alumno"
-        buttonText="Guardar Alumno"
-        closeFunction="cerrarModalAlumno()">
+        title="Nuevo Alumno">
         
-        <!-- RUN del Alumno -->
         <div class="mb-4">
-            <label for="runAlumnoVisible" class="block text-sm font-medium text-gray-700">RUN *</label>
+            <label for="runAlumno" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" 
-                   id="runAlumnoVisible" 
-                   name="runAlumnoVisible" 
+                   id="runAlumno" 
+                   name="runAlumno" 
                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                    placeholder="Ej: 12345678-9"
                    required>
