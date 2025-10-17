@@ -1,15 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Gestión de Estudiantes') }}
+            <h2 class="font-semibold text-xl text-white leading-tight">
+                {{ __('Gestión de Alumnos') }}
             </h2>
-        @can('alumnos.create')
-            <button onclick="limpiarFormularioAlumno()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
-                Crear Nuevo Estudiante
+             <button data-modal-target="alumnoModal" data-modal-toggle="alumnoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                Nuevo Alumno
             </button>
-        @endcan
-        </div>
+        </div>  
     </x-slot>
 
     <div class="py-12">
@@ -22,70 +20,29 @@
                             <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
                     @endif
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="py-2 px-4 text-left">Nombre Completo</th>
-                                    <th class="py-2 px-4 text-left">RUN</th>
-                                    <th class="py-2 px-4 text-left">Correo</th>
-                                    <th class="py-2 px-4 text-left">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($alumnos as $alumno)
-                                    <tr id="alumno-{{ $alumno->runAlumno }}" class="border-b">
-                                        <td class="py-2 px-4 flex items-center space-x-3">
-                                            @if($alumno->foto)
-                                                <img src="{{ asset('storage/' . $alumno->foto) }}" alt="Foto" class="h-10 w-10 rounded-full object-cover">
-                                            @else
-                                                <span class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">?</span>
-                                            @endif
-                                            <span>{{ $alumno->nombres }} {{ $alumno->apellidoPaterno }}</span>
-                                        </td>
-                                        <td class="py-2 px-4">{{ $alumno->runAlumno }}</td>
-                                        <td class="py-2 px-4">{{ $alumno->correo }}</td>
-                                        <td class="py-2 px-4 flex space-x-2">
-                                            @can('alumnos.update')
-                                                <button onclick="editarAlumno('{{ $alumno->runAlumno }}')" class="text-yellow-500 hover:text-yellow-700">Editar</button>
-                                            @endcan
-                                            @can('alumnos.delete')
-                                                <button onclick="eliminarAlumno('{{ $alumno->runAlumno }}')" class="text-red-500 hover:text-red-700">Eliminar</button>
-                                            @endcan
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="py-4 px-4 text-center">No hay estudiantes registrados.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $alumnos->links() }}
+                    <div id="tabla-container">
+                        @include('alumnos._tabla',[
+                            'alumnos' => $alumnos,
+                            'sortBy' => $sortBy,
+                            'sortDirection' => $sortDirection
+                        ])
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal para crear/editar alumnos -->
     <x-crud-modal 
         modalId="alumnoModal" 
         formId="alumnoForm" 
         primaryKey="runAlumno"
-        title="Nuevo Alumno"
-        buttonText="Guardar Alumno"
-        closeFunction="cerrarModalAlumno()">
+        title="Nuevo Alumno">
         
-        <!-- RUN del Alumno -->
         <div class="mb-4">
-            <label for="runAlumnoVisible" class="block text-sm font-medium text-gray-700">RUN *</label>
+            <label for="runAlumno" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" 
-                   id="runAlumnoVisible" 
-                   name="runAlumnoVisible" 
+                   id="runAlumno" 
+                   name="runAlumno" 
                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                    placeholder="Ej: 12345678-9"
                    required>
@@ -178,5 +135,5 @@
 
     </x-crud-modal>
 
-    @vite(['resources/js/alumnos.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

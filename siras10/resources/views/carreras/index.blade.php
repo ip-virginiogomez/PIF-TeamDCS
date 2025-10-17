@@ -4,11 +4,9 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Carreras') }}
             </h2>
-            @can('carreras.create')
-                <button onclick="limpiarFormularioCarrera()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
-                    Crear Nueva Carrera
-                </button>
-            @endcan
+            <button data-modal-target="carreraModal" data-modal-toggle="carreraModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                Crear Nueva Carrera
+            </button>
         </div>
     </x-slot>
 
@@ -84,5 +82,5 @@
 
     </x-crud-modal>
 
-    @vite(['resources/js/carreras.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>
