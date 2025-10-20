@@ -8,9 +8,12 @@ use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
 use App\Http\Controllers\DocentesController;
+use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\TipoCentroFormadorController;
+use App\Http\Controllers\TipoPracticaController;
+use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,7 +40,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('centros-formadores', CentroFormadorController::class);
     Route::resource('convenios', ConvenioController::class);
     
-    // ✅ AGREGAR: Rutas específicas para documentos de convenios
     Route::get('convenios/{id}/documento/descargar', [ConvenioController::class, 'descargarDocumento'])->name('convenios.descargarDocumento');
     Route::get('convenios/{id}/documento/ver', [ConvenioController::class, 'verDocumento'])->name('convenios.verDocumento');
     
@@ -57,6 +59,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/docentes/{docente}/edit', [DocentesController::class, 'edit'])->name('docentes.edit')->middleware('can:docentes.update');
     Route::put('/docentes/{docente}', [DocentesController::class, 'update'])->name('docentes.update')->middleware('can:docentes.update');
     Route::delete('/docentes/{docente}', [DocentesController::class, 'destroy'])->name('docentes.destroy')->middleware('can:docentes.delete');
+    Route::resource('periodos', PeriodoController::class);
+    Route::resource('cupo-ofertas', CupoOfertaController::class);
+    Route::resource('unidad-clinicas', UnidadClinicaController::class);
+    Route::resource('tipos-practica', TipoPracticaController::class);
 });
 
 require __DIR__.'/auth.php';

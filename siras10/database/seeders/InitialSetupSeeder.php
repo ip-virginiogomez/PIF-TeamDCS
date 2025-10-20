@@ -8,32 +8,42 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-// 1. Asegúrate de que el nombre de la clase coincida con el nombre del archivo
 class InitialSetupSeeder extends Seeder
 {
     public function run(): void
     {
-        // Limpiar caché
+        // 1. Limpiar caché
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 2. Lógica para crear Menús y Permisos (traída del otro seeder)
+        // 2. Definir la estructura COMPLETA de Menús, Submenús y Permisos
         $menus = [
             'Gestión Académica' => [
                 'alumnos' => ['create', 'read', 'update', 'delete'],
+                'docentes' => ['create', 'read', 'update', 'delete'],
                 'carreras' => ['create', 'read', 'update', 'delete'],
                 'asignaturas' => ['create', 'read', 'update', 'delete'],
-                'docentes' => ['create', 'read', 'update', 'delete'],
             ],
-            'Gestión de Centros' => [
+            'Gestión Centro Formador' => [
                 'centros-formadores' => ['create', 'read', 'update', 'delete'],
                 'tipos-centro-formador' => ['create', 'read', 'update', 'delete'],
+            ],
+            'Gestión de Salud' => [
+                'centro-salud' => ['create', 'read', 'update', 'delete'],
+                'unidad-clinicas' => ['create', 'read', 'update', 'delete'],
+            ],
+            'Gestión de Prácticas' => [
+                'periodos' => ['create', 'read', 'update', 'delete'],
+                'cupo-ofertas' => ['create', 'read', 'update', 'delete'],
+                'tipos-practica' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión de Usuarios' => [
                 'usuarios' => ['create', 'read', 'update', 'delete'],
                 'roles' => ['create', 'read', 'update', 'delete'],
+                'permisos' => ['read'],
             ],
         ];
 
+        // Crear Menús, Submenús y Permisos
         foreach ($menus as $nombreMenu => $submenus) {
             $menu = Menu::firstOrCreate(['nombreMenu' => $nombreMenu]);
             foreach ($submenus as $nombreSubmenu => $acciones) {
@@ -47,13 +57,12 @@ class InitialSetupSeeder extends Seeder
             }
         }
 
-        // 3. Crear Roles (como ya lo tenías)
+        // 3. Crear Roles
         $rolCoordinador = Role::create(['name' => 'Coordinador Campo Clínico']);
         $rolEncargado = Role::create(['name' => 'Encargado Campo Clínico']);
         $rolAdmin = Role::create(['name' => 'Admin']);
 
-        // 4. Asignar Permisos a Roles
+        // 4. Asignar todos los permisos existentes al rol de Admin
         $rolAdmin->givePermissionTo(Permission::all());
-
     }
 }
