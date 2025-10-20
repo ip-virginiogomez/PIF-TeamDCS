@@ -59,11 +59,14 @@
                                 <x-dropdown-link :href="route('centros-formadores.index')">{{ __('Centros Formadores') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('tipos-centro-formador.index')">{{ __('Tipos de Centro') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('sede.index')">{{ __('Sedes') }}</x-dropdown-link>
+                                <!-- Convenios permanece aquí -->
+                                <x-dropdown-link :href="route('convenios.index')">{{ __('Convenios') }}</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
                     @endcanany
                     <!-- ===== FIN: MENÚ DE GESTIÓN CENTRO FORMADOR ===== -->
+                    
                     <!-- ===== INICIO: MENÚ DE GESTIÓN DE SALUD ===== -->
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
@@ -79,6 +82,7 @@
                         </x-dropdown>
                     </div>
                     <!-- ===== FIN: MENÚ DE GESTIÓN DE SALUD ===== -->
+                    
                     <!-- ===== INICIO: MENÚ DE GESTIÓN DE USUARIOS ===== -->
                     @canany(['roles.read', 'usuarios.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -176,14 +180,30 @@
             </div>
             @endcanany
 
-            <div class="px-4 pt-3 pb-1 text-xs text-gray-400">Gestión de Salud</div>
-            <x-responsive-nav-link :href="route('centro-salud.index')" :active="request()->routeIs('centro-salud.*')">{{ __('Centros de Salud') }}</x-responsive-nav-link>
+            <div class="border-t border-gray-200 pt-2">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {{ __('Gestión de Salud') }}
+                </div>
+                <x-responsive-nav-link :href="route('centro-salud.index')" :active="request()->routeIs('centro-salud.*')" class="pl-6">
+                    {{ __('Centros de Salud') }}
+                </x-responsive-nav-link>
+            </div>
 
             @canany(['roles.read', 'usuarios.read'])
-                <div class="px-4 pt-3 pb-1 text-xs text-gray-400">Gestión de Usuarios</div>
-                <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.index')">{{ __('Roles') }}</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.index')">{{ __('Usuarios') }}</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('roles.permission_matrix')" :active="request()->routeIs('roles.permission_matrix')">{{ __('Asignar Permisos') }}</x-responsive-nav-link>
+                <div class="border-t border-gray-200 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        {{ __('Gestión de Usuarios') }}
+                    </div>
+                    <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.index')" class="pl-6">
+                        {{ __('Roles') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.index')" class="pl-6">
+                        {{ __('Usuarios') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('roles.permission_matrix')" :active="request()->routeIs('roles.permission_matrix')" class="pl-6">
+                        {{ __('Asignar Permisos') }}
+                    </x-responsive-nav-link>
+                </div>
             @endcanany
         </div>
 
