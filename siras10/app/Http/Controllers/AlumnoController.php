@@ -101,8 +101,13 @@ class AlumnoController extends Controller
             }
 
             if ($request->hasFile('foto')) {
-                $rutaFoto['foto'] = $request->file('foto')->store('fotos_alumnos', 'public');
-                $data['foto'] = $rutaFoto;
+                $rutafoto = $request->file('foto')->store('fotos', 'public');
+                $data['foto'] = $rutafoto;
+            }
+
+            if ($request->hasFile('acuerdo')) {
+                $rutaAcuerdo = $request->file('acuerdo')->store('acuerdos', 'public');
+                $data['acuerdo'] = $rutaAcuerdo;
             }
 
             $alumno = Alumno::create($data);
@@ -166,17 +171,23 @@ class AlumnoController extends Controller
             ], 422);
         }
         try {
-            $alumno = Alumno::findorfail($alumno->runAlumno);
+            $data = $validator->validated();
 
             if ($request->hasFile('foto')) {
                 if ($alumno->foto) {
                     Storage::disk('public')->delete($alumno->foto);
                 }
-                $rutaFoto = $request->file('foto')->store('fotos_alumnos', 'public');
-                $alumno->foto = $rutaFoto;
+                $data['foto'] = $request->file('foto')->store('fotos', 'public');
             }
 
-            $alumno->update($request->all());
+            if ($request->hasFile('acuerdo')) {
+                if ($alumno->acuerdo) {
+                    Storage::disk('public')->delete($alumno->acuerdo);
+                }
+                $data['acuerdo'] = $request->file('acuerdo')->store('acuerdos', 'public');
+            }
+
+            $alumno->update($data);
 
             return response()->json([
                 'success' => true,

@@ -195,9 +195,12 @@ export default class BaseModalManager {
             this.setModalTitle(`Editar ${this.config.entityName}`);
             this.setButtonText(`Actualizar ${this.config.entityName}`);
             this.mostrarModal();
+
+            return data;
         } catch (error) {
             console.error('Error al cargar datos para editar:', error);
             this.showAlert('Error', error.message, 'error');
+            return undefined;
         }
     }
     

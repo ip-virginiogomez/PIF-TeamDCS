@@ -20,6 +20,7 @@
                 <th class="py-2 px-4 text-left"> {!! $link('apellidoMaterno', 'Apellido Materno') !!}</th>
                 <th class="py-2 px-4 text-left"> {!! $link('fechaNacto', 'Fecha Nacimiento') !!}</th>
                 <th class="py-2 px-4 text-left"> {!! $link('correo', 'Correo Electrónico') !!}</th>
+                <th class="py-2 px-4 text-left"> {!! $link('acuerdo', 'Acuerdo') !!}</th>
                 <th class="py-2 px-4 text-left">Acciones</th>
             </tr>
         </thead>
@@ -27,18 +28,20 @@
             @forelse ($alumnos as $alumno)
             <tr class="border-b" id="alumno-{{ $alumno->idAlumno }}">
                 <td class="py-2 px-4">
-                    <div class="flex items-center space-x-3">
+                    <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"">
                         <div>
                             <span class="font-medium">{{ $alumno->runAlumno }}</span>
                         </div>
                     </div>
                 </td>
                 <td class="py-2 px-4">
-                    <div class="flex items-center space-x-3">
-                        <div>
-                            <img src="{{ asset('storage/' . $alumno->foto) }}" alt="Foto del Alumno"> 
+                    @if($alumno->foto)
+                        <img class="w-12 h-12 rounded-full object-cover" src="{{ asset('storage/' . $alumno->foto) }}" alt="Foto de {{ $alumno->nombres }}">
+                    @else
+                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                            <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}</span>
                         </div>
-                    </div>
+                    @endif
                 </td>
                 <td class="py-2 px-4">
                     <div class="flex items-center space-x-3">
@@ -75,7 +78,18 @@
                         </div>
                     </div>
                 </td>
-                <td class="py-2 px-4 flex space-x-2">
+                <td class="py-2 px-4">
+                    @if($alumno->acuerdo)
+                        <a href="{{ asset('storage/' . $alumno->acuerdo) }}" 
+                            target="_blank" 
+                            class="text-blue-600 hover:text-blue-800 hover:underline"
+                            title="Ver documento">
+                            <i class="fas fa-file-pdf fa-lg">Ver Documento</i>
+                    @else
+                        <span class="text-gray-500 text-center">N/A</span>
+                    @endif
+                </td>
+                <td class="py-2 px-4 flex space-x-2 items-center">
                     <button data-action="edit" data-id="{{ $alumno->runAlumno }}" class="text-yellow-500 hover:text-yellow-700">
                         <i class="fas fa-edit"></i> Editar
                     </button>
