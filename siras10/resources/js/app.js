@@ -5,6 +5,7 @@ import './carreras.js';
 import './centro-salud.js';
 import './docentes.js';
 import './sede.js';
+import './convenio.js';
 
 
 
