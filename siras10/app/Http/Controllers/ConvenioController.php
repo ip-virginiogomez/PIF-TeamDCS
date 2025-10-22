@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Convenio;
 use App\Models\CentroFormador;
+use App\Models\Convenio;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
 
 class ConvenioController extends Controller
 {
@@ -18,14 +18,14 @@ class ConvenioController extends Controller
     {
         try {
             $columnasDisponibles = [
-                'idConvenio', 'fechaSubida', 'anioValidez', 
-                'centro_formador.nombreCentroFormador'  
+                'idConvenio', 'fechaSubida', 'anioValidez',
+                'centro_formador.nombreCentroFormador',
             ];
 
             $sortBy = request()->get('sort_by', 'idConvenio');
             $sortDirection = request()->get('sort_direction', 'desc');
 
-            if (!in_array($sortBy, $columnasDisponibles)) {
+            if (! in_array($sortBy, $columnasDisponibles)) {
                 $sortBy = 'idConvenio';
             }
 
@@ -37,8 +37,8 @@ class ConvenioController extends Controller
                 [$tableRelacion, $columna] = explode('.', $sortBy);
                 if ($tableRelacion === 'centro_formador') {
                     $query->join('centro_formador', 'convenio.idCentroFormador', '=', 'centro_formador.idCentroFormador')
-                        ->orderBy('centro_formador.' . $columna, $sortDirection)
-                        ->select('convenio.*'); 
+                        ->orderBy('centro_formador.'.$columna, $sortDirection)
+                        ->select('convenio.*');
                 }
             } else {
                 $query->orderBy($sortBy, $sortDirection);
@@ -64,13 +64,13 @@ class ConvenioController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error en ConvenioController@index: ' . $e->getMessage());
-            
+            \Log::error('Error en ConvenioController@index: '.$e->getMessage());
+
             return view('convenios.index', [
                 'convenios' => collect(),
                 'centrosFormadores' => CentroFormador::all(),
                 'sortBy' => 'idConvenio',
-                'sortDirection' => 'desc'
+                'sortDirection' => 'desc',
             ])->with('error', 'Error al cargar datos');
         }
     }
@@ -91,7 +91,7 @@ class ConvenioController extends Controller
         $validator = Validator::make($request->all(), [
             'documento' => 'required|file|mimes:pdf,doc,docx|max:10240', // 10MB
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
-            'anioValidez' => 'required|integer|max:' . (date('Y') + 10),
+            'anioValidez' => 'required|integer|max:'.(date('Y') + 10),
         ], [
             'documento.required' => 'El documento del convenio es obligatorio.',
             'documento.file' => 'Debe seleccionar un archivo válido.',
@@ -117,7 +117,7 @@ class ConvenioController extends Controller
             // Manejar la subida del documento
             if ($request->hasFile('documento')) {
                 $archivo = $request->file('documento');
-                $nombreArchivo = time() . '_convenio_' . $archivo->getClientOriginalName();
+                $nombreArchivo = time().'_convenio_'.$archivo->getClientOriginalName();
                 $documentoPath = $archivo->storeAs('convenios', $nombreArchivo, 'public');
             }
 
@@ -138,7 +138,7 @@ class ConvenioController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear el convenio: ' . $e->getMessage(),
+                'message' => 'Error al crear el convenio: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -149,6 +149,7 @@ class ConvenioController extends Controller
     public function show(string $id)
     {
         $convenio = Convenio::with(['centroFormador'])->findOrFail($id);
+
         return response()->json($convenio);
     }
 
@@ -158,6 +159,7 @@ class ConvenioController extends Controller
     public function edit(string $id)
     {
         $convenio = Convenio::findOrFail($id);
+
         return response()->json($convenio);
     }
 
@@ -171,7 +173,7 @@ class ConvenioController extends Controller
         $validator = Validator::make($request->all(), [
             'documento' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // 10MB - opcional en edición
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
-            'anioValidez' => 'required|integer|max:' . (date('Y') + 10),
+            'anioValidez' => 'required|integer|max:'.(date('Y') + 10),
         ], [
             'documento.file' => 'Debe seleccionar un archivo válido.',
             'documento.mimes' => 'El documento debe ser un archivo PDF, DOC o DOCX.',
@@ -205,7 +207,7 @@ class ConvenioController extends Controller
 
                 // Subir el nuevo documento
                 $archivo = $request->file('documento');
-                $nombreArchivo = time() . '_convenio_' . $archivo->getClientOriginalName();
+                $nombreArchivo = time().'_convenio_'.$archivo->getClientOriginalName();
                 $documentoPath = $archivo->storeAs('convenios', $nombreArchivo, 'public');
                 $datosActualizar['documento'] = $documentoPath;
             }
@@ -221,7 +223,7 @@ class ConvenioController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar el convenio: ' . $e->getMessage(),
+                'message' => 'Error al actualizar el convenio: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -248,7 +250,7 @@ class ConvenioController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el convenio: ' . $e->getMessage(),
+                'message' => 'Error al eliminar el convenio: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -261,7 +263,7 @@ class ConvenioController extends Controller
         try {
             $convenio = Convenio::findOrFail($id);
 
-            if (!$convenio->documento || !Storage::disk('public')->exists($convenio->documento)) {
+            if (! $convenio->documento || ! Storage::disk('public')->exists($convenio->documento)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'El documento no existe.',
@@ -272,7 +274,7 @@ class ConvenioController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al descargar el documento: ' . $e->getMessage(),
+                'message' => 'Error al descargar el documento: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -285,11 +287,12 @@ class ConvenioController extends Controller
         try {
             $convenio = Convenio::findOrFail($id);
 
-            if (!$convenio->documento || !Storage::disk('public')->exists($convenio->documento)) {
+            if (! $convenio->documento || ! Storage::disk('public')->exists($convenio->documento)) {
                 abort(404, 'El documento no existe.');
             }
 
-            $path = storage_path('app/public/' . $convenio->documento);
+            $path = storage_path('app/public/'.$convenio->documento);
+
             return response()->file($path);
         } catch (\Exception $e) {
             abort(404, 'Error al mostrar el documento.');
