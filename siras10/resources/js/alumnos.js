@@ -137,12 +137,12 @@ class AlumnoManager extends BaseModalManager {
             runHelpText.classList.remove('hidden');
         }
         if (fotoPreview) {
-        if (data && data.foto) {
-            fotoPreview.src = `/storage/${data.foto}`;
-        } else {
-            fotoPreview.src = "/storage/placeholder.png";
+            if (data && data.foto) {
+                fotoPreview.src = `/storage/${data.foto}`;
+            } else {
+                fotoPreview.src = "/storage/placeholder.png";
+            }
         }
-    }
     }
 }
 

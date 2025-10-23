@@ -4,16 +4,16 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Docentes') }}
             </h2>
-        @can('docentes.create')
-            <button data-modal-target="docenteModal" data-modal-toggle="docenteModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
-                Crear Nuevo Docente
+            @can('docentes.create')
+            <button data-modal-target="docenteModal" data-modal-toggle="docenteModal    " class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                Nuevo Docente
             </button>
-        @endcan
+            @endcan
         </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
@@ -22,83 +22,31 @@
                             <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
                     @endif
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="py-2 px-4 text-left">Nombre Completo</th>
-                                    <th class="py-2 px-4 text-left">RUN</th>
-                                    <th class="py-2 px-4 text-left">Correo</th>
-                                    <th class="py-2 px-4 text-left">Profesión</th>
-                                    <th class="py-2 px-4 text-left">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($docentes as $docente)
-                                    <tr id="docente-{{ $docente->runDocente }}" class="border-b">
-                                        <td class="py-2 px-4 flex items-center space-x-3">
-                                            @if($docente->foto)
-                                                <img src="{{ asset('storage/' . $docente->foto) }}" alt="Foto" class="h-10 w-10 rounded-full object-cover">
-                                            @else
-                                                <span class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">?</span>
-                                            @endif
-                                            <span>{{ $docente->nombresDocente }} {{ $docente->apellidoPaterno }}</span>
-                                        </td>
-                                        <td class="py-2 px-4">{{ $docente->runDocente }}</td>
-                                        <td class="py-2 px-4">{{ $docente->correo }}</td>
-                                        <td class="py-2 px-4">{{ $docente->profesion }}</td>
-                                        <td class="py-2 px-4 flex space-x-2">
-                                            @can('docentes.update')
-                                                <button 
-                                                    data-action="edit" 
-                                                    data-id="{{ $docente->runDocente }}" 
-                                                    class="text-yellow-500 hover:text-yellow-700">
-                                                    Editar
-                                                </button>
-                                            @endcan
-                                            @can('docentes.delete')
-                                                <button 
-                                                    data-action="delete" 
-                                                    data-id="{{ $docente->runDocente }}" 
-                                                    class="text-red-500 hover:text-red-700">
-                                                    Eliminar
-                                                </button>
-                                            @endcan
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="py-4 px-4 text-center">No hay docentes registrados.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $docentes->links() }}
+                    <div id="tabla-container">
+                        @include('docentes._tabla',[
+                            'docentes' => $docentes,
+                            'sortBy' => $sortBy,
+                            'sortDirection' => $sortDirection
+                        ])
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal para crear/editar docentes -->
     <x-crud-modal 
         modalId="docenteModal" 
         formId="docenteForm" 
         primaryKey="runDocente"
-        title="Nuevo Docente"
-        buttonText="Guardar Docente"
-        closeFunction="cerrarModalDocente()">
+        title="Nuevo Docente">
         
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         
-        <!-- RUN del Docente -->
         <div class="mb-4">
-            <label for="runDocenteVisible" class="block text-sm font-medium text-gray-700">RUN *</label>
+            <label for="runDocente" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" 
-                id="runDocenteVisible" 
-                name="runDocenteVisible" 
+                id="runDocente" 
+                name="runDocente" 
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 placeholder="Ej: 12345678-9"
                 required>
@@ -108,7 +56,6 @@
             <div id="error-runDocente" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Nombres - CORREGIR ID -->
         <div class="mb-4">
             <label for="nombresDocente" class="block text-sm font-medium text-gray-700">Nombres *</label>
             <input type="text" 
@@ -119,7 +66,6 @@
             <div id="error-nombresDocente" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Apellido Paterno -->
         <div class="mb-4">
             <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
             <input type="text" 
@@ -130,7 +76,6 @@
             <div id="error-apellidoPaterno" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Apellido Materno -->
         <div class="mb-4">
             <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
             <input type="text" 
@@ -140,7 +85,6 @@
             <div id="error-apellidoMaterno" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Fecha de Nacimiento -->
         <div class="mb-4">
             <label for="fechaNacto" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento *</label>
             <input type="date" 
@@ -151,18 +95,6 @@
             <div id="error-fechaNacto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Correo -->
-        <div class="mb-4">
-            <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico *</label>
-            <input type="email" 
-                id="correo" 
-                name="correo" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                required>
-            <div id="error-correo" class="text-red-500 text-sm mt-1 hidden"></div>
-        </div>
-
-        <!-- Profesión -->
         <div class="mb-4">
             <label for="profesion" class="block text-sm font-medium text-gray-700">Profesión *</label>
             <input type="text" 
@@ -172,8 +104,21 @@
                 required>
             <div id="error-profesion" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+    </div>
+    <div class="mb-4">
+        <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico *</label>
+        <input type="email" 
+            id="correo" 
+            name="correo" 
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            required>
+        <div id="error-correo" class="text-red-500 text-sm mt-1 hidden"></div>
+    </div>
 
-        <!-- Foto -->
+    <hr class="my-6 border-t border-gray-200">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
         <div class="mb-4">
             <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
             <input type="file" 
@@ -184,7 +129,6 @@
             <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Curriculum -->
         <div class="mb-4">
             <label for="curriculum" class="block text-sm font-medium text-gray-700">Curriculum Vitae</label>
             <div id="curriculum-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -200,7 +144,6 @@
             <div id="error-curriculum" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Certificado Superintendencia -->
         <div class="mb-4">
             <label for="certSuperInt" class="block text-sm font-medium text-gray-700">Certificado Superintendencia</label>
             <div id="certSuperInt-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -216,7 +159,6 @@
             <div id="error-certSuperInt" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Certificado RCP -->
         <div class="mb-4">
             <label for="certRCP" class="block text-sm font-medium text-gray-700">Certificado RCP</label>
             <div id="certRCP-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -232,7 +174,6 @@
             <div id="error-certRCP" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Certificado IAAS -->
         <div class="mb-4">
             <label for="certIAAS" class="block text-sm font-medium text-gray-700">Certificado IAAS</label>
             <div id="certIAAS-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -248,7 +189,6 @@
             <div id="error-certIAAS" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
-        <!-- Acuerdo -->
         <div class="mb-4">
             <label for="acuerdo" class="block text-sm font-medium text-gray-700">Documento de Acuerdo</label>
             <div id="acuerdo-actual" class="mb-2 text-sm text-blue-600 hidden">
@@ -263,8 +203,9 @@
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-acuerdo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+    </div>
 
     </x-crud-modal>
-
+    <x-info-modal modalId="documentosModal" title="Documentos del Docente" />
     @vite(['resources/js/app.js'])
 </x-app-layout>

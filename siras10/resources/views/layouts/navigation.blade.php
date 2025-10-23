@@ -58,6 +58,7 @@
                     <!-- ===== FIN: MENÚ DE GESTIÓN CENTRO FORMADOR ===== -->
                     
                     <!-- ===== INICIO: MENÚ DE GESTIÓN DE SALUD ===== -->
+                    @canany(['roles.read', 'usuarios.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -72,9 +73,10 @@
                             </x-slot>
                         </x-dropdown>
                     </div>
+                    @endcanany
                     <!-- ===== FIN: MENÚ DE GESTIÓN DE SALUD ===== -->
-                    
-                    <!-- ===== INICIO: MENÚ DE GESTIÓN DE USUARIOS ===== -->
+
+                    <!-- ===== INICIO: MENÚ DE GESTIÓN DE Prácticas ===== -->
                     @canany(['roles.read', 'usuarios.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
