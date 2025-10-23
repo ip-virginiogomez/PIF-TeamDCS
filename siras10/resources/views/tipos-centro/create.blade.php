@@ -11,7 +11,7 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     <form action="{{ route('tipos-centro-formador.store') }}" method="POST">
                         @csrf
-                        @include('admin.tipos-centro._form')
+                        @include('tipos-centro._form')
                     </form>
                 </div>
             </div>

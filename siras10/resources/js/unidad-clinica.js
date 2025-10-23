@@ -23,7 +23,6 @@ class UnidadClinicaManager extends BaseModalManager {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Corregí esto para que busque el formulario, no el modal.
     if (document.getElementById('unidadClinicaForm')) { 
         new UnidadClinicaManager();
     }

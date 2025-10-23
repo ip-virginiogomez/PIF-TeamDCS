@@ -20,9 +20,6 @@ class CupoOfertaManager extends BaseModalManager {
             ]
         });
     }
-    
-    // ¡Todo el código repetido de 'showValidationErrors' y 'clearValidationErrors' se elimina!
-    // Usará los métodos del padre.
 }
 
 document.addEventListener('DOMContentLoaded', () => {

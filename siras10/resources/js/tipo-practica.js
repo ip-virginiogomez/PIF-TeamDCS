@@ -19,9 +19,6 @@ class TipoPracticaManager extends BaseModalManager {
             ]
         });
     }
-
-    // ¡Todo el código repetido de 'showValidationErrors', 'clearValidationErrors' y 'validate' se elimina!
-    // Usará los métodos del padre.
 }
 
 document.addEventListener('DOMContentLoaded', () => {

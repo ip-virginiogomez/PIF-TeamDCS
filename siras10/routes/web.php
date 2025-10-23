@@ -6,12 +6,16 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
+use App\Http\Controllers\ConvenioController;
 use App\Http\Controllers\CupoDistribucionController;
 use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DocentesController;
+use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\TipoCentroFormadorController;
+use App\Http\Controllers\TipoPracticaController;
+use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- RUTAS PARA LOS MÓDULOS DE GESTIÓN ---
     Route::resource('centros-formadores', CentroFormadorController::class);
+    Route::resource('convenios', ConvenioController::class);
+    Route::get('convenios/{id}/documento/descargar', [ConvenioController::class, 'descargarDocumento'])->name('convenios.descargarDocumento');
+    Route::get('convenios/{id}/documento/ver', [ConvenioController::class, 'verDocumento'])->name('convenios.verDocumento');
     Route::resource('tipos-centro-formador', TipoCentroFormadorController::class);
     Route::resource('sede', SedeController::class);
     Route::resource('centro-salud', CentroSaludController::class);

@@ -10,6 +10,7 @@ import './periodos.js';
 import './tipo-practica.js';
 import './unidad-clinica.js';
 import './cupo-distribucion.js';
+import './convenio.js';
 
 import Alpine from 'alpinejs';
 
