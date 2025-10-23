@@ -6,6 +6,8 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
+use App\Http\Controllers\CupoDistribucionController;
+use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DocentesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeController;
@@ -49,6 +51,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/docentes/{docente}/edit', [DocentesController::class, 'edit'])->name('docentes.edit')->middleware('can:docentes.update');
     Route::put('/docentes/{docente}', [DocentesController::class, 'update'])->name('docentes.update')->middleware('can:docentes.update');
     Route::delete('/docentes/{docente}', [DocentesController::class, 'destroy'])->name('docentes.destroy')->middleware('can:docentes.delete');
+    Route::resource('periodos', PeriodoController::class);
+    Route::resource('cupo-ofertas', CupoOfertaController::class);
+    Route::resource('unidad-clinicas', UnidadClinicaController::class);
+    Route::resource('tipos-practica', TipoPracticaController::class);
+    Route::resource('cupo-distribuciones', CupoDistribucionController::class);
 });
 
 require __DIR__.'/auth.php';

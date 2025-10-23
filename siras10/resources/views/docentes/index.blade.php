@@ -5,7 +5,7 @@
                 {{ __('Gestión de Docentes') }}
             </h2>
         @can('docentes.create')
-            <button onclick="limpiarFormularioDocente()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+            <button data-modal-target="docenteModal" data-modal-toggle="docenteModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Crear Nuevo Docente
             </button>
         @endcan
@@ -50,10 +50,20 @@
                                         <td class="py-2 px-4">{{ $docente->profesion }}</td>
                                         <td class="py-2 px-4 flex space-x-2">
                                             @can('docentes.update')
-                                                <button onclick="editarDocente('{{ $docente->runDocente }}')" class="text-yellow-500 hover:text-yellow-700">Editar</button>
+                                                <button 
+                                                    data-action="edit" 
+                                                    data-id="{{ $docente->runDocente }}" 
+                                                    class="text-yellow-500 hover:text-yellow-700">
+                                                    Editar
+                                                </button>
                                             @endcan
                                             @can('docentes.delete')
-                                                <button onclick="eliminarDocente('{{ $docente->runDocente }}')" class="text-red-500 hover:text-red-700">Eliminar</button>
+                                                <button 
+                                                    data-action="delete" 
+                                                    data-id="{{ $docente->runDocente }}" 
+                                                    class="text-red-500 hover:text-red-700">
+                                                    Eliminar
+                                                </button>
                                             @endcan
                                         </td>
                                     </tr>
@@ -87,11 +97,11 @@
         <div class="mb-4">
             <label for="runDocenteVisible" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" 
-                   id="runDocenteVisible" 
-                   name="runDocenteVisible" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   placeholder="Ej: 12345678-9"
-                   required>
+                id="runDocenteVisible" 
+                name="runDocenteVisible" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                placeholder="Ej: 12345678-9"
+                required>
             <div id="run-help-text" class="text-xs text-amber-600 mt-1 hidden">
                 El RUN no puede modificarse al editar un docente existente
             </div>
@@ -102,10 +112,10 @@
         <div class="mb-4">
             <label for="nombresDocente" class="block text-sm font-medium text-gray-700">Nombres *</label>
             <input type="text" 
-                   id="nombresDocente" 
-                   name="nombresDocente" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="nombresDocente" 
+                name="nombresDocente" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-nombresDocente" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -113,10 +123,10 @@
         <div class="mb-4">
             <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
             <input type="text" 
-                   id="apellidoPaterno" 
-                   name="apellidoPaterno" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="apellidoPaterno" 
+                name="apellidoPaterno" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-apellidoPaterno" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -124,9 +134,9 @@
         <div class="mb-4">
             <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
             <input type="text" 
-                   id="apellidoMaterno" 
-                   name="apellidoMaterno" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="apellidoMaterno" 
+                name="apellidoMaterno" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div id="error-apellidoMaterno" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -134,10 +144,10 @@
         <div class="mb-4">
             <label for="fechaNacto" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento *</label>
             <input type="date" 
-                   id="fechaNacto" 
-                   name="fechaNacto" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="fechaNacto" 
+                name="fechaNacto" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-fechaNacto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -145,10 +155,10 @@
         <div class="mb-4">
             <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico *</label>
             <input type="email" 
-                   id="correo" 
-                   name="correo" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="correo" 
+                name="correo" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-correo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -156,10 +166,10 @@
         <div class="mb-4">
             <label for="profesion" class="block text-sm font-medium text-gray-700">Profesión *</label>
             <input type="text" 
-                   id="profesion" 
-                   name="profesion" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="profesion" 
+                name="profesion" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-profesion" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -167,10 +177,10 @@
         <div class="mb-4">
             <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
             <input type="file" 
-                   id="foto" 
-                   name="foto" 
-                   accept="image/*"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="foto" 
+                name="foto" 
+                accept="image/*"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -182,10 +192,10 @@
                 <a id="curriculum-link" href="#" target="_blank" class="underline">Ver curriculum</a>
             </div>
             <input type="file" 
-                   id="curriculum" 
-                   name="curriculum" 
-                   accept=".pdf,.doc,.docx"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="curriculum" 
+                name="curriculum" 
+                accept=".pdf,.doc,.docx"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-curriculum" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
@@ -198,10 +208,10 @@
                 <a id="certSuperInt-link" href="#" target="_blank" class="underline">Ver certificado</a>
             </div>
             <input type="file" 
-                   id="certSuperInt" 
-                   name="certSuperInt" 
-                   accept=".pdf,.doc,.docx"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="certSuperInt" 
+                name="certSuperInt" 
+                accept=".pdf,.doc,.docx"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-certSuperInt" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
@@ -214,10 +224,10 @@
                 <a id="certRCP-link" href="#" target="_blank" class="underline">Ver certificado</a>
             </div>
             <input type="file" 
-                   id="certRCP" 
-                   name="certRCP" 
-                   accept=".pdf,.doc,.docx"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="certRCP" 
+                name="certRCP" 
+                accept=".pdf,.doc,.docx"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-certRCP" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
@@ -230,10 +240,10 @@
                 <a id="certIAAS-link" href="#" target="_blank" class="underline">Ver certificado</a>
             </div>
             <input type="file" 
-                   id="certIAAS" 
-                   name="certIAAS" 
-                   accept=".pdf,.doc,.docx"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="certIAAS" 
+                name="certIAAS" 
+                accept=".pdf,.doc,.docx"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-certIAAS" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
@@ -246,10 +256,10 @@
                 <a id="acuerdo-link" href="#" target="_blank" class="underline">Ver documento</a>
             </div>
             <input type="file" 
-                   id="acuerdo" 
-                   name="acuerdo" 
-                   accept=".pdf,.doc,.docx"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="acuerdo" 
+                name="acuerdo" 
+                accept=".pdf,.doc,.docx"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-acuerdo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>

@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Gestión de Alumnos') }}
             </h2>
-             <button data-modal-target="alumnoModal" data-modal-toggle="alumnoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+            <button data-modal-target="alumnoModal" data-modal-toggle="alumnoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Alumno
             </button>
         </div>  
@@ -41,11 +41,11 @@
         <div class="mb-4">
             <label for="runAlumno" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" 
-                   id="runAlumno" 
-                   name="runAlumno" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   placeholder="Ej: 12345678-9"
-                   required>
+                id="runAlumno" 
+                name="runAlumno" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                placeholder="Ej: 12345678-9"
+                required>
             <div id="run-help-text" class="text-xs text-amber-600 mt-1 hidden">
                 El RUN no puede modificarse al editar un alumno existente
             </div>
@@ -56,10 +56,10 @@
         <div class="mb-4">
             <label for="nombres" class="block text-sm font-medium text-gray-700">Nombres *</label>
             <input type="text" 
-                   id="nombres" 
-                   name="nombres" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="nombres" 
+                name="nombres" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-nombres" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -67,10 +67,10 @@
         <div class="mb-4">
             <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
             <input type="text" 
-                   id="apellidoPaterno" 
-                   name="apellidoPaterno" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="apellidoPaterno" 
+                name="apellidoPaterno" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-apellidoPaterno" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -78,9 +78,9 @@
         <div class="mb-4">
             <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
             <input type="text" 
-                   id="apellidoMaterno" 
-                   name="apellidoMaterno" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="apellidoMaterno" 
+                name="apellidoMaterno" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div id="error-apellidoMaterno" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -88,10 +88,10 @@
         <div class="mb-4">
             <label for="fechaNacto" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento *</label>
             <input type="date" 
-                   id="fechaNacto" 
-                   name="fechaNacto" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="fechaNacto" 
+                name="fechaNacto" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-fechaNacto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -99,10 +99,10 @@
         <div class="mb-4">
             <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico *</label>
             <input type="email" 
-                   id="correo" 
-                   name="correo" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="correo" 
+                name="correo" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-correo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -110,10 +110,10 @@
         <div class="mb-4">
             <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
             <input type="file" 
-                   id="foto" 
-                   name="foto" 
-                   accept="image/*"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="foto" 
+                name="foto" 
+                accept="image/*"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
@@ -125,15 +125,14 @@
                 <a id="acuerdo-link" href="#" target="_blank" class="underline">Ver documento</a>
             </div>
             <input type="file" 
-                   id="acuerdo" 
-                   name="acuerdo" 
-                   accept=".pdf,.doc,.docx"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                id="acuerdo" 
+                name="acuerdo" 
+                accept=".pdf,.doc,.docx"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
             <div id="error-acuerdo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
     </x-crud-modal>
-
     @vite(['resources/js/app.js'])
 </x-app-layout>

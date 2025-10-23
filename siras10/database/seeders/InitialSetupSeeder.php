@@ -28,6 +28,16 @@ class InitialSetupSeeder extends Seeder
                 'centros-formadores' => ['create', 'read', 'update', 'delete'],
                 'tipos-centro-formador' => ['create', 'read', 'update', 'delete'],
             ],
+            'Gestión de Salud' => [
+                'centro-salud' => ['create', 'read', 'update', 'delete'],
+                'unidad-clinicas' => ['create', 'read', 'update', 'delete'],
+            ],
+            'Gestión de Prácticas' => [
+                'periodos' => ['create', 'read', 'update', 'delete'],
+                'cupo-ofertas' => ['create', 'read', 'update', 'delete'],
+                'tipos-practica' => ['create', 'read', 'update', 'delete'],
+                'cupo-distribuciones' => ['create', 'read', 'update', 'delete'],
+            ],
             'Gestión de Usuarios' => [
                 'usuarios' => ['create', 'read', 'update', 'delete'],
                 'roles' => ['create', 'read', 'update', 'delete'],
