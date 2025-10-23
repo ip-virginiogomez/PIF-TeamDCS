@@ -5,8 +5,7 @@
                 {{ __('Gestión de Períodos') }}
             </h2>
             @can('periodos.create')
-                {{-- CAMBIO: Llamar a la función global específica --}}
-                <button onclick="limpiarFormularioPeriodo()" data-modal-target="periodoModal" data-modal-toggle="periodoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                <button data-modal-target="periodoModal" data-modal-toggle="periodoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                     Nuevo Período
                 </button>
             @endcan
@@ -62,5 +61,5 @@
         </x-slot>
     </x-crud-modal>
 
-    @vite(['resources/js/periodos.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

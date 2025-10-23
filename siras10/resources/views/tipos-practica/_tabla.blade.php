@@ -14,10 +14,19 @@
                 <td class="py-2 px-4 font-medium">{{ $tipo->nombrePractica }}</td>
                 <td class="py-2 px-4 flex space-x-2">
                     @can('tipos-practica.update')
-                        <button onclick="editarTipoPractica({{ $tipo->idTipoPractica }})" class="text-yellow-500 hover:text-yellow-700">Editar</button>
+                        <button data-action="edit" 
+                            data-id="{{ $tipo->idTipoPractica }}" 
+                            class="text-yellow-500 hover:text-yellow-700">
+                            Editar
+                        </button>
                     @endcan
                     @can('tipos-practica.delete')
-                        <button onclick="eliminarTipoPractica({{ $tipo->idTipoPractica }})" class="text-red-500 hover:text-red-700">Eliminar</button>
+                        <button 
+                            data-action="delete" 
+                            data-id="{{ $tipo->idTipoPractica }}" 
+                            class="text-red-500 hover:text-red-700">
+                            Eliminar
+                        </button>
                     @endcan
                 </td>
             </tr>

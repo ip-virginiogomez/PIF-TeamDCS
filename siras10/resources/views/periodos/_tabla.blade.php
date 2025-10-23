@@ -18,12 +18,20 @@
                 <td class="py-2 px-4">{{ \Carbon\Carbon::parse($periodo->fechaFin)->format('d/m/Y') }}</td>
                 <td class="py-2 px-4 flex space-x-2">
                     @can('periodos.update')
-                        {{-- CAMBIO: Llamar a la función global específica --}}
-                        <button onclick="editarPeriodo({{ $periodo->idPeriodo }})" class="text-yellow-500 hover:text-yellow-700">Editar</button>
+                        <button 
+                            data-action="edit" 
+                            data-id="{{ $periodo->idPeriodo }}" 
+                            class="text-yellow-500 hover:text-yellow-700">
+                            Editar
+                        </button>
                     @endcan
                     @can('periodos.delete')
-                        {{-- CAMBIO: Llamar a la función global específica --}}
-                        <button onclick="eliminarPeriodo({{ $periodo->idPeriodo }})" class="text-red-500 hover:text-red-700">Eliminar</button>
+                        <button 
+                            data-action="delete" 
+                            data-id="{{ $periodo->idPeriodo }}" 
+                            class="text-red-500 hover:text-red-700">
+                            Eliminar
+                        </button>
                     @endcan
                 </td>
             </tr>

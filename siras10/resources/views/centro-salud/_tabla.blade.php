@@ -62,10 +62,16 @@
                         <div class="text-xs text-gray-500">{{ $centro->tipoCentroSalud->nombreTipo ?? 'N/A' }}</div>
                     </td>
                     <td class="py-2 px-4 flex space-x-2">
-                        <button onclick="editarCentro({{ $centro->idCentroSalud }})" class="text-yellow-500 hover:text-yellow-700">
+                        <button 
+                            data-action="edit" 
+                            data-id="{{ $centro->idCentroSalud }}" 
+                            class="text-yellow-500 hover:text-yellow-700">
                             Editar
                         </button>
-                        <button onclick="eliminarCentro({{ $centro->idCentroSalud }})" class="text-red-500 hover:text-red-700">
+                        <button 
+                            data-action="delete" 
+                            data-id="{{ $centro->idCentroSalud }}" 
+                            class="text-red-500 hover:text-red-700">
                             Eliminar
                         </button>
                     </td>

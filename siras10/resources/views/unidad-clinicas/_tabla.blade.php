@@ -16,10 +16,20 @@
                 <td class="py-2 px-4">{{ $unidad->centroSalud->nombreCentro ?? 'N/A' }}</td>
                 <td class="py-2 px-4 flex space-x-2">
                     @can('unidad-clinicas.update')
-                        <button onclick="editarUnidadClinica({{ $unidad->idUnidadClinica }})" class="text-yellow-500 hover:text-yellow-700">Editar</button>
+                        <button 
+                            data-action="edit" 
+                            data-id="{{ $unidad->idUnidadClinica }}" 
+                            class="text-yellow-500 hover:text-yellow-700">
+                            Editar
+                        </button>
                     @endcan
                     @can('unidad-clinicas.delete')
-                        <button onclick="eliminarUnidadClinica({{ $unidad->idUnidadClinica }})" class="text-red-500 hover:text-red-700">Eliminar</button>
+                        <button 
+                            data-action="delete" 
+                            data-id="{{ $unidad->idUnidadClinica }}" 
+                            class="text-red-500 hover:text-red-700">
+                            Eliminar
+                        </button>
                     @endcan
                 </td>
             </tr>

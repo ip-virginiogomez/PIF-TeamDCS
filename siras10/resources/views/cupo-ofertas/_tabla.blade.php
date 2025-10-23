@@ -22,12 +22,27 @@
                     {{ \Carbon\Carbon::parse($oferta->fechaSalida)->format('d/m/Y') }}
                 </td>
                 <td class="py-2 px-4 flex space-x-2">
-                    {{-- CORRECCIÓN: Llamar a las funciones globales específicas y proteger con @can --}}
                     @can('cupo-ofertas.update')
-                        <button onclick="editarCupoOferta({{ $oferta->idCupoOferta }})" class="text-yellow-500 hover:text-yellow-700">Editar</button>
+                        <button 
+                            data-action="edit" 
+                            data-id="{{ $oferta->idCupoOferta }}" 
+                            class="text-yellow-500 hover:text-yellow-700">
+                            Editar
+                        </button>
                     @endcan
                     @can('cupo-ofertas.delete')
-                        <button onclick="eliminarCupoOferta({{ $oferta->idCupoOferta }})" class="text-red-500 hover:text-red-700">Eliminar</button>
+                        <button 
+                            data-action="delete" 
+                            data-id="{{ $oferta->idCupoOferta }}" 
+                            class="text-red-500 hover:text-red-700">
+                            Eliminar
+                        </button>
+                    @endcan
+                    @can('cupo-distribuciones.read')
+                        <a href="{{ route('cupo-distribuciones.index', ['oferta_id' => $oferta->idCupoOferta]) }}" 
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-xs">
+                            Distribuir
+                        </a>
                     @endcan
                 </td>
             </tr>

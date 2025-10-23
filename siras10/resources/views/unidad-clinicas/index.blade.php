@@ -5,7 +5,7 @@
                 {{ __('Gestión de Unidades Clínicas') }}
             </h2>
             @can('unidad-clinicas.create')
-                <button onclick="limpiarFormularioUnidadClinica()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                <button data-modal-target="unidadClinicaModal" data-modal-toggle="unidadClinicaModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                     Nueva Unidad Clínica
                 </button>
             @endcan
@@ -59,5 +59,5 @@
         </x-slot>
     </x-crud-modal>
 
-    @vite(['resources/js/unidad-clinica.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

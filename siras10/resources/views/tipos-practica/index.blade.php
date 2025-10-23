@@ -5,7 +5,7 @@
                 {{ __('Gestión de Tipos de Práctica') }}
             </h2>
             @can('tipos-practica.create')
-                <button onclick="limpiarFormularioTipoPractica()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                <button data-modal-target="tipoPracticaModal" data-modal-toggle="tipoPracticaModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                     Nuevo Tipo de Práctica
                 </button>
             @endcan
@@ -48,5 +48,5 @@
         </x-slot>
     </x-crud-modal>
 
-    @vite(['resources/js/tipo-practica.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

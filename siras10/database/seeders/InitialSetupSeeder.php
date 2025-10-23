@@ -35,6 +35,7 @@ class InitialSetupSeeder extends Seeder
                 'periodos' => ['create', 'read', 'update', 'delete'],
                 'cupo-ofertas' => ['create', 'read', 'update', 'delete'],
                 'tipos-practica' => ['create', 'read', 'update', 'delete'],
+                'cupo-distribuciones' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión de Usuarios' => [
                 'usuarios' => ['create', 'read', 'update', 'delete'],

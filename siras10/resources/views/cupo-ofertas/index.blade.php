@@ -4,8 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Oferta de Cupos') }}
             </h2>
-            {{-- El botón para abrir el modal ahora llama a la función global específica --}}
-            <button onclick="limpiarFormularioCupoOferta()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+            <button data-modal-target="cupoOfertaModal" data-modal-toggle="cupoOfertaModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Oferta
             </button>
         </div>
@@ -112,5 +111,5 @@
         </x-slot>
     </x-crud-modal>
 
-    @vite(['resources/js/cupo-oferta.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

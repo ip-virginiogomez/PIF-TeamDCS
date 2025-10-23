@@ -7,6 +7,8 @@ use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
+use App\Http\Controllers\CupoDistribucionController;
+use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DocentesController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
@@ -39,10 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- RUTAS PARA LOS MÓDULOS DE GESTIÓN ---
     Route::resource('centros-formadores', CentroFormadorController::class);
     Route::resource('convenios', ConvenioController::class);
-
     Route::get('convenios/{id}/documento/descargar', [ConvenioController::class, 'descargarDocumento'])->name('convenios.descargarDocumento');
     Route::get('convenios/{id}/documento/ver', [ConvenioController::class, 'verDocumento'])->name('convenios.verDocumento');
-
     Route::resource('tipos-centro-formador', TipoCentroFormadorController::class);
     Route::resource('sede', SedeController::class);
     Route::resource('centro-salud', CentroSaludController::class);
@@ -53,7 +53,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('asignar-permisos', [RoleController::class, 'showPermissionMatrix'])->name('roles.permission_matrix');
     Route::post('asignar-permisos', [RoleController::class, 'syncPermissionsFromMatrix'])->name('roles.sync_permissions');
     Route::resource('carreras', CarreraController::class);
-
     Route::get('/docentes', [DocentesController::class, 'index'])->name('docentes.index')->middleware('can:docentes.read');
     Route::post('/docentes', [DocentesController::class, 'store'])->name('docentes.store')->middleware('can:docentes.create');
     Route::get('/docentes/{docente}/edit', [DocentesController::class, 'edit'])->name('docentes.edit')->middleware('can:docentes.update');
@@ -63,6 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('cupo-ofertas', CupoOfertaController::class);
     Route::resource('unidad-clinicas', UnidadClinicaController::class);
     Route::resource('tipos-practica', TipoPracticaController::class);
+    Route::resource('cupo-distribuciones', CupoDistribucionController::class);
 });
 
 require __DIR__.'/auth.php';

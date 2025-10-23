@@ -2,9 +2,8 @@ import BaseModalManager from './base-modal-manager.js';
 
 /**
  * Centro de Salud Manager
- * Extiende BaseModalManager para funcionalidad específica de centros de salud
+ * Extiende BaseModalManager
  */
-
 class CentroSaludManager extends BaseModalManager {
     constructor() {
         super({
@@ -24,41 +23,9 @@ class CentroSaludManager extends BaseModalManager {
             ]
         });
     }
-
-    showValidationErrors(errors) {
-        this.clearValidationErrors();
-        for (const field in errors) {
-            const input = this.form.querySelector(`[name="${field}"]`);
-            const errorDiv = document.getElementById(`error-${field}`);
-            const errorMessage = errors[field][0];
-
-            if (input) {
-                input.classList.add('border-red-500'); 
-            }
-
-            if (errorDiv) {
-                errorDiv.textContent = errorMessage;
-                errorDiv.classList.remove('hidden');
-            }
-        }
-    }
-
-    clearValidationErrors() {
-        this.form.querySelectorAll('.border-red-500').forEach(el => {
-            el.classList.remove('border-red-500');
-        });
-        
-        this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-        });
-    }
-
-    validate() {
-        this.clearValidationErrors();
-        let esValido = true;
-        return esValido;
-    }
+    
+    // ¡Todo el código repetido de 'showValidationErrors', 'clearValidationErrors' y 'validate' se elimina!
+    // Usará los métodos del padre.
 }
 
 document.addEventListener('DOMContentLoaded', () => {
