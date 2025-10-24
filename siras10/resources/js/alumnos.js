@@ -23,9 +23,9 @@ class AlumnoManager extends BaseModalManager {
                 'apellidoMaterno',
                 'fechaNacto',
                 'correo',
-                'acuerdo'
             ]
         });
+        this.initFotoPreview();
     }
 
     showValidationErrors(errors) {
@@ -54,6 +54,26 @@ class AlumnoManager extends BaseModalManager {
         this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
             errorDiv.classList.add('hidden');
             errorDiv.textContent = '';
+        });
+    }
+
+    initFotoPreview(){
+        const fotoInput = this.form.querySelector('#foto');
+        const fotoPreview = document.getElementById('foto-preview');
+
+        if (!fotoInput || !fotoPreview) return;
+
+        fotoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                fotoPreview.src = event.target.result; 
+            };
+            
+            reader.readAsDataURL(file);
         });
     }
 
@@ -89,6 +109,7 @@ class AlumnoManager extends BaseModalManager {
         super.limpiarFormulario();
         const runInput = this.form.querySelector('#runAlumno');
         const runHelpText = document.getElementById('run-help-text');
+        const fotoPreview = document.getElementById('foto-preview');
 
         if (runInput) {
             runInput.removeAttribute('readonly');
@@ -97,19 +118,30 @@ class AlumnoManager extends BaseModalManager {
         if (runHelpText) {
             runHelpText.classList.add('hidden');
         }
+        if (fotoPreview) {
+            fotoPreview.src = "/storage/placeholder.png";
+        }
     }
 
     async editarRegistro(id) {
-        await super.editarRegistro(id);
+        const data = await super.editarRegistro(id);
 
         const runInput = this.form.querySelector('#runAlumno');
         const runHelpText = document.getElementById('run-help-text');
+        const fotoPreview = document.getElementById('foto-preview');
         
         if (runInput) {
             runInput.setAttribute('readonly', true);
         }
         if (runHelpText) {
             runHelpText.classList.remove('hidden');
+        }
+        if (fotoPreview) {
+            if (data && data.foto) {
+                fotoPreview.src = `/storage/${data.foto}`;
+            } else {
+                fotoPreview.src = "/storage/placeholder.png";
+            }
         }
     }
 }

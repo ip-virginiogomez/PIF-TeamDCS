@@ -58,6 +58,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/docentes/{docente}/edit', [DocentesController::class, 'edit'])->name('docentes.edit')->middleware('can:docentes.update');
     Route::put('/docentes/{docente}', [DocentesController::class, 'update'])->name('docentes.update')->middleware('can:docentes.update');
     Route::delete('/docentes/{docente}', [DocentesController::class, 'destroy'])->name('docentes.destroy')->middleware('can:docentes.delete');
+    Route::get('/docentes/{docente}/documentos', [DocentesController::class, 'showDocumentos'])->name('docentes.documentos');
     Route::resource('periodos', PeriodoController::class);
     Route::resource('cupo-ofertas', CupoOfertaController::class);
     Route::resource('unidad-clinicas', UnidadClinicaController::class);

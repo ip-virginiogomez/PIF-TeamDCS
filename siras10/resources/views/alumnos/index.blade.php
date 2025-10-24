@@ -4,14 +4,16 @@
             <h2 class="font-semibold text-xl text-white leading-tight">
                 {{ __('Gestión de Alumnos') }}
             </h2>
+            @can('alumnos.create')
             <button data-modal-target="alumnoModal" data-modal-toggle="alumnoModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Alumno
             </button>
+            @endcan
         </div>  
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
@@ -109,6 +111,9 @@
         <!-- Foto -->
         <div class="mb-4">
             <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
+            <div class="mt-2 mb-2">
+                <img id="foto-preview" src="{{ asset('storage/placeholder.png') }}" alt="Vista previa de la foto" class="w-24 h-24 rounded-md object-cover border border-gray-300 hidden">    
+            </div>
             <input type="file" 
                 id="foto" 
                 name="foto" 
