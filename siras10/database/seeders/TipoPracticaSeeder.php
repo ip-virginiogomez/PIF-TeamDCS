@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use app\Models\TipoPractica;
 
 class TipoPracticaSeeder extends Seeder
 {
@@ -22,7 +20,7 @@ class TipoPracticaSeeder extends Seeder
             [
                 'nombrePractica' => 'Internado',
                 'fechaCreacion' => now(),
-            ]
+            ],
         ];
         foreach ($tiposPractica as $tipo) {
             \App\Models\TipoPractica::create($tipo);
