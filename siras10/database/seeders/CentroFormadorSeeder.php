@@ -48,6 +48,11 @@ class CentroFormadorSeeder extends Seeder
                 'idTipoCentroFormador' => 2,
                 'fechaCreacion' => now(),
             ],
+            [
+                'nombreCentroFormador' => 'Liceo Técnico Juanita Fernández',
+                'idTipoCentroFormador' => 3,
+                'fechaCreacion' => now(),
+            ],
         ];
         foreach ($centrosFormador as $centro) {
             \App\Models\CentroFormador::create($centro);
