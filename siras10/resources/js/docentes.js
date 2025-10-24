@@ -145,6 +145,31 @@ class DocenteManager extends BaseModalManager {
             }
         }
     }
+
+    async verDocumentos(id) {
+        const modal = document.getElementById('documentosModal');
+        const modalBody = document.getElementById('documentosModal-body');
+        const modalTitle = document.getElementById('documentosModal-title');
+
+        if (!modal || !modalBody) return;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex', 'items-center', 'justify-center');
+        modalTitle.textContent = 'Documentos del Docente';
+        modalBody.innerHTML = `<div class="flex justify-center items-center h-32"><i class="fas fa-spinner fa-spin fa-2x text-gray-500"></i></div>`;
+
+        try {
+            const response = await fetch(`/docentes/${id}/documentos`);
+            if (!response.ok) throw new Error('No se pudo cargar la lista de documentos.');
+
+            const html = await response.text();
+            
+            modalBody.innerHTML = html;
+        } catch (error) {
+            console.error('Error al ver documentos:', error);
+            modalBody.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

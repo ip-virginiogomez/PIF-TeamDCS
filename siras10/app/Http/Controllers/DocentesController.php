@@ -324,4 +324,9 @@ class DocentesController extends Controller
         return redirect()->route('docentes.index')
             ->with('success', 'Docente eliminado exitosamente.');
     }
+
+    public function showDocumentos(Docente $docente)
+    {
+        return view('docentes._documentos_lista', compact('docente'));
+    }
 }

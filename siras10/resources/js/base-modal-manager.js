@@ -25,6 +25,19 @@ export default class BaseModalManager {
      * Inicializa TODOS los event listeners necesarios: formulario y página.
      */
     initEventListeners() {
+
+        document.body.addEventListener('click', (e) => {
+            const closeModalButton = e.target.closest('[data-action="close-info-modal"]');
+            if (closeModalButton) {
+                const modalId = closeModalButton.dataset.modalId;
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex', 'items-center', 'justify-center');
+                }
+            }
+        });
+
         if (this.form) {
             this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         }
@@ -57,12 +70,18 @@ export default class BaseModalManager {
 
                 const editButton = e.target.closest('[data-action="edit"]');
                 const deleteButton = e.target.closest('[data-action="delete"]');
+                const docButton = e.target.closest('[data-action="view-documents"]');
 
                 if (editButton) {
                     this.editarRegistro(editButton.dataset.id);
                 }
                 if (deleteButton) {
                     this.eliminarRegistro(deleteButton.dataset.id);
+                }
+                if (docButton) {
+                    if (typeof this.verDocumentos === 'function') {
+                        this.verDocumentos(docButton.dataset.id);
+                    }
                 }
             });
         }
