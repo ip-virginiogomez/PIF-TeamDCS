@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Carrera;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CarreraController extends Controller
 {
@@ -17,44 +18,74 @@ class CarreraController extends Controller
 
     public function index()
     {
-        $carreras = Carrera::paginate(10);
+        $columnasDisponibles = ['idCarrera', 'nombreCarrera', 'fechaCreacion'];
 
-        // AJUSTE AQUÍ
-        return view('carreras.index', compact('carreras'));
+        $sortBy = request()->get('sort_by', 'idCarrera');
+        $sortDirection = request()->get('sort_direction', 'asc');
+
+        if (! in_array($sortBy, $columnasDisponibles)) {
+            $sortBy = 'idCarrera';
+        }
+
+        $query = Carrera::query();
+
+        if (strpos($sortBy, '.') !== false) {
+            [$tableRelacion, $columna] = explode('.', $sortBy);
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $carreras = $query->paginate(10);
+
+        if (request()->ajax()) {
+            return view('carreras._tabla', [
+                'carreras' => $carreras,
+                'sortBy' => $sortBy,
+                'sortDirection' => $sortDirection,
+            ])->render();
+        }
+
+        return view('carreras.index', [
+            'carreras' => $carreras,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+        ]);
     }
 
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Errores de validación',
-                    'errors' => $e->errors(),
-                ], 422);
-            }
-            throw $e;
+        $validator = Validator::make($request->all(), [
+            'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera',
+        ],[
+            'nombreCarrera.required' => 'El nombre de la carrera es obligatorio.',
+            'nombreCarrera.string' => 'El nombre de la carrera debe ser una cadena de texto.',
+            'nombreCarrera.unique' => 'Ya existe una carrera con ese nombre.',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors(),
+            ], 422);
         }
-
-        // Establecer la fecha de creación automáticamente
-        $data = $request->all();
-        $data['fechaCreacion'] = now()->format('Y-m-d');
-
-        $carrera = Carrera::create($data);
-
-        if (request()->expectsJson()) {
+        try{
+            $data = $request->all();
+            if(empty($data['fechaCreacion'])){
+                $data['fechaCreacion'] = now();
+            }
+            $carrera = Carrera::create($data);
             return response()->json([
                 'success' => true,
                 'message' => 'Carrera creada exitosamente.',
                 'data' => $carrera,
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear la carrera.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return redirect()->route('carreras.index')->with('success', 'Carrera creada exitosamente.');
     }
 
     public function edit(Carrera $carrera)
@@ -64,33 +95,35 @@ class CarreraController extends Controller
 
     public function update(Request $request, Carrera $carrera)
     {
-        try {
-            $request->validate([
-                'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera,'.$carrera->idCarrera.',idCarrera',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Errores de validación',
-                    'errors' => $e->errors(),
-                ], 422);
-            }
-            throw $e;
+        $validator = Validator::make($request->all(), [
+            'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera,'.$carrera->idCarrera.',idCarrera',
+        ],[
+            'nombreCarrera.required' => 'El nombre de la carrera es obligatorio.',
+            'nombreCarrera.string' => 'El nombre de la carrera debe ser una cadena de texto.',
+            'nombreCarrera.unique' => 'Ya existe una carrera con ese nombre.',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors(),
+            ], 422);
         }
-
-        // Solo actualizar el nombre de la carrera, mantener la fecha de creación original
-        $carrera->update(['nombreCarrera' => $request->nombreCarrera]);
-
-        if (request()->expectsJson()) {
+        try{
+            $data = $validator->validated();
+            $carrera->update($data);
             return response()->json([
                 'success' => true,
                 'message' => 'Carrera actualizada exitosamente.',
                 'data' => $carrera,
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la carrera.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return redirect()->route('carreras.index')->with('success', 'Carrera actualizada exitosamente.');
     }
 
     public function destroy(Carrera $carrera)
