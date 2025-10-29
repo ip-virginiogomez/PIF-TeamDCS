@@ -21,41 +21,47 @@ class UsuarioController extends Controller
     {
         $usuarios = Usuario::with('roles')->paginate(10);
 
-        return view('admin.usuarios.index', compact('usuarios'));
+        return view('usuarios.index', compact('usuarios'));
     }
 
     public function create()
     {
         $roles = Role::all();
 
-        return view('admin.usuarios.create', compact('roles'));
+        return view('usuarios.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario',
-            'nombreUsuario' => 'required|string|max:45|unique:usuarios,nombreUsuario',
-            'correo' => 'required|email|max:45|unique:usuarios,correo',
-            'contrasenia' => 'required|string|min:8|confirmed',
-            'nombres' => 'required|string|max:45',
-            'apellidoPaterno' => 'required|string|max:45',
-            'apellidoMaterno' => 'required|string|max:45',
-            'roles' => 'required|array',
-        ]);
+        // uso de try catch para capturar errores de validacion
+        try {
+            $request->validate([
+                'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario',
+                'nombreUsuario' => 'required|string|max:45|unique:usuarios,nombreUsuario',
+                'apellidoPaterno' => 'required|string|max:45',
+                'apellidoMaterno' => 'required|string|max:45',
+                'correo' => 'required|email|max:45|unique:usuarios,correo',
+                'telefono' => 'nullable|string|max:20',
+                'contrasenia' => 'required|string|min:8|confirmed',
+                'roles' => 'required|array',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            dd($e->errors());
+        }
 
+        // Si la validación pasa, el código continuará normalmente.
         $usuario = Usuario::create([
             'runUsuario' => $request->runUsuario,
             'nombreUsuario' => $request->nombreUsuario,
-            'correo' => $request->correo,
-            'contrasenia' => Hash::make($request->contrasenia),
-            'nombres' => $request->nombres,
             'apellidoPaterno' => $request->apellidoPaterno,
             'apellidoMaterno' => $request->apellidoMaterno,
+            'correo' => $request->correo,
+            'telefono' => $request->telefono,
+            'contrasenia' => Hash::make($request->contrasenia),
             'fechaCreacion' => now(),
         ]);
 
-        $usuario->assignRole($request->roles);
+        $usuario->syncRoles($request->roles);
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado exitosamente.');
     }
@@ -64,7 +70,7 @@ class UsuarioController extends Controller
     {
         $roles = Role::all();
 
-        return view('admin.usuarios.edit', compact('usuarios', 'roles'));
+        return view('usuarios.edit', compact('usuario', 'roles'));
     }
 
     public function update(Request $request, Usuario $usuario)

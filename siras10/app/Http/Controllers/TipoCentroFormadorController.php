@@ -19,12 +19,12 @@ class TipoCentroFormadorController extends Controller
     {
         $tipos = TipoCentroFormador::paginate(10);
 
-        return view('admin.tipos-centro.index', compact('tipos'));
+        return view('tipos-centro.index', compact('tipos'));
     }
 
     public function create()
     {
-        return view('admin.tipos-centro.create');
+        return view('tipos-centro.create');
     }
 
     public function store(Request $request)
@@ -42,12 +42,12 @@ class TipoCentroFormadorController extends Controller
 
     public function show(TipoCentroFormador $tipos_centro_formador)
     {
-        return view('admin.tipos-centro.show', compact('tipos_centro_formador'));
+        return view('tipos-centro.show', compact('tipos_centro_formador'));
     }
 
     public function edit(TipoCentroFormador $tipos_centro_formador)
     {
-        return view('admin.tipos-centro.edit', compact('tipos_centro_formador'));
+        return view('tipos-centro.edit', compact('tipos_centro_formador'));
     }
 
     public function update(Request $request, TipoCentroFormador $tipos_centro_formador)

@@ -20,7 +20,7 @@ class CarreraController extends Controller
         $carreras = Carrera::paginate(10);
 
         // AJUSTE AQUÍ
-        return view('admin.carreras.index', compact('carreras'));
+        return view('carreras.index', compact('carreras'));
     }
 
     public function store(Request $request)

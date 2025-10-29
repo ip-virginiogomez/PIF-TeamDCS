@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id('idPermisosRol');
             $table->unsignedBigInteger('idPermisos')->nullable();
             $table->unsignedBigInteger('idRol')->nullable();
-            $table->unsignedBigInteger('idEstadoPermisos')->nullable();
-            $table->string('runUsuario', 10)->nullable();
             $table->timestamps();
 
             $table->foreign('idPermisos')
@@ -28,18 +26,6 @@ return new class extends Migration
             $table->foreign('idRol')
                 ->references('idRol')
                 ->on('rol')
-                ->onUpdate('no action')
-                ->onDelete('no action');
-
-            $table->foreign('idEstadoPermisos')
-                ->references('idEstadoPermisos')
-                ->on('estado_permisos')
-                ->onUpdate('no action')
-                ->onDelete('no action');
-
-            $table->foreign('runUsuario')
-                ->references('runUsuario')
-                ->on('usuarios')
                 ->onUpdate('no action')
                 ->onDelete('no action');
         });

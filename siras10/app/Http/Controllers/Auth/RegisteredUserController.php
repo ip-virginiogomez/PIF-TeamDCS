@@ -42,7 +42,6 @@ class RegisteredUserController extends Controller
             'nombreUsuario' => $request->nombreUsuario,
             'correo' => $request->correo,
             'contrasenia' => Hash::make($request->password),
-            'nombres' => $request->nombreUsuario,
         ]);
 
         // --- LÍNEA CLAVE QUE DEBES AÑADIR ---

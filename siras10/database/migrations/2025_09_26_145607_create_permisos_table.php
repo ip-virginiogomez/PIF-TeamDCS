@@ -13,17 +13,10 @@ return new class extends Migration
     {
         Schema::create('permisos', function (Blueprint $table) {
             $table->id('idPermisos');
-            $table->string('nombrePermisos', 45)->nullable();
-            $table->unsignedBigInteger('idSubmenu')->nullable();
+            $table->string('nombrePermisos', 100)->nullable();
             $table->date('fechaCreacion')->nullable();
-            $table->string('decripcion', 150)->nullable();
+            $table->string('decripcion', 300)->nullable();
             $table->timestamps();
-
-            $table->foreign('idSubmenu')
-                ->references('idSubmenu')
-                ->on('submenu')
-                ->onUpdate('no action')
-                ->onDelete('no action');
         });
     }
 

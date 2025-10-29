@@ -14,8 +14,9 @@ class DatabaseSeeder extends Seeder
     {
         // Llamamos a los seeders que hemos creado en el orden que necesitamos
         $this->call([
-            RolesAndPermissionsSeeder::class,
-            MenuAndPermissionsSeeder::class,
+            InitialSetupSeeder::class,
+            UserSeeder::class,
+
             CiudadSeeder::class,
             TipoCentroSaludSeeder::class,
             CarreraSeeder::class,
