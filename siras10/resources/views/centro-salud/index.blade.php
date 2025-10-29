@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Centros de Salud') }}
             </h2>
-            <button onclick="limpiarFormulario()" data-modal-target="centroSaludModal" data-modal-toggle="centroSaludModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+            <button data-modal-target="centroSaludModal" data-modal-toggle="centroSaludModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Centro de Salud
             </button>
         </div>
@@ -32,6 +32,7 @@
         </div>
     </div>
 
+    <!-- Función simple en closeFunction -->
     <x-crud-modal 
         modalId="centroSaludModal" 
         formId="centroSaludForm" 
@@ -63,6 +64,18 @@
         </div>
 
         <div class="mb-4">
+            <label for="director" class="block text-sm font-medium text-gray-700">Director del Centro *</label>
+            <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="director" name="director" placeholder="Ej: Dr. Juan Pérez" required>
+            <div class="text-red-500 text-sm mt-1 hidden" id="error-director"></div>
+        </div>
+
+        <div class="mb-4">
+            <label for="correoDirector" class="block text-sm font-medium text-gray-700">Correo del Director *</label>
+            <input type="email" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="correoDirector" name="correoDirector" placeholder="director@centro.cl" required>
+            <div class="text-red-500 text-sm mt-1 hidden" id="error-correoDirector"></div>
+        </div>
+
+        <div class="mb-4">
             <label for="idCiudad" class="block text-sm font-medium text-gray-700">Ciudad *</label>
             <select class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="idCiudad" name="idCiudad" required>
                 <option value="">Seleccione una ciudad</option>
@@ -74,5 +87,5 @@
         </div>
     </x-crud-modal>
 
-    @vite(['resources/js/centro-salud.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

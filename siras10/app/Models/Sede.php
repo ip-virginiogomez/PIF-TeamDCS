@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,6 +28,17 @@ class Sede extends Model
     public function centroFormador()
     {
         return $this->belongsTo(CentroFormador::class, 'idCentroFormador', 'idCentroFormador');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($sede) {
+            if (empty($sede->fechaCreacion)) {
+                $sede->fechaCreacion = Carbon::now()->format('Y-m-d');
+            }
+        });
     }
 
     // Relación uno a muchos con SedeCarrera

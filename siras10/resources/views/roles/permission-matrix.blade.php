@@ -167,7 +167,7 @@
                     users.forEach(user => {
                         const option = document.createElement('option');
                         option.value = user.runUsuario;
-                        option.textContent = `${user.nombres} ${user.apellidoPaterno}`;
+                        option.textContent = `${user.nombreUsuario} ${user.apellidoPaterno}`;
                         if (user.runUsuario === selectedUserRun) {
                             option.selected = true;
                         }

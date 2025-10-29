@@ -1,5 +1,10 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
+        <label for="runUsuario" class="block text-sm font-medium text-gray-700">RUN</label>
+        <input type="text" name="runUsuario" id="runUsuario" value="{{ old('runUsuario', $usuario->runUsuario ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+        @error('runUsuario')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+    </div>
+    <div>
         <label for="nombreUsuario" class="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
         <input type="text" name="nombreUsuario" id="nombreUsuario" value="{{ old('nombreUsuario', $usuario->nombreUsuario ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('nombreUsuario')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -15,14 +20,15 @@
         @error('apellidoMaterno')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
-        <label for="runUsuario" class="block text-sm font-medium text-gray-700">RUN</label>
-        <input type="text" name="runUsuario" id="runUsuario" value="{{ old('runUsuario', $usuario->runUsuario ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-        @error('runUsuario')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-    </div>
-    <div>
         <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
         <input type="email" name="correo" id="correo" value="{{ old('correo', $usuario->correo ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
         @error('correo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+    </div>
+    <!-- CAMPO NUEVO AÑADIDO -->
+    <div>
+        <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+        <input type="text" name="telefono" id="telefono" value="{{ old('telefono', $usuario->telefono ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+        @error('telefono')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     </div>
     <div>
         <label for="contrasenia" class="block text-sm font-medium text-gray-700">Contraseña</label>

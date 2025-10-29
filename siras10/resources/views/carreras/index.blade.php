@@ -4,11 +4,9 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Carreras') }}
             </h2>
-            @can('carreras.create')
-                <button onclick="limpiarFormularioCarrera()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
-                    Crear Nueva Carrera
-                </button>
-            @endcan
+            <button data-modal-target="carreraModal" data-modal-toggle="carreraModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                Crear Nueva Carrera
+            </button>
         </div>
     </x-slot>
 
@@ -75,14 +73,14 @@
         <div class="mb-4">
             <label for="nombreCarrera" class="block text-sm font-medium text-gray-700">Nombre de la Carrera *</label>
             <input type="text" 
-                   id="nombreCarrera" 
-                   name="nombreCarrera" 
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   required>
+                id="nombreCarrera" 
+                name="nombreCarrera" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required>
             <div id="error-nombreCarrera" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
     </x-crud-modal>
 
-    @vite(['resources/js/carreras.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>
