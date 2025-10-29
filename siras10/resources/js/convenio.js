@@ -29,8 +29,6 @@ class ConvenioManager extends BaseModalManager {
      * del formulario, evitando el campo de archivo.
      */
     fillForm(data) {
-        console.log('📝 Llenando formulario de convenio con:', data);
-
         // Llama al método del padre, pero solo con los campos seguros
         super.fillForm(data);
 
@@ -185,15 +183,11 @@ let convenioManager;
 
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('convenioForm')) {
-        console.log('🚀 Inicializando ConvenioManager...');
         convenioManager = new ConvenioManager();
     }
 });
 
-/**
- * ✅ AGREGAR: Funciones globales para que los botones onclick funcionen.
- */
-window.abrirModal = function () {
+w.abrirModal = function () {
     if (convenioManager) {
         convenioManager.limpiarFormulario();
     } else {
