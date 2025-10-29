@@ -56,7 +56,7 @@ class CarreraController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera',
-        ],[
+        ], [
             'nombreCarrera.required' => 'El nombre de la carrera es obligatorio.',
             'nombreCarrera.string' => 'El nombre de la carrera debe ser una cadena de texto.',
             'nombreCarrera.unique' => 'Ya existe una carrera con ese nombre.',
@@ -68,12 +68,13 @@ class CarreraController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-        try{
+        try {
             $data = $request->all();
-            if(empty($data['fechaCreacion'])){
+            if (empty($data['fechaCreacion'])) {
                 $data['fechaCreacion'] = now();
             }
             $carrera = Carrera::create($data);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Carrera creada exitosamente.',
@@ -97,7 +98,7 @@ class CarreraController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera,'.$carrera->idCarrera.',idCarrera',
-        ],[
+        ], [
             'nombreCarrera.required' => 'El nombre de la carrera es obligatorio.',
             'nombreCarrera.string' => 'El nombre de la carrera debe ser una cadena de texto.',
             'nombreCarrera.unique' => 'Ya existe una carrera con ese nombre.',
@@ -109,9 +110,10 @@ class CarreraController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-        try{
+        try {
             $data = $validator->validated();
             $carrera->update($data);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Carrera actualizada exitosamente.',
