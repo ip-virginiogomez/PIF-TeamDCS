@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\CentroFormador;
-use App\Models\TipoCentroFormador; // Importamos el modelo relacionado
+use App\Models\TipoCentroFormador;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CentroFormadorController extends Controller
 {
@@ -18,61 +19,161 @@ class CentroFormadorController extends Controller
 
     public function index()
     {
-        $centros = CentroFormador::with('tipoCentroFormador')->paginate(10);
+        $columnasDisponibles = ['idCentroFormador', 'tipoCentroFormador.nombreTipo', 'nombreCentroFormador', 'fechaCreacion'];
 
-        return view('centros-formadores.index', compact('centros'));
+        $sortBy = request()->get('sort_by', 'idCentroFormador');
+        $sortDirection = request()->get('sort_direction', 'asc');
+
+        if (! in_array($sortBy, $columnasDisponibles)) {
+            $sortBy = 'idCentroFormador';
+        }
+
+        $query = CentroFormador::query();
+
+        if (strpos($sortBy, '.') !== false) {
+            [$tableRelacion, $columna] = explode('.', $sortBy);
+            if (tableRelacion === 'tipoCentroFormador') {
+                $query->join('tipo_centro_formador', 'centro_formador.idTipoCentroFormador', '=', 'tipo_centro_formador.idTipoCentroFormador')
+                    ->orderBy('tipo_centro_formador.'.$columna, $sortDirection)
+                    ->select('centro_formador.*');
+            }
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $centrosFormadores = $query->with(['tipoCentroFormador'])->paginate(10);
+
+        if (request()->ajax()) {
+            return view('centros-formadores._tabla', [
+                'centrosFormadores' => $centrosFormadores,
+                'sortBy' => $sortBy,
+                'sortDirection' => $sortDirection,
+            ])->render();
+        }
+
+        $tipoCentroFormador = TipoCentroFormador::all();
+
+        return view('centros-formadores.index', [
+            'centrosFormadores' => $centrosFormadores,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'tipoCentroFormador' => $tipoCentroFormador,
+        ]);
     }
 
     public function create()
     {
-        $tipos = TipoCentroFormador::all();
 
-        return view('centros-formadores.create', compact('tipos'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'nombreCentroFormador' => 'required|string|max:45',
-            'idTipoCentroFormador' => ['required', 'exists:App\Models\TipoCentroFormador,idTipoCentroFormador'],
+            'idTipoCentroFormador' => 'required|exists:tipo_centro_formador,idTipoCentroFormador',
+            'fechaCreacion' => 'nullable|date'
+        ],[
+            'nombreCentroFormador.required' => 'El nombre del centro formador es obligatorio.',
+            'idTipoCentroFormador.required' => 'Debe seleccionar un tipo de centro formador.',
+            'idTipoCentroFormador.exists' => 'El tipo de centro formador seleccionado no es válido.',
+            'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
         ]);
+        if ($validator-> fails()){
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        CentroFormador::create($request->all());
+        try{
+            $data = $request->all();
 
-        return redirect()->route('centros-formadores.index')
-            ->with('success', 'Centro Formador creado exitosamente.');
+            if (empty($data['fechaCreacion'])) {
+                $data['fechaCreacion'] = now()->format('Y-m-d');
+            }
+
+            $centroFormador = CentroFormador::create($data);
+            $centroFormador->load(['tipoCentroFormador']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Centro Formador creado exitosamente.',
+                'centroFormador' => $centroFormador,
+            ]);
+        }catch (\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el centro formador: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show(CentroFormador $centros_formadore)
     {
-        return view('centros-formadores.show', compact('centros_formadore'));
+        $centroFormador = CentroFormador::with(['tipoCentroFormador'])->findOrFail($id);
+
+        return response()->json($centroFormador);
     }
 
-    public function edit(CentroFormador $centros_formadore)
+    public function edit(string $id)
     {
-        $tipos = TipoCentroFormador::all();
+        $centroFormador = CentroFormador::findOrFail($id);
 
-        return view('centros-formadores.edit', compact('centros_formadore', 'tipos'));
+        return response()->json($centroFormador);
     }
 
-    public function update(Request $request, CentroFormador $centros_formadore)
+    public function update(Request $request, string $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'nombreCentroFormador' => 'required|string|max:45',
-            'idTipoCentroFormador' => ['required', 'exists:App\Models\TipoCentroFormador,idTipoCentroFormador'],
+            'idTipoCentroFormador' => 'required|exists:tipo_centro_formador,idTipoCentroFormador',
+            'fechaCreacion' => 'nullable|date'
+        ],[
+            'nombreCentroFormador.required' => 'El nombre del centro formador es obligatorio.',
+            'idTipoCentroFormador.required' => 'Debe seleccionar un tipo de centro formador.',
+            'idTipoCentroFormador.exists' => 'El tipo de centro formador seleccionado no es válido.',
+            'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
         ]);
+        if ($validator-> fails()){
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-        $centros_formadore->update($request->all());
+        try{
+            $centroFormador = CentroFormador::findOrFail($id);
+            $centroFormador->update($request->all());
+            $centroFormador->load(['tipoCentroFormador']);
 
-        return redirect()->route('centros-formadores.index')
-            ->with('success', 'Centro Formador actualizado exitosamente.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Centro Formador actualizado exitosamente.',
+                'centroFormador' => $centroFormador,
+            ]);
+        }catch (\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el centro formador: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
-    public function destroy(CentroFormador $centros_formadore)
+    public function destroy(string $id)
     {
-        $centros_formadore->delete();
+        try {
+            $centroFormador = CentroFormador::findOrFail($id);
+            $centroFormador->delete();
 
-        return redirect()->route('centros-formadores.index')
-            ->with('success', 'Centro Formador eliminado exitosamente.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Centro Formador eliminado exitosamente.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el centro formador: '.$e->getMessage(),
+            ], 500);
+        }
     }
 }
