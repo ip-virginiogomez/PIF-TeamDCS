@@ -36,7 +36,7 @@
                 </td>
                 <td class="py-2 px-4">
                     @if($alumno->foto)
-                        <img class="w-12 h-12 rounded-full object-cover" src="{{ asset('storage/' . $alumno->foto) }}" alt="Foto de {{ $alumno->nombres }}">
+                        <img class="w-12 h-12 rounded-full object-cover" src="{{ asset('images/placeholder.png' . $alumno->foto) }}" alt="Foto de {{ $alumno->nombres }}">
                     @else
                         <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
                             <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}</span>

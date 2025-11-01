@@ -112,7 +112,7 @@
         <div class="mb-4">
             <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
             <div class="mt-2 mb-2">
-                <img id="foto-preview" src="{{ asset('storage/placeholder.png') }}" alt="Vista previa de la foto" class="w-24 h-24 rounded-md object-cover border border-gray-300 hidden">    
+                <img id="foto-preview" src="{{ asset('images/placeholder.png') }}" alt="Vista previa de la foto" class="w-24 h-24 rounded-md object-cover border border-gray-300 hidden">    
             </div>
             <input type="file" 
                 id="foto" 

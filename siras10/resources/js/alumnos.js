@@ -119,7 +119,7 @@ class AlumnoManager extends BaseModalManager {
             runHelpText.classList.add('hidden');
         }
         if (fotoPreview) {
-            fotoPreview.src = "/storage/placeholder.png";
+            fotoPreview.src = "/images/placeholder.png";
         }
     }
 
@@ -138,9 +138,9 @@ class AlumnoManager extends BaseModalManager {
         }
         if (fotoPreview) {
             if (data && data.foto) {
-                fotoPreview.src = `/storage/${data.foto}`;
+                fotoPreview.src = `/images/${data.foto}`;
             } else {
-                fotoPreview.src = "/storage/placeholder.png";
+                fotoPreview.src = "/images/placeholder.png";
             }
         }
     }
