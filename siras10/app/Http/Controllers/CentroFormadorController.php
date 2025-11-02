@@ -61,31 +61,28 @@ class CentroFormadorController extends Controller
         ]);
     }
 
-    public function create()
-    {
-
-    }
+    public function create() {}
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'nombreCentroFormador' => 'required|string|max:45',
             'idTipoCentroFormador' => 'required|exists:tipo_centro_formador,idTipoCentroFormador',
-            'fechaCreacion' => 'nullable|date'
-        ],[
+            'fechaCreacion' => 'nullable|date',
+        ], [
             'nombreCentroFormador.required' => 'El nombre del centro formador es obligatorio.',
             'idTipoCentroFormador.required' => 'Debe seleccionar un tipo de centro formador.',
             'idTipoCentroFormador.exists' => 'El tipo de centro formador seleccionado no es válido.',
             'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
         ]);
-        if ($validator-> fails()){
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors(),
             ], 422);
         }
 
-        try{
+        try {
             $data = $request->all();
 
             if (empty($data['fechaCreacion'])) {
@@ -100,7 +97,7 @@ class CentroFormadorController extends Controller
                 'message' => 'Centro Formador creado exitosamente.',
                 'centroFormador' => $centroFormador,
             ]);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear el centro formador: '.$e->getMessage(),
@@ -124,24 +121,24 @@ class CentroFormadorController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'nombreCentroFormador' => 'required|string|max:45',
             'idTipoCentroFormador' => 'required|exists:tipo_centro_formador,idTipoCentroFormador',
-            'fechaCreacion' => 'nullable|date'
-        ],[
+            'fechaCreacion' => 'nullable|date',
+        ], [
             'nombreCentroFormador.required' => 'El nombre del centro formador es obligatorio.',
             'idTipoCentroFormador.required' => 'Debe seleccionar un tipo de centro formador.',
             'idTipoCentroFormador.exists' => 'El tipo de centro formador seleccionado no es válido.',
             'fechaCreacion.date' => 'La fecha de creación debe ser una fecha válida.',
         ]);
-        if ($validator-> fails()){
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors(),
             ], 422);
         }
 
-        try{
+        try {
             $centroFormador = CentroFormador::findOrFail($id);
             $centroFormador->update($request->all());
             $centroFormador->load(['tipoCentroFormador']);
@@ -151,7 +148,7 @@ class CentroFormadorController extends Controller
                 'message' => 'Centro Formador actualizado exitosamente.',
                 'centroFormador' => $centroFormador,
             ]);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar el centro formador: '.$e->getMessage(),

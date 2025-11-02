@@ -3,6 +3,7 @@ import './base-modal-manager';
 import './alumnos.js';
 import './carreras.js';
 import './centro-salud.js';
+import './tipo-centro-formador.js';
 import './centro-formador.js'
 import './docentes.js';
 import './sede.js';
