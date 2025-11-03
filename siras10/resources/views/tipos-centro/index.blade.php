@@ -5,9 +5,9 @@
                 {{ __('Tipos de Centro Formador') }}
             </h2>
             @can('tipos-centro-formador.create')
-                <a href="{{ route('tipos-centro-formador.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Crear Nuevo
-                </a>
+                <button data-modal-target="tipoCentroModal" data-modal-toggle="tipoCentroModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                    Nuevo Tipo de Centro Formador
+                </button>
             @endcan
         </div>
     </x-slot>
@@ -19,52 +19,34 @@
                     
                     @if (session('success'))
                         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            <strong class="font-bold">¡Éxito!</strong>
                             <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
                     @endif
-
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white">
-                            <thead class="bg-gray-200">
-                                <tr>
-                                    <th class="w-1/4 py-2 px-4 text-left">ID</th>
-                                    <th class="w-1/2 py-2 px-4 text-left">Nombre</th>
-                                    <th class="w-1/4 py-2 px-4 text-left">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($tipos as $tipo)
-                                    <tr class="border-b">
-                                        <td class="py-2 px-4">{{ $tipo->idTipoCentroFormador }}</td>
-                                        <td class="py-2 px-4">{{ $tipo->nombreTipo }}</td>
-                                        <td class="py-2 px-4 flex space-x-2">
-                                            @can('tipos-centro-formador.edit')
-                                                <a href="{{ route('tipos-centro-formador.edit', $tipo) }}" class="text-yellow-500 hover:text-yellow-700">Editar</a>
-                                            @endcan
-                                            @can('tipos-centro-formador.delete')
-                                                <form action="{{ route('tipos-centro-formador.destroy', $tipo) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este elemento?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
-                                                </form>
-                                            @endcan
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="py-4 px-4 text-center">No hay tipos de centro registrados.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $tipos->links() }}
+                    <div id="tabla-container">
+                        @include('tipos-centro._tabla',[
+                            'tiposCentro' => $tiposCentro,
+                            'sortBy' => $sortBy,
+                            'sortDirection' => $sortDirection
+                        ])
                     </div>
                 </div>
-            </div>
+            </div>              
         </div>
     </div>
+
+    <x-crud-modal
+        modalId="tipoCentroModal"
+        formId="tipoCentroForm"
+        title="Nuevo Tipo de Centro Formador"
+        primaryKey="idTipoCentroFormador">
+
+        <div class="mb-4">
+            <label for="nombreTipo" class="block text-sm font-medium text-gray-700">Nombre del Tipo de Centro *</label>
+            <input type="text" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" id="nombreTipo" name="nombreTipo" required>
+            <div class="text-red-500 text-sm mt-1 hidden" id="error-nombreTipoCentro"></div>
+        </div>
+        <div class="mb-4" id="fechaCreacion-container"></div>
+    </x-crud-modal>
+
     @vite(['resources/js/app.js'])
 </x-app-layout>

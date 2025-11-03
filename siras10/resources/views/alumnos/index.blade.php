@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-white leading-tight">
+            <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Alumnos') }}
             </h2>
             @can('alumnos.create')
