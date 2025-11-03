@@ -1,9 +1,5 @@
 import BaseModalManager from './base-modal-manager.js';
 
-/**
- * Carrera Manager
- * Extiende BaseModalManager
- */
 class CarreraManager extends BaseModalManager {
     constructor() {
         super({
@@ -18,9 +14,6 @@ class CarreraManager extends BaseModalManager {
             ]
         });
     }
-    
-    // ¡Todo el código repetido de 'showValidationErrors', 'clearValidationErrors' y 'validate' se elimina!
-    // Usará los métodos del padre.
 }
 
 document.addEventListener('DOMContentLoaded', () => {
