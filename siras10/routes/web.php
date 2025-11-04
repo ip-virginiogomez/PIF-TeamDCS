@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
+use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
 use App\Http\Controllers\CupoDistribucionController;
@@ -69,6 +70,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('unidad-clinicas', UnidadClinicaController::class);
     Route::resource('tipos-practica', TipoPracticaController::class);
     Route::resource('cupo-distribuciones', CupoDistribucionController::class);
+    Route::get('/asignacion', [AsignacionController::class, 'index'])
+        ->name('asignacion.index');
+
+    Route::get('/coordinadores/{usuario}/centros', [AsignacionController::class, 'getCentrosDeCoordinador'])
+        ->name('asignaciones.getCentros');
+
+    Route::post('/coordinadores/{usuario}/centros', [AsignacionController::class, 'asignarCentro'])
+        ->name('asignaciones.asignar');
+
+    Route::delete('/coordinadores/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentro'])
+        ->name('asignaciones.quitar');
 });
 
 require __DIR__.'/auth.php';

@@ -77,7 +77,7 @@ class Usuario extends Authenticatable
     {
         return $this->belongsToMany(
             CentroFormador::class,
-            'CoordinadorCampoClinico',
+            'coordinador_campo_clinico',
             'runUsuario',
             'idCentroFormador'
         );

@@ -5,6 +5,7 @@ import './carreras.js';
 import './centro-salud.js';
 import './tipo-centro-formador.js';
 import './centro-formador.js'
+import './asignacion.js';
 import './docentes.js';
 import './sede.js';
 import './cupo-oferta.js';
