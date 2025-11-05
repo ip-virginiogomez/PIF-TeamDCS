@@ -107,6 +107,9 @@
                             </x-slot>
                             <x-slot name="content">
                                 @can('usuarios.read')<x-dropdown-link :href="route('usuarios.index')">{{ __('Usuarios') }}</x-dropdown-link>@endcan
+                                @can('usuarios.read')
+                                    <x-dropdown-link :href="route('asignacion.index')">{{ __('Asignación') }}</x-dropdown-link>
+                                @endcan
                                 @can('roles.read')<x-dropdown-link :href="route('roles.index')">{{ __('Roles') }}</x-dropdown-link>@endcan
                                 <div class="border-t border-gray-200"></div>
                                 @can('roles.read')<x-dropdown-link :href="route('roles.permission_matrix')">{{ __('Asignar Permisos') }}</x-dropdown-link>@endcan
@@ -265,6 +268,9 @@
                 <div class="mt-3 space-y-1">
                     @can('usuarios.read')<x-responsive-nav-link :href="route('usuarios.index')" class="text-gray-300">{{ __('Usuarios') }}</x-responsive-nav-link>@endcan
                     @can('roles.read')<x-responsive-nav-link :href="route('roles.index')" class="text-gray-300">{{ __('Roles') }}</x-responsive-nav-link>@endcan
+                    @can('usuarios.read')
+                        <x-responsive-nav-link :href="route('asignacion.index')" :active="request()->routeIs('asignacion.*')" class="pl-6">{{ __('Asignación') }}</x-responsive-nav-link>
+                    @endcan
                     @can('roles.read')<x-responsive-nav-link :href="route('roles.permission_matrix')" class="text-gray-300">{{ __('Asignar Permisos') }}</x-responsive-nav-link>@endcan
                 </div>
             </div>
