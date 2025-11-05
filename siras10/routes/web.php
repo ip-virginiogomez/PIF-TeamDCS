@@ -3,9 +3,9 @@
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
-use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
 use App\Http\Controllers\CupoDistribucionController;

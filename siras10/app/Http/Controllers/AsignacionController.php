@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Usuario; 
 use App\Models\CentroFormador;
+use App\Models\Usuario;
+use Illuminate\Http\Request;
 
 class AsignacionController extends Controller
 {
@@ -55,4 +55,3 @@ class AsignacionController extends Controller
         return response()->json(['success' => true]);
     }
 }
-

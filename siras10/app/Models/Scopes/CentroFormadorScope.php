@@ -11,20 +11,21 @@ class CentroFormadorScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
-        if(!Auth::check()){
+        if (! Auth::check()) {
             return;
         }
 
         $user = Auth::user();
 
-        if($user->esAdmin()){
+        if ($user->esAdmin()) {
             return;
         }
 
-        if($user->esCoordinador()){
+        if ($user->esCoordinador()) {
             $centroIds = $user->centrosFormadores->pluck('idCentroFormador')->toArray();
             if (empty($centroIds)) {
                 $builder->whereRaw('1 = 0');
+
                 return;
             }
             $tableName = $model->getTable();
@@ -33,18 +34,13 @@ class CentroFormadorScope implements Scope
                 $builder->whereHas('alumnoCarreras.sedeCarrera.sede', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroFormador', $centroIds);
                 });
-            } 
-            
-            elseif ($tableName === 'Docente') {
+            } elseif ($tableName === 'Docente') {
                 $builder->whereHas('docenteCarreras.sedeCarrera.sede', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroFormador', $centroIds);
                 });
-            }
-            elseif ($tableName === 'Sede') {
+            } elseif ($tableName === 'Sede') {
                 $builder->whereIn('idCentroFormador', $centroIds);
-            }
-            
-            elseif ($tableName === 'Convenio') {
+            } elseif ($tableName === 'Convenio') {
                 $builder->whereIn('idCentroFormador', $centroIds);
             }
         }
