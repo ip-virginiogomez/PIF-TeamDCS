@@ -17,7 +17,7 @@
                     </x-nav-link>
 
                     <!-- Menú Gestión Académica -->
-                    @canany(['alumnos.read', 'docentes.read', 'carreras.read'])
+                    @canany(['alumnos.read', 'docentes.read', 'carreras.read', 'sede-carrera.read'])
                     <div class="hidden sm:flex sm:items-center">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -30,6 +30,8 @@
                                 @can('alumnos.read')<x-dropdown-link :href="route('alumnos.index')">{{ __('Alumnos') }}</x-dropdown-link>@endcan
                                 @can('docentes.read')<x-dropdown-link :href="route('docentes.index')">{{ __('Docentes') }}</x-dropdown-link>@endcan
                                 @can('carreras.read')<x-dropdown-link :href="route('carreras.index')">{{ __('Carreras') }}</x-dropdown-link>@endcan
+                                <div class="border-t border-gray-200"></div>
+                                @can('sede-carrera.read')<x-dropdown-link :href="route('sede-carrera.index')">{{ __('Asignar Carreras') }}</x-dropdown-link>@endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -156,7 +158,7 @@
             </x-responsive-nav-link>
 
             <!-- Gestión Académica - Responsive -->
-            @canany(['alumnos.read', 'docentes.read', 'carreras.read'])
+            @canany(['alumnos.read', 'docentes.read', 'carreras.read', 'sede-carrera.read'])
             <div class="border-t border-gray-200 pt-2">
                 <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     {{ __('Gestión Académica') }}
@@ -177,6 +179,12 @@
                 @can('carreras.read')
                 <x-responsive-nav-link :href="route('carreras.index')" :active="request()->routeIs('carreras.*')" class="pl-6">
                     {{ __('Carreras') }}
+                </x-responsive-nav-link>
+                @endcan
+
+                @can('sede-carrera.read')
+                <x-responsive-nav-link :href="route('sede-carrera.index')" :active="request()->routeIs('sede-carrera.*')" class="pl-6">
+                    {{ __('Asignar Carreras') }}
                 </x-responsive-nav-link>
                 @endcan
             </div>

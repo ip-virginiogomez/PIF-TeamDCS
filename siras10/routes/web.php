@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\SedeCarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
@@ -59,6 +60,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('asignar-permisos', [RoleController::class, 'showPermissionMatrix'])->name('roles.permission_matrix');
     Route::post('asignar-permisos', [RoleController::class, 'syncPermissionsFromMatrix'])->name('roles.sync_permissions');
     Route::resource('carreras', CarreraController::class);
+
+    // --- GESTIÓN DE CARRERAS ESPECÍFICAS POR SEDE (ENFOQUE JSON) ---
+
+    // 1. Ruta para la página principal que contiene todo el HTML
+    Route::get('gestion-carreras', [SedeCarreraController::class, 'index'])->name('sede-carrera.index');
+
+    // Ruta que devuelve el contenedor de gestión completo (con modal)
+    Route::get('sedes/{sede}/gestion-html', [SedeCarreraController::class, 'getGestionAsHtml'])->name('sede-carrera.gestion.html');
+
+    // Ruta que devuelve SOLO la tabla para refrescar
+    Route::get('sedes/{sede}/tabla-html', [SedeCarreraController::class, 'getTablaAsHtml'])->name('sede-carrera.list.html');
+
+    // 3. Rutas para el CRUD del modal (siguen siendo las mismas)
+    Route::post('sede-carrera', [SedeCarreraController::class, 'store'])->name('sede-carrera.store');
+    Route::get('sede-carrera/{sedeCarrera}/edit', [SedeCarreraController::class, 'edit'])->name('sede-carrera.edit');
+    Route::put('sede-carrera/{sedeCarrera}', [SedeCarreraController::class, 'update'])->name('sede-carrera.update');
+    Route::delete('sede-carrera/{sedeCarrera}', [SedeCarreraController::class, 'destroy'])->name('sede-carrera.destroy');
+
     Route::get('/docentes', [DocentesController::class, 'index'])->name('docentes.index')->middleware('can:docentes.read');
     Route::post('/docentes', [DocentesController::class, 'store'])->name('docentes.store')->middleware('can:docentes.create');
     Route::get('/docentes/{docente}/edit', [DocentesController::class, 'edit'])->name('docentes.edit')->middleware('can:docentes.update');
