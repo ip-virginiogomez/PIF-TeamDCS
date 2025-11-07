@@ -73,6 +73,11 @@ class Usuario extends Authenticatable
         return $this->hasRole('Coordinador Campo Clínico');
     }
 
+    public function esTecnicoRAD()
+    {
+        return $this->hasRole('Técnico RAD');
+    }
+
     public function centrosFormadores()
     {
         return $this->belongsToMany(
@@ -80,6 +85,16 @@ class Usuario extends Authenticatable
             'coordinador_campo_clinico',
             'runUsuario',
             'idCentroFormador'
+        );
+    }
+
+    public function centroSalud()
+    {
+        return $this->belongsToMany(
+            CentroSalud::class,
+            'personal',
+            'runUsuario',
+            'idCentroSalud'
         );
     }
 }

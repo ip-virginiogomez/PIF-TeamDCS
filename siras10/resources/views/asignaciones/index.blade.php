@@ -1,20 +1,37 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-black leading-tight">
-            {{ __('Asignar Usuarios a Centros Salud/Formador') }}
+            {{ __('Asignar Centros a Coordinadores') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-4">
+                <form method="GET" action="{{ route('asignaciones.index') }}" class="flex items-center space-x-2">
+                    <label for="grupo-select" class="block text-sm font-medium text-gray-700">Grupo de Coordinador:</label>
+                    <select id="grupo-select" name="grupo" class="block w-1/2 rounded-md border-gray-300 shadow-sm" onchange="this.form.submit()">
+                        
+                        <option value="campo_clinico" {{ $grupo === 'campo_clinico' ? 'selected' : '' }}>
+                            Coordinador de Campo Clínico (Centros Formadores)
+                        </option>
+                        
+                        <option value="rad" {{ $grupo === 'rad' ? 'selected' : '' }}>
+                            Coordinador Técnico RAD (Centros de Salud)
+                        </option>
+                        
+                    </select>
+                </form>
+            </div>
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="flex" style="min-height: 70vh;">
 
                     <div class="w-1/3 border-r border-gray-200 bg-gray-50">
                         <div class="p-4 border-b">
-                            <h3 class="font-semibold text-lg">Coordinadores</h3>
-                            </div>
+                            <h3 class="font-semibold text-lg">{{ $titulo }}</h3>
+                        </div>
                         <ul id="lista-coordinadores" class="overflow-y-auto">
+                            
                             @forelse ($coordinadores as $coordinador)
                                 <li class="p-4 border-b cursor-pointer hover:bg-indigo-50" 
                                     data-id="{{ $coordinador->runUsuario }}"
@@ -23,18 +40,18 @@
                                     <div class="text-sm text-gray-500">{{ $coordinador->correo }}</div>
                                 </li>
                             @empty
-                                <li class="p-4 text-gray-500">No se encontraron coordinadores.</li>
+                                <li class="p-4 text-gray-500">No se encontraron coordinadores para este grupo.</li>
                             @endforelse
                         </ul>
                     </div>
 
-                    <div class="w-2/3 p-6">
+                    <div class="w-2/3 p-6" id="panel-derecho" data-grupo="{{ $grupo }}">
+                        
                         <div id="panel-inicial" class="text-center text-gray-500 pt-20">
                             <i class="fas fa-hand-point-left fa-3x mb-4 text-gray-400"></i>
                             <h2 class="text-lg font-medium">Seleccione un coordinador</h2>
-                            <p>Seleccione un coordinador de la lista para ver y gestionar sus centros asignados.</p>
+                            <p>Seleccione un coordinador de la lista para ver y gestionar sus centros.</p>
                         </div>
-
                         <div id="panel-carga" class="text-center text-gray-500 pt-20 hidden">
                             <i class="fas fa-spinner fa-spin fa-3x text-blue-500"></i>
                             <p class="mt-2">Cargando...</p>
@@ -61,15 +78,16 @@
 
                             <div>
                                 <h3 class="text-lg font-semibold mb-3">Asignaciones Actuales</h3>
+                                
                                 <ul id="lista-asignaciones-actuales" class="space-y-2">
                                     </ul>
+                                
                                 <div id="sin-asignaciones" class="text-gray-500 hidden">
                                     Este coordinador aún no tiene centros asignados.
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
