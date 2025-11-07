@@ -32,7 +32,7 @@ class CentroSaludScope implements Scope
 
             if ($tableName === 'unidad_clinica') {
                 $builder->whereIn('idCentroSalud', $centroIds);
-            }elseif ($tableName === 'cupo_oferta') {
+            } elseif ($tableName === 'cupo_oferta') {
                 $builder->whereHas('unidadClinica', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroSalud', $centroIds);
                 });

@@ -3,28 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\CentroFormador;
+use App\Models\CentroSalud;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 
 class AsignacionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $grupo = $request->get('grupo', 'campo_clinico');
 
         if ($grupo === 'rad') {
             $coordinadores = Usuario::role('Técnico RAD')->get();
-            $titulo = "Coordinadores Técnicos RAD";
+            $titulo = 'Coordinadores Técnicos RAD';
         } else {
             $grupo = 'campo_clinico';
             $coordinadores = Usuario::role('Coordinador Campo Clínico')->get();
-            $titulo = "Coordinadores de Campo Clínico";
+            $titulo = 'Coordinadores de Campo Clínico';
         }
 
-        return view('asignacion.index', compact('coordinadores', 'grupo', 'titulo'));
+        return view('asignaciones.index', compact('coordinadores', 'grupo', 'titulo'));
     }
 
-    public function getCentrosCoordinador(Usuario $usuario)
+    public function getCentrosCampoClinico(Usuario $usuario)
     {
         $idsAsignados = $usuario->centrosFormadores()->pluck('centro_formador.idCentroFormador');
         $asignados = CentroFormador::whereIn('idCentroFormador', $idsAsignados)->get();
@@ -34,7 +35,7 @@ class AsignacionController extends Controller
             'asignados' => $asignados,
             'disponibles' => $disponibles,
             'idKey' => 'idCentroFormador',
-            'nameKey' => 'nombreCentroFormador'
+            'nameKey' => 'nombreCentroFormador',
         ]);
     }
 
@@ -56,13 +57,13 @@ class AsignacionController extends Controller
     public function quitarCentroCoordinador(Usuario $usuario, CentroFormador $centro)
     {
         $usuario->centrosFormadores()->detach($centro->idCentroFormador);
+
         return response()->json(['success' => true]);
     }
 
-
     public function getCentrosRad(Usuario $usuario)
     {
-        $idsAsignados = $usuario->centrosSalud()->pluck('centro_salud.idCentroSalud');
+        $idsAsignados = $usuario->centroSalud()->pluck('centro_salud.idCentroSalud');
         $asignados = CentroSalud::whereIn('idCentroSalud', $idsAsignados)->get();
         $disponibles = CentroSalud::whereNotIn('idCentroSalud', $idsAsignados)->get();
 
@@ -70,7 +71,7 @@ class AsignacionController extends Controller
             'asignados' => $asignados,
             'disponibles' => $disponibles,
             'idKey' => 'idCentroSalud',
-            'nameKey' => 'nombreCentro'
+            'nameKey' => 'nombreCentro',
         ]);
     }
 
@@ -80,18 +81,19 @@ class AsignacionController extends Controller
 
         $centroId = $request->input('centro_id');
 
-        if ($usuario->centrosSalud()->find($centroId)) {
+        if ($usuario->centroSalud()->find($centroId)) {
             return response()->json(['success' => false, 'message' => 'Este centro ya está asignado.'], 409);
         }
 
-        $usuario->centrosSalud()->attach($centroId);
+        $usuario->centroSalud()->attach($centroId);
 
         return response()->json(['success' => true]);
     }
 
     public function quitarCentroRad(Usuario $usuario, CentroSalud $centro)
     {
-        $usuario->centrosSalud()->detach($centro->idCentroSalud);
+        $usuario->centroSalud()->detach($centro->idCentroSalud);
+
         return response()->json(['success' => true]);
     }
 }

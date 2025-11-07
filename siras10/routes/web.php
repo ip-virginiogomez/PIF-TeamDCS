@@ -70,17 +70,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('unidad-clinicas', UnidadClinicaController::class);
     Route::resource('tipos-practica', TipoPracticaController::class);
     Route::resource('cupo-distribuciones', CupoDistribucionController::class);
-    Route::get('/asignacion', [AsignacionController::class, 'index'])
-        ->name('asignacion.index');
+    // 1. La página principal
+    Route::get('/asignaciones', [AsignacionController::class, 'index'])
+        ->name('asignaciones.index');
 
-    Route::get('/coordinadores/{usuario}/centros', [AsignacionController::class, 'getCentrosDeCoordinador'])
-        ->name('asignaciones.getCentros');
+    // --- RUTAS AJAX PARA CAMPO CLÍNICO (LAS QUE FALTABAN) ---
+    Route::get('/asignaciones/campo-clinico/{usuario}/centros', [AsignacionController::class, 'getCentrosCampoClinico'])
+        ->name('asignaciones.getCentrosCC');
+    Route::post('/asignaciones/campo-clinico/{usuario}/centros', [AsignacionController::class, 'asignarCentroCampoClinico'])
+        ->name('asignaciones.asignarCC');
+    Route::delete('/asignaciones/campo-clinico/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroCampoClinico'])
+        ->name('asignaciones.quitarCC');
 
-    Route::post('/coordinadores/{usuario}/centros', [AsignacionController::class, 'asignarCentro'])
-        ->name('asignaciones.asignar');
-
-    Route::delete('/coordinadores/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentro'])
-        ->name('asignaciones.quitar');
+    // --- RUTAS AJAX PARA RAD (ESTAS YA ESTÁN BIEN) ---
+    Route::get('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'getCentrosRad'])
+        ->name('asignaciones.getCentrosRAD');
+    Route::post('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'asignarCentroRad'])
+        ->name('asignaciones.asignarRAD');
+    Route::delete('/asignaciones/rad/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroRad'])
+        ->name('asignaciones.quitarRAD');
 });
 
 require __DIR__.'/auth.php';
