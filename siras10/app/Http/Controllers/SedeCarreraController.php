@@ -9,22 +9,20 @@ use App\Models\SedeCarrera;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class SedeCarreraController extends Controller
 {
     /**
      * Define las reglas de validación para crear y actualizar una SedeCarrera.
-     * Centraliza las reglas para evitar duplicación de código.
      */
     private function getValidationRules(): array
     {
         return [
             'idSede' => 'required|exists:sede,idSede',
             'idCarrera' => 'required|exists:carrera,idCarrera',
-            'nombreSedeCarrera' => 'required|string|max:255',
-            'codigoCarrera' => 'required|string|max:50',
+            'nombreSedeCarrera' => 'nullable|string|max:255',
+            'codigoCarrera' => 'required|string|max:50|unique:sede_carrera,codigoCarrera',
         ];
     }
 
@@ -34,90 +32,199 @@ class SedeCarreraController extends Controller
     public function index(): View
     {
         $centrosFormadores = CentroFormador::with('sedes')->orderBy('nombreCentroFormador')->get();
-        $carrerasBase = Carrera::orderBy('nombreCarrera')->get();
+        $carrerasBase = Carrera::select('idCarrera', 'nombreCarrera')
+            ->orderBy('nombreCarrera')
+            ->get();
 
         return view('sede-carrera.index', compact('centrosFormadores', 'carrerasBase'));
     }
 
     /**
      * Devuelve una lista de carreras específicas de una sede en formato JSON.
-     *
-     * @param  Sede  $sede  El modelo Sede inyectado por Route Model Binding.
      */
     public function getCarrerasAsJson(Sede $sede): JsonResponse
     {
         try {
-            $carreras = $sede->sedeCarreras()->with('carrera')->get();
+            $carreras = $sede->sedeCarreras()
+                ->with('carrera')
+                ->orderBy('nombreSedeCarrera')
+                ->get();
 
             return response()->json($carreras);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Error al obtener las carreras.'], 500);
+            return response()->json(['error' => 'Error al cargar carreras'], 500);
         }
     }
 
     /**
      * Devuelve solo la tabla de carreras en formato HTML.
-     *
-     * @return View|Response
      */
     public function getTablaAsHtml(Sede $sede)
     {
         try {
-            $carrerasEspecificas = $sede->sedeCarreras()->with('carrera')->get();
+            // Obtener las carreras específicas de la sede con la relación carrera
+            $carrerasEspecificas = $sede->sedeCarreras()
+                ->with('carrera')
+                ->orderBy('nombreSedeCarrera')
+                ->get();
+
+            // Verificar que la vista existe
+            if (! view()->exists('sede-carrera._tabla')) {
+                throw new Exception('Vista sede-carrera._tabla no encontrada');
+            }
 
             return view('sede-carrera._tabla', compact('sede', 'carrerasEspecificas'));
+
         } catch (Exception $e) {
-            return response('Error al renderizar la tabla: '.$e->getMessage(), 500);
+            // Log del error para debugging
+            \Log::error('Error en getTablaAsHtml: '.$e->getMessage(), [
+                'sede_id' => $sede->idSede,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->view('errors.500', ['error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Este método ya no se usará, pero lo dejamos por si se necesita en el futuro.
+     * Devuelve el contenedor de gestión completo
      */
     public function getGestionAsHtml(Sede $sede)
     {
-        // Ya no se utiliza esta lógica. La tabla se carga por separado.
-        // Devolvemos una respuesta vacía para evitar errores si se llama accidentalmente.
-        return response('');
+        try {
+            $carrerasEspecificas = $sede->sedeCarreras()
+                ->with('carrera')
+                ->orderBy('nombreSedeCarrera')
+                ->get();
+
+            return view('sede-carrera._gestion', compact('sede', 'carrerasEspecificas'));
+        } catch (Exception $e) {
+            \Log::error('Error en getGestionAsHtml: '.$e->getMessage());
+
+            return response()->view('errors.500', [], 500);
+        }
     }
 
     /**
-     * Almacena una nueva carrera específica para una sede.
+     * Almacena una nueva SedeCarrera
      */
     public function store(Request $request): JsonResponse
     {
-        $validatedData = $request->validate($this->getValidationRules());
-        SedeCarrera::create($validatedData);
+        try {
+            $validatedData = $request->validate($this->getValidationRules());
 
-        return response()->json(['message' => 'Carrera asignada con éxito.']);
+            // Si no se proporciona nombre específico, usar el de la carrera base
+            if (empty($validatedData['nombreSedeCarrera'])) {
+                $carrera = Carrera::find($validatedData['idCarrera']);
+                $validatedData['nombreSedeCarrera'] = $carrera->nombreCarrera;
+            }
+
+            $sedeCarrera = SedeCarrera::create($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Carrera asignada a la sede correctamente',
+                'data' => $sedeCarrera->load('carrera'),
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            \Log::error('Error en store SedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor',
+            ], 500);
+        }
     }
 
     /**
-     * Devuelve los datos de una carrera específica para el formulario de edición.
+     * Devuelve los datos de una SedeCarrera para edición
      */
     public function edit(SedeCarrera $sedeCarrera): JsonResponse
     {
-        return response()->json($sedeCarrera);
+        try {
+            return response()->json([
+                'success' => true,
+                'data' => $sedeCarrera->load('carrera', 'sede'),
+            ]);
+        } catch (Exception $e) {
+            \Log::error('Error en edit SedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar los datos',
+            ], 500);
+        }
     }
 
     /**
-     * Actualiza una carrera específica existente.
+     * Actualiza una SedeCarrera existente
      */
     public function update(Request $request, SedeCarrera $sedeCarrera): JsonResponse
     {
-        $validatedData = $request->validate($this->getValidationRules());
-        $sedeCarrera->update($validatedData);
+        try {
+            $rules = $this->getValidationRules();
+            // Excluir el registro actual de la validación unique
+            $rules['codigoCarrera'] = 'required|string|max:50|unique:sede_carrera,codigoCarrera,'.$sedeCarrera->idSedeCarrera.',idSedeCarrera';
 
-        return response()->json(['message' => 'Carrera actualizada con éxito.']);
+            $validatedData = $request->validate($rules);
+
+            // Si no se proporciona nombre específico, usar el de la carrera base
+            if (empty($validatedData['nombreSedeCarrera'])) {
+                $carrera = Carrera::find($validatedData['idCarrera']);
+                $validatedData['nombreSedeCarrera'] = $carrera->nombreCarrera;
+            }
+
+            $sedeCarrera->update($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Carrera actualizada correctamente',
+                'data' => $sedeCarrera->load('carrera'),
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            \Log::error('Error en update SedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor',
+            ], 500);
+        }
     }
 
     /**
-     * Elimina una carrera específica de una sede.
+     * Elimina una SedeCarrera
      */
     public function destroy(SedeCarrera $sedeCarrera): JsonResponse
     {
-        $sedeCarrera->delete();
+        try {
+            $sedeCarrera->delete();
 
-        return response()->json(['message' => 'Carrera eliminada con éxito.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Carrera eliminada de la sede correctamente',
+            ]);
+
+        } catch (Exception $e) {
+            \Log::error('Error en destroy SedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la carrera',
+            ], 500);
+        }
     }
 }
