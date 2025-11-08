@@ -9,8 +9,8 @@ use App\Models\SedeCarrera;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class SedeCarreraController extends Controller
 {
@@ -95,34 +95,35 @@ class SedeCarreraController extends Controller
      * Almacena una nueva SedeCarrera
      */
     public function store(Request $request)
-{
-    $request->validate([
-        'idSede' => 'required|exists:sede,idSede',
-        'idCarrera' => 'required|exists:carrera,idCarrera',
-        'codigoCarrera' => [
-            'required',
-            'string',
-            'max:50',
-            Rule::unique('sede_carrera', 'codigoCarrera')
-                ->where('idSede', $request->idSede)
-        ],
-        'nombreSedeCarrera' => 'nullable|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'idSede' => 'required|exists:sede,idSede',
+            'idCarrera' => 'required|exists:carrera,idCarrera',
+            'codigoCarrera' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('sede_carrera', 'codigoCarrera')
+                    ->where('idSede', $request->idSede),
+            ],
+            'nombreSedeCarrera' => 'nullable|string|max:255',
+        ]);
 
-    $carrera = SedeCarrera::create([
-        'idSede' => $request->idSede,
-        'idCarrera' => $request->idCarrera,
-        'nombreSedeCarrera' => $request->nombreSedeCarrera,
-        'codigoCarrera' => $request->codigoCarrera,
-        'fechaCreacion' => now(),
-    ]);
+        $carrera = SedeCarrera::create([
+            'idSede' => $request->idSede,
+            'idCarrera' => $request->idCarrera,
+            'nombreSedeCarrera' => $request->nombreSedeCarrera,
+            'codigoCarrera' => $request->codigoCarrera,
+            'fechaCreacion' => now(),
+        ]);
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Carrera asignada correctamente',
-        'data' => $carrera
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Carrera asignada correctamente',
+            'data' => $carrera,
+        ]);
+    }
+
     /**
      * Devuelve los datos de una SedeCarrera para edición
      */
@@ -137,7 +138,7 @@ class SedeCarreraController extends Controller
                 'idCarrera' => $sc->idCarrera,
                 'nombreSedeCarrera' => $sc->nombreSedeCarrera,
                 'codigoCarrera' => $sc->codigoCarrera,
-            ]
+            ],
         ]);
     }
 

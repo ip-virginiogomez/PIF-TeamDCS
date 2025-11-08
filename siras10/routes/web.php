@@ -93,7 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- GESTIÓN DE CARRERAS POR SEDE ---
     Route::prefix('gestion-carreras')->name('sede-carrera.')->group(function () {
         Route::get('/', [SedeCarreraController::class, 'index'])->name('index');
-        Route::get('sedes/{sede}/tabla-html', [SedeCarreraController::class, 'getTablaAsHtml'])->name('tabla.html');     
+        Route::get('sedes/{sede}/tabla-html', [SedeCarreraController::class, 'getTablaAsHtml'])->name('tabla.html');
         Route::post('/', [SedeCarreraController::class, 'store'])->name('store');
         Route::get('{sedeCarrera}/edit', [SedeCarreraController::class, 'edit'])->name('edit');
         Route::put('{sedeCarrera}', [SedeCarreraController::class, 'update'])->name('update');
