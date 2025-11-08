@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class SedeCarreraController extends Controller
 {
@@ -36,7 +37,7 @@ class SedeCarreraController extends Controller
             ->orderBy('nombreCarrera')
             ->get();
 
-        return view('sede-carrera.index', compact('centrosFormadores', 'carrerasBase'));
+        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase'));
     }
 
     /**
@@ -59,31 +60,16 @@ class SedeCarreraController extends Controller
     /**
      * Devuelve solo la tabla de carreras en formato HTML.
      */
-    public function getTablaAsHtml(Sede $sede)
+    // SedeCarreraController.php
+    public function getTablaAsHtml($sedeId)
     {
-        try {
-            // Obtener las carreras específicas de la sede con la relación carrera
-            $carrerasEspecificas = $sede->sedeCarreras()
-                ->with('carrera')
-                ->orderBy('nombreSedeCarrera')
-                ->get();
+        $carrerasEspecificas = SedeCarrera::with('carrera')
+            ->where('idSede', $sedeId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            // Verificar que la vista existe
-            if (! view()->exists('sede-carrera._tabla')) {
-                throw new Exception('Vista sede-carrera._tabla no encontrada');
-            }
-
-            return view('sede-carrera._tabla', compact('sede', 'carrerasEspecificas'));
-
-        } catch (Exception $e) {
-            // Log del error para debugging
-            \Log::error('Error en getTablaAsHtml: '.$e->getMessage(), [
-                'sede_id' => $sede->idSede,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->view('errors.500', ['error' => $e->getMessage()], 500);
-        }
+        // CORRECTO: 'gestion-carreras._tabla'
+        return view('gestion-carreras._tabla', compact('carrerasEspecificas'))->render();
     }
 
     /**
@@ -108,59 +94,51 @@ class SedeCarreraController extends Controller
     /**
      * Almacena una nueva SedeCarrera
      */
-    public function store(Request $request): JsonResponse
-    {
-        try {
-            $validatedData = $request->validate($this->getValidationRules());
+    public function store(Request $request)
+{
+    $request->validate([
+        'idSede' => 'required|exists:sede,idSede',
+        'idCarrera' => 'required|exists:carrera,idCarrera',
+        'codigoCarrera' => [
+            'required',
+            'string',
+            'max:50',
+            Rule::unique('sede_carrera', 'codigoCarrera')
+                ->where('idSede', $request->idSede)
+        ],
+        'nombreSedeCarrera' => 'nullable|string|max:255',
+    ]);
 
-            // Si no se proporciona nombre específico, usar el de la carrera base
-            if (empty($validatedData['nombreSedeCarrera'])) {
-                $carrera = Carrera::find($validatedData['idCarrera']);
-                $validatedData['nombreSedeCarrera'] = $carrera->nombreCarrera;
-            }
+    $carrera = SedeCarrera::create([
+        'idSede' => $request->idSede,
+        'idCarrera' => $request->idCarrera,
+        'nombreSedeCarrera' => $request->nombreSedeCarrera,
+        'codigoCarrera' => $request->codigoCarrera,
+        'fechaCreacion' => now(),
+    ]);
 
-            $sedeCarrera = SedeCarrera::create($validatedData);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Carrera asignada a la sede correctamente',
-                'data' => $sedeCarrera->load('carrera'),
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (Exception $e) {
-            \Log::error('Error en store SedeCarrera: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error interno del servidor',
-            ], 500);
-        }
-    }
-
+    return response()->json([
+        'success' => true,
+        'message' => 'Carrera asignada correctamente',
+        'data' => $carrera
+    ]);
+}
     /**
      * Devuelve los datos de una SedeCarrera para edición
      */
-    public function edit(SedeCarrera $sedeCarrera): JsonResponse
+    public function edit($sedeCarrera)
     {
-        try {
-            return response()->json([
-                'success' => true,
-                'data' => $sedeCarrera->load('carrera', 'sede'),
-            ]);
-        } catch (Exception $e) {
-            \Log::error('Error en edit SedeCarrera: '.$e->getMessage());
+        $sc = SedeCarrera::with('carrera')->findOrFail($sedeCarrera);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al cargar los datos',
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'idSede' => $sc->idSede,
+                'idCarrera' => $sc->idCarrera,
+                'nombreSedeCarrera' => $sc->nombreSedeCarrera,
+                'codigoCarrera' => $sc->codigoCarrera,
+            ]
+        ]);
     }
 
     /**
