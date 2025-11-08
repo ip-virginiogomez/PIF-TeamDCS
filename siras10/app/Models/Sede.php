@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sede extends Model
 {
@@ -24,25 +25,20 @@ class Sede extends Model
         'numContacto',
     ];
 
-    // Relación inversa con CentroFormador
-    public function centroFormador()
+    /**
+     * Relación uno a muchos inversa con CentroFormador.
+     * Una Sede pertenece a un Centro Formador.
+     */
+    public function centroFormador(): BelongsTo
     {
         return $this->belongsTo(CentroFormador::class, 'idCentroFormador', 'idCentroFormador');
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($sede) {
-            if (empty($sede->fechaCreacion)) {
-                $sede->fechaCreacion = Carbon::now()->format('Y-m-d');
-            }
-        });
-    }
-
-    // Relación uno a muchos con SedeCarrera
-    public function sedeCarreras()
+    /**
+     * Relación uno a muchos con la tabla pivote SedeCarrera.
+     * Útil cuando necesitas acceder a los registros intermedios.
+     */
+    public function sedeCarreras(): HasMany
     {
         return $this->hasMany(SedeCarrera::class, 'idSede', 'idSede');
     }

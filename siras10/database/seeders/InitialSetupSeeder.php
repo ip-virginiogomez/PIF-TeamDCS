@@ -22,6 +22,7 @@ class InitialSetupSeeder extends Seeder
                 'docentes' => ['create', 'read', 'update', 'delete'],
                 'carreras' => ['create', 'read', 'update', 'delete'],
                 'asignaturas' => ['create', 'read', 'update', 'delete'],
+                'sede-carrera' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión Centro Formador' => [
                 'centros-formadores' => ['create', 'read', 'update', 'delete'],
