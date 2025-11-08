@@ -102,6 +102,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- GESTIÓN DE ASIGNACIONES ---
     Route::resource('asignacion', AsignacionController::class);
+    // 1. La página principal
+    Route::get('/asignaciones', [AsignacionController::class, 'index'])
+        ->name('asignaciones.index');
+
+    // --- RUTAS AJAX PARA CAMPO CLÍNICO (LAS QUE FALTABAN) ---
+    Route::get('/asignaciones/campo-clinico/{usuario}/centros', [AsignacionController::class, 'getCentrosCampoClinico'])
+        ->name('asignaciones.getCentrosCC');
+    Route::post('/asignaciones/campo-clinico/{usuario}/centros', [AsignacionController::class, 'asignarCentroCampoClinico'])
+        ->name('asignaciones.asignarCC');
+    Route::delete('/asignaciones/campo-clinico/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroCampoClinico'])
+        ->name('asignaciones.quitarCC');
+
+    // --- RUTAS AJAX PARA RAD (ESTAS YA ESTÁN BIEN) ---
+    Route::get('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'getCentrosRad'])
+        ->name('asignaciones.getCentrosRAD');
+    Route::post('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'asignarCentroRad'])
+        ->name('asignaciones.asignarRAD');
+    Route::delete('/asignaciones/rad/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroRad'])
+        ->name('asignaciones.quitarRAD');
 });
 
 require __DIR__.'/auth.php';
