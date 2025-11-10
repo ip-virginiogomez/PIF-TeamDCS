@@ -39,7 +39,7 @@ class AsignacionController extends Controller
         ]);
     }
 
-    public function asignarCentroCoordinador(Request $request, Usuario $usuario)
+    public function asignarCentroCampoClinico(Request $request, Usuario $usuario)
     {
         $request->validate(['centro_id' => 'required|integer']);
 
