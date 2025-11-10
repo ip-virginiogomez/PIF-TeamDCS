@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
+use App\Models\SedeCarrera;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -18,6 +19,13 @@ class AlumnoController extends Controller
         $this->middleware('can:alumnos.delete')->only('destroy');
     }
 
+    public function create()
+    {
+        $sedesCarreras = SedeCarrera::all(); 
+        
+        return view('alumnos.create', compact('sedesCarreras'));
+    }
+
     public function index()
     {
         $columnasDisponibles = ['runAlumno', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
@@ -30,6 +38,7 @@ class AlumnoController extends Controller
         }
 
         $query = Alumno::query();
+        $sedesCarreras = SedeCarrera::all();
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
@@ -51,6 +60,7 @@ class AlumnoController extends Controller
             'alumnos' => $alumnos,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
+            'sedesCarreras' => $sedesCarreras,
         ]);
     }
 
@@ -71,6 +81,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'idSedeCarrera' => 'required|integer|exists:SedeCarrera,idSedeCarrera',
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',
@@ -94,23 +105,27 @@ class AlumnoController extends Controller
         }
 
         try {
-            $data = $request->all();
+            $alumnoData = $request->except(['idSedeCarrera','_token']);
+            $sedeCarreraId = $request->input('idSedeCarrera');
 
-            if (empty($data['fechaCreacion'])) {
-                $data['fechaCreacion'] = now()->format('Y-m-d');
+            if (empty($alumnoData['fechaCreacion'])) {
+                $alumnoData['fechaCreacion'] = now()->format('Y-m-d');
             }
 
             if ($request->hasFile('foto')) {
                 $rutafoto = $request->file('foto')->store('fotos', 'public');
-                $data['foto'] = $rutafoto;
+                $alumnoData['foto'] = $rutafoto;
             }
 
             if ($request->hasFile('acuerdo')) {
                 $rutaAcuerdo = $request->file('acuerdo')->store('acuerdos', 'public');
-                $data['acuerdo'] = $rutaAcuerdo;
+                $alumnoData['acuerdo'] = $rutaAcuerdo;
             }
 
-            $alumno = Alumno::create($data);
+            $alumno = Alumno::create($alumnoData);
+            if ($sedeCarreraId) {
+                $alumno->sedesCarreras()->attach($sedeCarreraId);
+            }
 
             return response()->json([
                 'success' => true,
@@ -149,6 +164,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'idSedeCarrera' => 'required|integer|exists:SedeCarrera,idSedeCarrera'
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',
@@ -172,6 +188,9 @@ class AlumnoController extends Controller
         }
         try {
             $data = $validator->validated();
+            $sedeCarreraId = $request->input('idSedeCarrera');
+
+            unset($data['idSedeCarrera']);
 
             if ($request->hasFile('foto')) {
                 if ($alumno->foto) {
@@ -188,6 +207,10 @@ class AlumnoController extends Controller
             }
 
             $alumno->update($data);
+
+            if ($sedeCarreraId) {
+                $alumno->sedesCarreras()->sync([$sedeCarreraId]);
+            }
 
             return response()->json([
                 'success' => true,

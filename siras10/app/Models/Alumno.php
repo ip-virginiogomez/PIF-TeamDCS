@@ -48,4 +48,14 @@ class Alumno extends Model
     {
         return $this->hasMany(DossierGrupo::class, 'runAlumno', 'runAlumno');
     }
+
+    public function sedesCarreras()
+    {
+        return $this->belongsToMany(
+            SedeCarrera::class,
+            'alumno_carrera',
+            'runAlumno',
+            'idSedeCarrera'
+        );
+    }
 }
