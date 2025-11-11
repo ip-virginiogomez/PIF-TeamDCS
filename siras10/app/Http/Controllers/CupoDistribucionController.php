@@ -26,17 +26,25 @@ class CupoDistribucionController extends Controller
         $oferta = CupoOferta::findOrFail($ofertaId);
         $oferta->load('periodo', 'unidadClinica.centroSalud', 'carrera', 'tipoPractica');
 
-        // ¡CAMBIO AQUÍ! Carga la relación correcta (asumiendo que existe en el modelo CupoDistribucion)
         $distribuciones = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
-            ->with('sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera') // Ajusta según tus relaciones
-            ->orderBy('idCupoDistribucion', 'desc')
+            ->with([
+                'sedeCarrera.sede.centroFormador', // Carga el Centro Formador
+                'sedeCarrera.carrera',             // Carga la Carrera Base
+            ])
             ->get();
 
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
+        // ====================================================================
+        // ¡AQUÍ ESTÁ LA SOLUCIÓN!
+        // ====================================================================
         $sedesCarreras = SedeCarrera::with('sede.centroFormador', 'carrera')
+            // Filtra la lista para que solo muestre Sede/Carreras
+            // que coincidan con la Carrera Base de la Oferta.
+            ->where('idCarrera', $oferta->idCarrera) // <-- ¡ESTA ES LA LÍNEA AÑADIDA!
             ->orderBy('idSedeCarrera')
             ->get();
+        // ====================================================================
 
         if ($request->ajax()) {
             return view('cupo-distribucion._tabla', compact('distribuciones', 'oferta'));
@@ -46,7 +54,7 @@ class CupoDistribucionController extends Controller
             'oferta',
             'distribuciones',
             'cuposRestantes',
-            'sedesCarreras'
+            'sedesCarreras' // Esta variable ahora solo tiene las opciones filtradas
         ));
     }
 
@@ -78,10 +86,19 @@ class CupoDistribucionController extends Controller
         return response()->json(['message' => 'Distribución asignada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
     }
 
-    public function edit(CupoDistribucion $distribucion)
+    public function edit($id)
     {
-        // Esto debería funcionar si el modelo tiene 'idSedeCarrera'
-        return response()->json($distribucion);
+        try {
+            // Buscamos la distribución por su ID
+            $distribucion = CupoDistribucion::findOrFail($id);
+
+            // Retornamos el modelo como JSON
+            return response()->json($distribucion);
+
+        } catch (\Exception $e) {
+            // Si no lo encuentra, devuelve un error 404
+            return response()->json(['error' => 'Registro no encontrado.'], 404);
+        }
     }
 
     public function update(Request $request, CupoDistribucion $distribucion)
@@ -112,14 +129,30 @@ class CupoDistribucionController extends Controller
         return response()->json(['message' => 'Distribución actualizada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
     }
 
-    // ... (destroy y _recalcularCupos están bien) ...
-    public function destroy(CupoDistribucion $distribucion)
+    public function destroy($id)
     {
-        $idOfertaPadre = $distribucion->idCupoOferta;
-        $distribucion->delete();
-        $nuevosRestantes = $this->_recalcularCupos($idOfertaPadre);
+        try {
+            // 1. Encontrar el registro antes de borrarlo
+            $distribucion = CupoDistribucion::findOrFail($id);
+            // 2. Guardar el idCupoOferta antes de borrar
+            $idOferta = $distribucion->idCupoOferta;
 
-        return response()->json(['message' => 'Distribución eliminada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
+            // 3. Borrar el registro
+            $distribucion->delete();
+
+            // 4. Recalcular usando la variable guardada
+            $cuposRestantes = $this->_recalcularCupos($idOferta);
+
+            // 5. Devolver la respuesta correcta
+            return response()->json([
+                'message' => 'Registro eliminado con éxito.',
+                'cuposRestantes' => $cuposRestantes,
+            ]);
+
+        } catch (\Exception $e) {
+            // Manejar cualquier error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     private function _recalcularCupos(int $idCupoOferta): int
