@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,5 +47,10 @@ class Docente extends Model
     public function docenteVacunas()
     {
         return $this->hasMany(DocenteVacuna::class, 'runDocente', 'runDocente');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CentroFormadorScope);
     }
 }

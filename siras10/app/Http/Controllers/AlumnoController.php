@@ -81,7 +81,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-            'idSedeCarrera' => 'required|integer|exists:SedeCarrera,idSedeCarrera',
+            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',
@@ -164,7 +164,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-            'idSedeCarrera' => 'required|integer|exists:SedeCarrera,idSedeCarrera'
+            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera'
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',
