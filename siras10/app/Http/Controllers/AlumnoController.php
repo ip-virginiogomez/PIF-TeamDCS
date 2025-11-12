@@ -21,8 +21,8 @@ class AlumnoController extends Controller
 
     public function create()
     {
-        $sedesCarreras = SedeCarrera::all(); 
-        
+        $sedesCarreras = SedeCarrera::all();
+
         return view('alumnos.create', compact('sedesCarreras'));
     }
 
@@ -105,7 +105,7 @@ class AlumnoController extends Controller
         }
 
         try {
-            $alumnoData = $request->except(['idSedeCarrera','_token']);
+            $alumnoData = $request->except(['idSedeCarrera', '_token']);
             $sedeCarreraId = $request->input('idSedeCarrera');
 
             if (empty($alumnoData['fechaCreacion'])) {
@@ -143,8 +143,14 @@ class AlumnoController extends Controller
     public function edit(Alumno $alumno)
     {
         $alumno = Alumno::findorfail($alumno->runAlumno);
+        $sedesCarrerasDisponibles = SedeCarrera::all();
+        $sedeCarreraActual = $alumno->sedesCarreras()->first();
 
-        return response()->json($alumno);
+        return response()->json([
+            'alumno' => $alumno,
+            'sedesCarrerasDisponibles' => $sedesCarrerasDisponibles,
+            'sedeCarreraActual' => $sedeCarreraActual,
+        ]);
     }
 
     public function update(Request $request, Alumno $alumno)
@@ -164,7 +170,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera'
+            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',

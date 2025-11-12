@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Scopes\CentroFormadorScope;
 
 class Convenio extends Model
 {
