@@ -11,7 +11,9 @@
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Filtros</h3>
                     <form method="GET" action="{{ route('roles.permission_matrix') }}" id="filterForm">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        
+                        {{-- CAMBIO: Reducido a 3 columnas, ya que la 4ta se oculta --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label for="role_id_selector" class="block text-sm font-medium text-gray-700">1. Rol</label>
                                 <select name="role_id" id="role_id_selector" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
@@ -41,7 +43,8 @@
                                 </select>
                             </div>
 
-                            <div>
+                            {{-- CAMBIO: Div de Submenú oculto --}}
+                            <div style="display: none;">
                                 <label for="submenu_select" class="block text-sm font-medium text-gray-700">4. Submenú</label>
                                 <select id="submenu_select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" disabled>
                                     <option value="">-- Selecciona un menú --</option>
@@ -79,7 +82,11 @@
                                         </div>
                                     </div>
                                 @endforeach
-                                <div id="no-permissions-message" class="text-center text-gray-500 py-4" style="display: none;">Selecciona un submenú para ver los permisos.</div>
+                                
+                                {{-- CAMBIO: Texto del mensaje actualizado --}}
+                                <div id="no-permissions-message" class="text-center text-gray-500 py-4" style="display: none;">
+                                    Selecciona un menú para ver los permisos, o este menú no tiene permisos asociados.
+                                </div>
                             </div>
                         </div>
                         <div class="px-6 pb-6 bg-white text-right">
@@ -91,98 +98,134 @@
         </div>
     </div>
 
+{{-- ===================================================================== --}}
+{{-- CAMBIO: LÓGICA COMPLETA DEL SCRIPT ACTUALIZADA --}}
+{{-- ===================================================================== --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const roleSelect = document.getElementById('role_id_selector');
-        const userSelect = document.getElementById('user_select');
-        const menuSelect = document.getElementById('menu_select');
-        const submenuSelect = document.getElementById('submenu_select');
-        const filterForm = document.getElementById('filterForm');
-        const noPermissionsMessage = document.getElementById('no-permissions-message');
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('role_id_selector');
+    const userSelect = document.getElementById('user_select');
+    const menuSelect = document.getElementById('menu_select');
+    const submenuSelect = document.getElementById('submenu_select'); // Aún se usa internamente
+    const filterForm = document.getElementById('filterForm');
+    const noPermissionsMessage = document.getElementById('no-permissions-message');
 
-        function showPermissionGroup(resourceName) {
-            document.querySelectorAll('.permission-group').forEach(group => {
-                group.style.display = group.dataset.resourceName === resourceName ? 'block' : 'none';
-            });
-            const hasVisibleGroup = resourceName && document.querySelector(`.permission-group[data-resource-name="${resourceName}"]`);
-            noPermissionsMessage.style.display = hasVisibleGroup ? 'none' : 'block';
+    // --- NUEVAS FUNCIONES DE AYUDA ---
+
+    /**
+     * Oculta TODOS los grupos de permisos y muestra el mensaje de "vacío".
+     */
+    function hideAllPermissionGroups() {
+        document.querySelectorAll('.permission-group').forEach(group => {
+            group.style.display = 'none';
+        });
+        noPermissionsMessage.style.display = 'block'; 
+    }
+
+    /**
+     * Muestra UN grupo de permisos por su nombre (resourceName).
+     * Retorna 'true' si lo encontró y 'false' si no.
+     */
+    function showPermissionGroup(resourceName) {
+        const group = document.querySelector(`.permission-group[data-resource-name="${resourceName}"]`);
+        if (group) {
+            group.style.display = 'block';
+            return true; // Lo encontró y lo mostró
         }
+        return false; // No lo encontró
+    }
 
-        // --- Lógica para Rol y Usuario (recarga de página) ---
-        roleSelect.addEventListener('change', () => {
-            userSelect.value = ''; // Limpia la selección de usuario
-            filterForm.submit();
-        });
-        userSelect.addEventListener('change', () => {
-            if (userSelect.value) {
-                filterForm.submit();
-            }
-        });
-        
-        // --- Lógica para Menú -> Submenú (AJAX) ---
-        menuSelect.addEventListener('change', function() {
-            const menuId = this.value;
-            submenuSelect.innerHTML = '<option value="">Cargando...</option>';
-            submenuSelect.disabled = true;
-            showPermissionGroup(null);
-
-            if (!menuId) {
-                submenuSelect.innerHTML = '<option value="">-- Selecciona un menú --</option>';
-                return;
-            }
-
-            fetch(`/api/menus/${menuId}/submenus`)
-                .then(response => response.json())
-                .then(submenus => {
-                    submenuSelect.innerHTML = '<option value="">-- Elige un submenú --</option>';
-                    submenus.forEach(submenu => {
-                        const option = document.createElement('option');
-                        option.value = submenu.nombreSubmenu;
-                        option.textContent = submenu.nombreSubmenu;
-                        submenuSelect.appendChild(option);
-                    });
-                    submenuSelect.disabled = false;
-                });
-        });
-
-        // --- Lógica para Submenú -> Mostrar Permisos ---
-        submenuSelect.addEventListener('change', function() {
-            showPermissionGroup(this.value);
-        });
-
-        // --- Lógica de Inicialización al cargar la página ---
-        function populateUsersOnLoad() {
-            const roleId = roleSelect.value;
-            if (!roleId) return;
-
-            userSelect.disabled = true;
-            userSelect.innerHTML = '<option value="">Cargando...</option>';
-
-            fetch(`/api/roles/${roleId}/users`)
-                .then(response => response.json())
-                .then(users => {
-                    userSelect.innerHTML = '<option value="">-- Elige un usuario --</option>';
-                    const selectedUserRun = '{{ $selectedUser->runUsuario ?? '' }}';
-                    
-                    users.forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user.runUsuario;
-                        option.textContent = `${user.nombreUsuario} ${user.apellidoPaterno}`;
-                        if (user.runUsuario === selectedUserRun) {
-                            option.selected = true;
-                        }
-                        userSelect.appendChild(option);
-                    });
-                    
-                    userSelect.disabled = false;
-
-                    // --- LÍNEA CLAVE CORREGIDA ---
-                    // Activamos el selector de Menú SOLO si hay un usuario seleccionado
-                    menuSelect.disabled = !selectedUserRun;
-                });
-        }
-        
-        populateUsersOnLoad();
+    // --- Lógica para Rol y Usuario (recarga de página) ---
+    // (Esta parte no cambia)
+    roleSelect.addEventListener('change', () => {
+        userSelect.value = ''; // Limpia la selección de usuario
+        filterForm.submit();
     });
+    userSelect.addEventListener('change', () => {
+        if (userSelect.value) {
+            filterForm.submit();
+        }
+    });
+    
+    // --- LÓGICA MODIFICADA DE MENÚ -> PERMISOS ---
+    menuSelect.addEventListener('change', function() {
+        const menuId = this.value;
+
+        // 1. Ocultamos todos los permisos anteriores
+        hideAllPermissionGroups();
+        
+        // (Usamos el select oculto para mostrar "cargando" al usuario)
+        submenuSelect.innerHTML = '<option value="">Cargando...</option>';
+        submenuSelect.disabled = true; // Sigue deshabilitado (y oculto)
+
+        if (!menuId) {
+            submenuSelect.innerHTML = '<option value="">-- Selecciona un menú --</option>';
+            return;
+        }
+
+        // 2. Buscamos los submenús de este menú
+        fetch(`/api/menus/${menuId}/submenus`)
+            .then(response => response.json())
+            .then(submenus => {
+                // Ya no poblamos el select, solo lo usamos para feedback
+                submenuSelect.innerHTML = '<option value="">Submenús cargados</option>'; 
+                let permissionsFound = false; // Flag para ver si encontramos algo
+
+                // 3. ¡LA MAGIA! Iteramos por CADA submenú encontrado...
+                submenus.forEach(submenu => {
+                    
+                    // ...y mostramos su grupo de permisos correspondiente.
+                    if (showPermissionGroup(submenu.nombreSubmenu)) {
+                        permissionsFound = true; // Marcamos que sí encontramos permisos
+                    }
+                });
+                
+                // 4. Si encontramos al menos un permiso, ocultamos el mensaje de "vacío".
+                if (permissionsFound) {
+                    noPermissionsMessage.style.display = 'none';
+                }
+                
+                // (Ya no es necesario habilitar el select de submenú)
+            });
+    });
+
+    // --- LÓGICA ELIMINADA ---
+    // Ya no necesitamos un "listener" para el dropdown de submenú.
+    // submenuSelect.addEventListener('change', ...); // <--- ESTO SE FUE
+
+    // --- Lógica de Inicialización al cargar la página ---
+    // (Esta parte no cambia)
+    function populateUsersOnLoad() {
+        const roleId = roleSelect.value;
+        if (!roleId) return;
+
+        userSelect.disabled = true;
+        userSelect.innerHTML = '<option value="">Cargando...</option>';
+
+        fetch(`/api/roles/${roleId}/users`)
+            .then(response => response.json())
+            .then(users => {
+                userSelect.innerHTML = '<option value="">-- Elige un usuario --</option>';
+                const selectedUserRun = '{{ $selectedUser->runUsuario ?? '' }}';
+                
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.runUsuario;
+                    option.textContent = `${user.nombreUsuario} ${user.apellidoPaterno}`;
+                    if (user.runUsuario === selectedUserRun) {
+                        option.selected = true;
+                    }
+                    userSelect.appendChild(option);
+                                });
+                
+                userSelect.disabled = false;
+
+                // Activamos el selector de Menú SOLO si hay un usuario seleccionado
+                menuSelect.disabled = !selectedUserRun;
+            });
+    }
+    
+    populateUsersOnLoad();
+});
 </script>
 </x-app-layout>

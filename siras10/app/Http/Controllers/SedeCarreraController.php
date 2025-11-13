@@ -14,9 +14,14 @@ use Illuminate\View\View;
 
 class SedeCarreraController extends Controller
 {
-    /**
-     * Define las reglas de validación para crear y actualizar una SedeCarrera.
-     */
+    public function __construct()
+    {
+        $this->middleware('permission:sede-carrera.read')->only('index', 'getCarrerasAsJson', 'getTablaAsHtml', 'getGestionAsHtml');
+        $this->middleware('permission:sede-carrera.create')->only('store');
+        $this->middleware('permission:sede-carrera.update')->only('edit', 'update');
+        $this->middleware('permission:sede-carrera.delete')->only('destroy');
+    }
+    
     private function getValidationRules(): array
     {
         return [

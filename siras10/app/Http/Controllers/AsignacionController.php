@@ -9,6 +9,13 @@ use Illuminate\Http\Request;
 
 class AsignacionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:asignaciones.read')->only('index', 'getCentrosCampoClinico', 'getCentrosRad');
+        $this->middleware('permission:asignaciones.create')->only('asignarCentroCoordinador', 'asignarCentroRad');
+        $this->middleware('permission:asignaciones.delete')->only('quitarCentroCoordinador', 'quitarCentroRad');
+    }
+
     public function index(Request $request)
     {
         $grupo = $request->get('grupo', 'campo_clinico');

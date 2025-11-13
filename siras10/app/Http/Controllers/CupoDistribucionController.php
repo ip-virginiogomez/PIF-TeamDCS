@@ -13,7 +13,10 @@ class CupoDistribucionController extends Controller
 {
     public function __construct()
     {
-        // ... (Los middleware can están bien) ...
+        $this->middleware('permission:cupo-distribuciones.read')->only('index');
+        $this->middleware('permission:cupo-distribuciones.create')->only('create', 'store');
+        $this->middleware('permission:cupo-distribuciones.update')->only('edit', 'update');
+        $this->middleware('permission:cupo-distribuciones.delete')->only('destroy');
     }
 
     public function index(Request $request)
