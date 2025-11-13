@@ -18,6 +18,7 @@ class ConvenioController extends Controller
         $this->middleware('permission:convenios.update')->only('edit', 'update');
         $this->middleware('permission:convenios.delete')->only('destroy');
     }
+
     public function index(Request $request)
     {
         try {

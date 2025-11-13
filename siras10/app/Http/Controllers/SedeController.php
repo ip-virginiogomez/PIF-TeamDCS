@@ -16,7 +16,7 @@ class SedeController extends Controller
         $this->middleware('permission:sede.update')->only('edit', 'update');
         $this->middleware('permission:sede.delete')->only('destroy');
     }
-    
+
     public function index(Request $request)
     {
         $columnasDisponibles = ['idSede', 'nombreSede', 'direccion', 'centroFormador.nombreCentroFormador', 'fechaCreacion', 'numContacto'];

@@ -21,7 +21,7 @@ class SedeCarreraController extends Controller
         $this->middleware('permission:sede-carrera.update')->only('edit', 'update');
         $this->middleware('permission:sede-carrera.delete')->only('destroy');
     }
-    
+
     private function getValidationRules(): array
     {
         return [

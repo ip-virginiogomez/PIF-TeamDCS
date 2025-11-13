@@ -17,7 +17,7 @@ class CentroSaludController extends Controller
         $this->middleware('permission:centro-salud.update')->only('edit', 'update');
         $this->middleware('permission:centro-salud.delete')->only('destroy');
     }
-    
+
     public function index(Request $request)
     {
         $columnasDisponibles = [
