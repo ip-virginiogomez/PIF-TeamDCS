@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,5 +27,10 @@ class Convenio extends Model
     public function centroFormador()
     {
         return $this->belongsTo(CentroFormador::class, 'idCentroFormador', 'idCentroFormador');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CentroFormadorScope);
     }
 }

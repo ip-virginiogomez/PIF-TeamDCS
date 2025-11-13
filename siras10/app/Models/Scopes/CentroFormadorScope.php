@@ -22,7 +22,7 @@ class CentroFormadorScope implements Scope
         }
 
         if ($user->esCoordinador()) {
-            $centroIds = $user->centrosFormadores->pluck('idCentroFormador')->toArray();
+            $centroIds = $user->centrosFormadores()->pluck('centro_formador.idCentroFormador')->toArray();
             if (empty($centroIds)) {
                 $builder->whereRaw('1 = 0');
 
@@ -30,18 +30,22 @@ class CentroFormadorScope implements Scope
             }
             $tableName = $model->getTable();
 
-            if ($tableName === 'Alumno') {
+            if ($tableName === 'alumno') {
                 $builder->whereHas('alumnoCarreras.sedeCarrera.sede', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroFormador', $centroIds);
                 });
-            } elseif ($tableName === 'Docente') {
+            } elseif ($tableName === 'docente') {
                 $builder->whereHas('docenteCarreras.sedeCarrera.sede', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroFormador', $centroIds);
                 });
-            } elseif ($tableName === 'Sede') {
+            } elseif ($tableName === 'sede') {
                 $builder->whereIn('idCentroFormador', $centroIds);
-            } elseif ($tableName === 'Convenio') {
+            } elseif ($tableName === 'convenio') {
                 $builder->whereIn('idCentroFormador', $centroIds);
+            } elseif ($tableName === 'sede_carrera') {
+                $builder->whereHas('sede', function ($query) use ($centroIds) {
+                    $query->whereIn('idCentroFormador', $centroIds);
+                });
             }
         }
     }

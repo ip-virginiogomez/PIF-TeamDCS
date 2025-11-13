@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,5 +42,10 @@ class Sede extends Model
     public function sedeCarreras(): HasMany
     {
         return $this->hasMany(SedeCarrera::class, 'idSede', 'idSede');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CentroFormadorScope);
     }
 }
