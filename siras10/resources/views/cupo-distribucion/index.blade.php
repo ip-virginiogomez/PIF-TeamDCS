@@ -59,13 +59,19 @@
         <div class="mb-4">
             <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Sede / Carrera *</label>
             <select id="idSedeCarrera" name="idSedeCarrera" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                <option value="">Seleccione Sede/Carrera</option>
-                {{-- Bucle sobre la variable correcta $sedesCarreras --}}
-                @foreach($sedesCarreras as $sc)
-                    <option value="{{ $sc->idSedeCarrera }}">
-                        {{ $sc->sede->nombreSede ?? 'Sede Desc.' }}
-                        ({{ $sc->sede->centroFormador->nombreCentroFormador ?? 'CF Desc.' }})
-                        - {{ $sc->carrera->nombreCarrera ?? 'Carrera Desc.' }}
+                <option value="">Seleccione Centro Formador(Sede)</option>
+                @foreach ($sedesCarreras as $sedeCarrera)
+                    <option value="{{ $sedeCarrera->idSedeCarrera }}">
+                        
+                        {{-- 1. Centro Formador --}}
+                        {{ $sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'CF Desc.' }} 
+
+                        {{-- 2. (Sede) --}}
+                        ({{ $sedeCarrera->sede->nombreSede ?? 'Sede Desc.' }}) 
+
+                        {{-- 3. - Carrera (con el nombre específico) --}}
+                        - {{ $sedeCarrera->nombreSedeCarrera ?: ($sedeCarrera->carrera->nombreCarrera ?? 'Carrera Desc.') }}
+                    
                     </option>
                 @endforeach
             </select>

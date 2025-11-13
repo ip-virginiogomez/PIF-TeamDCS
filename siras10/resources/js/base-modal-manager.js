@@ -252,6 +252,8 @@ export default class BaseModalManager {
 
                 this.showAlert('¡Eliminado!', data.message, 'success');
                 this.refreshTable();
+                
+                return data;
 
             } catch (error) {
                 console.error('Error al eliminar:', error);
