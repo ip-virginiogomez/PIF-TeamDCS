@@ -10,9 +10,14 @@ use Illuminate\Support\Facades\Validator;
 
 class CentroSaludController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('permission:centro-salud.read')->only('index');
+        $this->middleware('permission:centro-salud.create')->only('create', 'store');
+        $this->middleware('permission:centro-salud.update')->only('edit', 'update');
+        $this->middleware('permission:centro-salud.delete')->only('destroy');
+    }
+
     public function index(Request $request)
     {
         $columnasDisponibles = [

@@ -15,18 +15,19 @@ class InitialSetupSeeder extends Seeder
         // 1. Limpiar caché
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 2. Definir la estructura COMPLETA de Menús, Submenús y Permisos
+        // 2. Crear Menús, Submenús y Permisos
         $menus = [
             'Gestión Académica' => [
                 'alumnos' => ['create', 'read', 'update', 'delete'],
                 'docentes' => ['create', 'read', 'update', 'delete'],
                 'carreras' => ['create', 'read', 'update', 'delete'],
-                'asignaturas' => ['create', 'read', 'update', 'delete'],
                 'sede-carrera' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión Centro Formador' => [
                 'centros-formadores' => ['create', 'read', 'update', 'delete'],
                 'tipos-centro-formador' => ['create', 'read', 'update', 'delete'],
+                'sede' => ['create', 'read', 'update', 'delete'],
+                'convenios' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión de Salud' => [
                 'centro-salud' => ['create', 'read', 'update', 'delete'],
@@ -41,11 +42,10 @@ class InitialSetupSeeder extends Seeder
             'Gestión de Usuarios' => [
                 'usuarios' => ['create', 'read', 'update', 'delete'],
                 'roles' => ['create', 'read', 'update', 'delete'],
+                'asignaciones' => ['create', 'read', 'update', 'delete'],
                 'permisos' => ['read'],
             ],
         ];
-
-        // Crear Menús, Submenús y Permisos
         foreach ($menus as $nombreMenu => $submenus) {
             $menu = Menu::firstOrCreate(['nombreMenu' => $nombreMenu]);
             foreach ($submenus as $nombreSubmenu => $acciones) {
