@@ -24,6 +24,10 @@ class TipoCentroFormadorSeeder extends Seeder
                 'nombreTipo' => 'Centro de Formación Técnica',
                 'fechaCreacion' => now(),
             ],
+            [
+                'nombreTipo' => 'Liceo Técnico',
+                'fechaCreacion' => now(),
+            ],
         ];
         foreach ($tiposCentroFormador as $tipo) {
             \App\Models\TipoCentroFormador::create($tipo);

@@ -4,7 +4,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-white leading-tight">
+            <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Convenios') }}
             </h2>
             <button onclick="abrirModal()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">

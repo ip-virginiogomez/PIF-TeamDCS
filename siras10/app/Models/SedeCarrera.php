@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -63,5 +64,10 @@ class SedeCarrera extends Model
     public function cupoDistribuciones()
     {
         return $this->hasMany(CupoDistribucion::class, 'idSedeCarrera', 'idSedeCarrera');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CentroFormadorScope);
     }
 }

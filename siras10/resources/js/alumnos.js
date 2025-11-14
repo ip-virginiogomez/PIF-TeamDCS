@@ -124,24 +124,46 @@ class AlumnoManager extends BaseModalManager {
     }
 
     async editarRegistro(id) {
-        const data = await super.editarRegistro(id);
+        const data = await super.editarRegistro(id); 
+        
+        if (!data) return; 
 
+        const alumno = data.alumno;
+        this.form.querySelector('[name="runAlumno"]').value = alumno.runAlumno;
+        this.form.querySelector('[name="nombres"]').value = alumno.nombres;
+        this.form.querySelector('[name="apellidoPaterno"]').value = alumno.apellidoPaterno;
+        this.form.querySelector('[name="apellidoMaterno"]').value = alumno.apellidoMaterno;
+        this.form.querySelector('[name="correo"]').value = alumno.correo;
+        this.form.querySelector('[name="fechaNacto"]').value = alumno.fechaNacto;
+        
         const runInput = this.form.querySelector('#runAlumno');
         const runHelpText = document.getElementById('run-help-text');
+        if (runInput) runInput.setAttribute('readonly', true);
+        if (runHelpText) runHelpText.classList.remove('hidden');
+
         const fotoPreview = document.getElementById('foto-preview');
-        
-        if (runInput) {
-            runInput.setAttribute('readonly', true);
-        }
-        if (runHelpText) {
-            runHelpText.classList.remove('hidden');
-        }
         if (fotoPreview) {
-            if (data && data.foto) {
-                fotoPreview.src = `/storage/${data.foto}`;
+            if (data && data.alumno && data.alumno.foto) {
+                fotoPreview.src = `/storage/${data.alumno.foto}`;
             } else {
                 fotoPreview.src = "/storage/placeholder.png";
             }
+        }
+        
+        const selectSedeCarrera = this.form.querySelector('[name="idSedeCarrera"]');
+        if (selectSedeCarrera && data.sedesCarrerasDisponibles) {
+            selectSedeCarrera.innerHTML = '<option value="">Seleccione una opción...</option>';
+            
+            data.sedesCarrerasDisponibles.forEach(sede => {
+                const option = document.createElement('option');
+                option.value = sede.idSedeCarrera;
+                option.textContent = sede.nombreSedeCarrera;
+                
+                if (sede.idSedeCarrera == data.sedeCarreraActual.idSedeCarrera) {
+                    option.selected = true;
+                }
+                selectSedeCarrera.appendChild(option);
+            });
         }
     }
 }

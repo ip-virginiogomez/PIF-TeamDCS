@@ -17,7 +17,6 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
-            {{-- Volvemos a incluir la barra de navegación superior --}}
             @include('layouts.navigation')
 
             <!-- Page Heading -->
@@ -34,5 +33,7 @@
                 {{ $slot }}
             </main>
         </div>
+
+        @yield('scripts')
     </body>
 </html>

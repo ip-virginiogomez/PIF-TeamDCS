@@ -20,8 +20,8 @@ class CentroSalud extends Model
         'idCiudad',
         'idTipoCentroSalud',
         'nombreCentro',
-        'director',           // NUEVO CAMPO
-        'correoDirector',     // NUEVO CAMPO
+        'director',
+        'correoDirector',
     ];
 
     // Relación inversa con Ciudad

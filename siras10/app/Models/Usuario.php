@@ -63,9 +63,38 @@ class Usuario extends Authenticatable
         return $this->hasMany(Personal::class, 'runUsuario', 'runUsuario');
     }
 
-    /*
-     * NOTA: La relación 'permisosRoles' ya no es necesaria.
-     * El paquete Spatie manejará esto automáticamente con métodos como
-     * $usuario->roles y $usuario->permissions. La hemos eliminado para evitar confusiones.
-     */
+    public function esAdmin()
+    {
+        return $this->hasRole('Admin');
+    }
+
+    public function esCoordinador()
+    {
+        return $this->hasRole('Coordinador Campo Clínico');
+    }
+
+    public function esTecnicoRAD()
+    {
+        return $this->hasRole('Técnico RAD');
+    }
+
+    public function centrosFormadores()
+    {
+        return $this->belongsToMany(
+            CentroFormador::class,
+            'coordinador_campo_clinico',
+            'runUsuario',
+            'idCentroFormador'
+        );
+    }
+
+    public function centroSalud()
+    {
+        return $this->belongsToMany(
+            CentroSalud::class,
+            'personal',
+            'runUsuario',
+            'idCentroSalud'
+        );
+    }
 }
