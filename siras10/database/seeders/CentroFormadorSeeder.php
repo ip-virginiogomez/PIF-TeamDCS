@@ -49,8 +49,8 @@ class CentroFormadorSeeder extends Seeder
                 'fechaCreacion' => now(),
             ],
             [
-                'nombreCentroFormador' => 'Liceo Técnico Juanita Fernández',
-                'idTipoCentroFormador' => 3,
+                'nombreCentroFormador' => 'Liceo Técnico Bicentenario Juanita Fernández Solar',
+                'idTipoCentroFormador' => 4,
                 'fechaCreacion' => now(),
             ],
         ];
