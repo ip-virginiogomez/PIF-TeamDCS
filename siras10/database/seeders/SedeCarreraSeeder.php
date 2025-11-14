@@ -93,7 +93,7 @@ class SedeCarreraSeeder extends Seeder
                 'idCarrera' => 2,
                 'codigoCarrera' => 'IS-012',
                 'fechaCreacion' => now(),
-            ]
+            ],
         ];
 
         foreach ($sedeCarreras as $sedeCarrera) {

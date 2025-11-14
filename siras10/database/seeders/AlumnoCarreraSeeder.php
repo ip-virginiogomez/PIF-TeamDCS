@@ -61,7 +61,7 @@ class AlumnoCarreraSeeder extends Seeder
             [
                 'runAlumno' => '21345678-1',
                 'idSedeCarrera' => 11,
-            ]
+            ],
         ];
         foreach ($alumnoCarreras as $alumnoCarrera) {
             AlumnoCarrera::create($alumnoCarrera);

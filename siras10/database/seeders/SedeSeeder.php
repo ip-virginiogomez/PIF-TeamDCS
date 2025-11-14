@@ -86,7 +86,7 @@ class SedeSeeder extends Seeder
                 'idCentroFormador' => 8,
                 'fechaCreacion' => now(),
                 'numContacto' => '+56412111006',
-            ]
+            ],
         ];
         foreach ($sedes as $sede) {
             Sede::create($sede);

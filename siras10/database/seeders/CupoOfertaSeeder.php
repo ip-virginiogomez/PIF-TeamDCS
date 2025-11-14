@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\CupoOferta;
+use Illuminate\Database\Seeder;
 
 class CupoOfertaSeeder extends Seeder
 {
@@ -154,7 +153,7 @@ class CupoOfertaSeeder extends Seeder
                 'horaEntrada' => '08:45:00',
                 'horaSalida' => '16:45:00',
                 'fechaCreacion' => now(),
-            ]
+            ],
         ];
         foreach ($cupoOfertas as $cupoOferta) {
             CupoOferta::create($cupoOferta);
