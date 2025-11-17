@@ -2,26 +2,42 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class MallaCurricular extends Model
 {
-    use HasFactory;
-
     protected $table = 'malla_curricular';
 
     protected $primaryKey = 'idMallaCurricular';
 
-    public $timestamps = false;
-
     protected $fillable = [
+        'anio',
         'fechaCreacion',
     ];
 
-    // Relación uno a muchos con MallaSedeCarrera
-    public function mallaSedeCarreras()
+    // Relación con las mallas específicas por sede
+    public function mallasSedeCarrera()
     {
         return $this->hasMany(MallaSedeCarrera::class, 'idMallaCurricular', 'idMallaCurricular');
+    }
+
+    // Método estático para obtener o crear un año
+    public static function obtenerOCrearAnio($anio)
+    {
+        return self::firstOrCreate(['anio' => $anio]);
+    }
+
+    // Obtener años disponibles para selector
+    public static function getAniosDisponibles($limite = 5)
+    {
+        $anioActual = now()->year;
+        $anios = [];
+
+        // Años: actual - 2, actual - 1, actual, actual + 1, actual + 2
+        for ($i = $anioActual - 2; $i <= $anioActual + 2; $i++) {
+            $anios[] = $i;
+        }
+
+        return $anios;
     }
 }
