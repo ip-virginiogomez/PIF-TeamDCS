@@ -67,7 +67,7 @@
         </div>
 
         <div class="mb-4">
-            <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
+            <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Primer Apellido</label>
             <input type="text" 
                 id="apellidoPaterno" 
                 name="apellidoPaterno" 
@@ -77,7 +77,7 @@
         </div>
 
         <div class="mb-4">
-            <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
+            <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Segundo Apellido</label>
             <input type="text" 
                 id="apellidoMaterno" 
                 name="apellidoMaterno" 

@@ -79,14 +79,14 @@
 
         {{-- Apellido Paterno --}}
         <div class="mb-4">
-            <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
+            <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Primer Apellido</label>
             <input type="text" id="apellidoPaterno" name="apellidoPaterno" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-apellidoPaterno"></div>
         </div>
 
         {{-- Apellido Materno --}}
         <div class="mb-4">
-            <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
+            <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Segundo Apellido</label>
             <input type="text" id="apellidoMaterno" name="apellidoMaterno" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
             <div class="text-red-500 text-sm mt-1 hidden" id="error-apellidoMaterno"></div>
         </div>

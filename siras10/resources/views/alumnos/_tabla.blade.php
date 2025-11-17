@@ -16,8 +16,8 @@
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('runAlumno', 'RUN') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap">Foto</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('nombres', 'Nombres') !!}</th>
-                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoPaterno', 'Apellido Paterno') !!}</th>
-                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoMaterno', 'Apellido Materno') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoPaterno', 'Primer Apellido') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoMaterno', 'Segundo Apellido') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('fechaNacto', 'Fecha Nacimiento') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('correo', 'Correo') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap">Acuerdo</th>
