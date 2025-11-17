@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('malla_curricular', function (Blueprint $table) {
             $table->id('idMallaCurricular');
             $table->date('fechaCreacion')->nullable();
+            $table->integer('anio')->nullable();
             $table->timestamps();
         });
     }

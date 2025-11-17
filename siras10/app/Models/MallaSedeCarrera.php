@@ -17,8 +17,8 @@ class MallaSedeCarrera extends Model
 
     protected $fillable = [
         'fechaSubida',
-        'doc',
-        'anio',
+        'documento',
+        'nombre',
         'idMallaCurricular',
         'idSedeCarrera',
     ];

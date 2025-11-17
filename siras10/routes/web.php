@@ -98,6 +98,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{sedeCarrera}/edit', [SedeCarreraController::class, 'edit'])->name('edit');
         Route::put('{sedeCarrera}', [SedeCarreraController::class, 'update'])->name('update');
         Route::delete('{sedeCarrera}', [SedeCarreraController::class, 'destroy'])->name('destroy');
+        Route::post('malla', [SedeCarreraController::class, 'storeMalla'])->name('malla.store');
+        Route::get('años-disponibles', [SedeCarreraController::class, 'getAniosDisponibles'])->name('anios');
+        Route::get('sedes/{sedeId}/mallas', [SedeCarreraController::class, 'getMallasPorSede'])->name('mallas.por-sede');
+        Route::get('malla/{idMallaSedeCarrera}/ver', [SedeCarreraController::class, 'verMallaPdf'])->name('malla.ver');
+        Route::get('malla/{idMallaSedeCarrera}/descargar', [SedeCarreraController::class, 'descargarMallaPdf'])->name('malla.descargar');
     });
 
     // --- GESTIÓN DE ASIGNACIONES ---
