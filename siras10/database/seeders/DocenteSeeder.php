@@ -140,6 +140,16 @@ class DocenteSeeder extends Seeder
                 'fechaNacto' => '1990-12-01',
                 'profesion' => 'Ingeniero',
             ],
+            [
+                'runDocente' => '18806025-0',
+                'nombresDocente' => 'Camilo',
+                'apellidoPaterno' => 'Córdova',
+                'apellidoMaterno' => 'Álvarez',
+                'correo' => 'camilo@example.com',
+                'fechaCreacion' => now(),
+                'fechaNacto' => '1994-12-30',
+                'profesion' => 'Ingeniero',
+            ]
         ];
         foreach ($docentes as $docenteData) {
             Docente::create($docenteData);

@@ -26,6 +26,88 @@ class DocenteManager extends BaseModalManager {
             ]
         });
         this.initFotoPreview();
+        this.addDocenteListeners();
+    }
+
+    addDocenteListeners() {
+        document.body.addEventListener('click', (e) => {
+
+            const btnEdit = e.target.closest('[data-action="edit"]');
+            const documentosModal = document.getElementById('documentosModal');
+            
+            if (btnEdit && documentosModal && documentosModal.contains(btnEdit)) {
+                e.preventDefault();
+                const id = btnEdit.dataset.id;
+                this.cerrarModalDocumentos();
+                this.editarRegistro(id);
+                return;
+            }
+
+            const btnPreview = e.target.closest('[data-action="preview-doc"]');
+            if (btnPreview) {
+                e.preventDefault();
+                const url = btnPreview.dataset.url;
+                const title = btnPreview.dataset.title;
+                this.mostrarPreviewDocumento(url, title);
+                return;
+            }
+
+            const btnBack = e.target.closest('#btn-cerrar-preview');
+            if (btnBack) {
+                e.preventDefault();
+                this.cerrarPreviewDocumento();
+                return;
+            }
+            
+            if (documentosModal && !documentosModal.classList.contains('hidden')) {
+                if (e.target === documentosModal || e.target.closest('[data-dismiss="modal"]')) {
+                    this.cerrarModalDocumentos();
+                }
+            }
+        });
+    }
+
+    mostrarPreviewDocumento(url, title) {
+        const listaContainer = document.getElementById('lista-documentos-container');
+        const previewContainer = document.getElementById('preview-documento-container');
+        const iframe = document.getElementById('doc-viewer-iframe');
+        const titleSpan = document.getElementById('preview-titulo');
+        const modalTitle = document.getElementById('documentosModal-title');
+
+        if (listaContainer && previewContainer && iframe) {
+            listaContainer.classList.add('hidden');
+            previewContainer.classList.remove('hidden');
+            
+            iframe.src = url;
+            
+            if (titleSpan) titleSpan.textContent = title;
+            
+            if (modalTitle) modalTitle.textContent = 'Visualizando Documento';
+        }
+    }
+
+    cerrarPreviewDocumento() {
+        const listaContainer = document.getElementById('lista-documentos-container');
+        const previewContainer = document.getElementById('preview-documento-container');
+        const iframe = document.getElementById('doc-viewer-iframe');
+        const modalTitle = document.getElementById('documentosModal-title');
+
+        if (listaContainer && previewContainer && iframe) {
+            iframe.src = '';
+            
+            previewContainer.classList.add('hidden');
+            listaContainer.classList.remove('hidden');
+
+            if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
+        }
+    }
+
+    cerrarModalDocumentos() {
+        const modal = document.getElementById('documentosModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
 
     showValidationErrors(errors) {
