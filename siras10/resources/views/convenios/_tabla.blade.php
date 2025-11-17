@@ -31,24 +31,40 @@
                         };
                     @endphp
                     
-                    <th class="py-2 px-4 text-left">{!! $link('idConvenio', 'ID') !!}</th>
-                    <th class="py-2 px-4 text-left">{!! $link('centro_formador.nombreCentroFormador', 'Centro Formador') !!}</th>
-                    <th class="py-2 px-4 text-left">{!! $link('fechaSubida', 'Fecha Subida') !!}</th>
-                    <th class="py-2 px-4 text-left">{!! $link('anioValidez', 'Año Validez') !!}</th>
-                    <th class="py-2 px-4 text-left">Documento</th>
-                    <th class="py-2 px-4 text-left">Estado</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('idConvenio', 'ID') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('centro_formador.nombreCentroFormador', 'Centro Formador') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('fechaSubida', 'Fecha Subida') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('anioValidez', 'Año Validez') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">Documento</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">Estado</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($convenios as $convenio)
-                    <tr class="border-t hover:bg-gray-50">
-                        <td class="py-2 px-4">#{{ $convenio->idConvenio }}</td>
-                        <td class="py-2 px-4">
-                            {{ $convenio->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                    <tr class="border-b" id="convenio-{{ $convenio->idConvenio }}">
+                        <td class="py-2 px-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                <div>
+                                    <span class="font-medium">{{ $convenio->idConvenio }}</span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="py-2 px-4">{{ \Carbon\Carbon::parse($convenio->fechaSubida)->format('d/m/Y') }}</td>
-                        <td class="py-2 px-4">{{ $convenio->anioValidez }}</td>
+                        <td class="py-2 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $convenio->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ \Carbon\Carbon::parse($convenio->fechaSubida)->format('d/m/Y') }}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ $convenio->anioValidez }}
+                            </span>
+                        </td>
                         <td class="py-2 px-4">
                             @if($convenio->documento)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -75,28 +91,18 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="py-2 px-4">
-                            <div class="flex space-x-2">
-                                @if($convenio->documento)
-                                    <button onclick="verDocumento({{ $convenio->idConvenio }})" 
-                                            class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                                            title="Ver documento">
-                                        Ver
-                                    </button>
-                                @endif
-                                
-                                <button onclick="editarConvenio({{ $convenio->idConvenio }})" 
-                                        class="text-yellow-600 hover:text-yellow-900 text-sm font-medium"
-                                        title="Editar convenio">
-                                    Editar
+                        <td class="py-2 px-4 flex space-x-2">
+                            @if($convenio->documento)
+                                <button onclick="verDocumento({{ $convenio->idConvenio }})" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-file-pdf"></i> Ver
                                 </button>
-                                
-                                <button onclick="eliminarConvenio({{ $convenio->idConvenio }})" 
-                                        class="text-red-600 hover:text-red-900 text-sm font-medium"
-                                        title="Eliminar convenio">
-                                    Eliminar
-                                </button>
-                            </div>
+                            @endif
+                            <button onclick="editarConvenio({{ $convenio->idConvenio }})" class="text-yellow-500 hover:text-yellow-700">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button onclick="eliminarConvenio({{ $convenio->idConvenio }})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
                         </td>
                     </tr>
                 @endforeach

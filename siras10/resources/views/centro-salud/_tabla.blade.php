@@ -13,19 +13,19 @@
                         return "<a href=\"{$url}\" class='sort-link text-left font-bold'>{$texto} {$symbol}</a>";
                     };
                 @endphp
-                <th class="py-2 px-4 text-left"> {!! $link('idCentroSalud', 'ID') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('nombreCentro', 'Nombre del Centro') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('director', 'Director') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('direccion', 'Dirección') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('ciudad.nombreCiudad', 'Ciudad') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('tipo_centro_salud.acronimo', 'Tipo') !!}</th>
-                <th class="py-2 px-4 text-left">Acciones</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('idCentroSalud', 'ID') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('nombreCentro', 'Nombre del Centro') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('director', 'Director') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('direccion', 'Dirección') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('ciudad.nombreCiudad', 'Ciudad') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('tipo_centro_salud.acronimo', 'Tipo') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($centrosSalud as $centro)
                 <tr class="border-b" id="centro-{{ $centro->idCentroSalud }}">
-                    <td class="py-2 px-4">
+                    <td class="py-2 px-4 whitespace-nowrap">
                         <div class="flex items-center space-x-3">
                             <div>
                                 <span class="font-medium">{{ $centro->idCentroSalud }}</span>
@@ -62,30 +62,30 @@
                         <div class="text-xs text-gray-500">{{ $centro->tipoCentroSalud->nombreTipo ?? 'N/A' }}</div>
                     </td>
                     <td class="py-2 px-4 flex space-x-2">
-                        <button 
-                            data-action="edit" 
-                            data-id="{{ $centro->idCentroSalud }}" 
-                            class="text-yellow-500 hover:text-yellow-700">
-                            Editar
+                        <button data-action="edit" data-id="{{ $centro->idCentroSalud }}" class="text-yellow-500 hover:text-yellow-700">
+                            <i class="fas fa-edit"></i> Editar
                         </button>
-                        <button 
-                            data-action="delete" 
-                            data-id="{{ $centro->idCentroSalud }}" 
-                            class="text-red-500 hover:text-red-700">
-                            Eliminar
+                        <button data-action="delete" data-id="{{ $centro->idCentroSalud }}" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="7" class="py-4 px-4 text-center">No hay centros de salud registrados.</td>
-                </tr>
+            <tr>
+                <td colspan="7" class="py-4 px-4 text-center text-gray-500">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-hospital text-4xl text-gray-300 mb-2"></i>
+                        <span>No hay centros de salud registrados.</span>
+                    </div>
+                </td>
+            </tr>
             @endforelse
         </tbody>
     </table>
-    @if(method_exists($centrosSalud, 'links'))
-        <div class="mt-4">
-            {{ $centrosSalud->appends(request()->query())->links() }}
-        </div>
-    @endif
 </div>
+
+@if(method_exists($centrosSalud, 'links'))
+    <div class="mt-4">
+        {{ $centrosSalud->appends(request()->query())->links() }}
+    </div>
+@endif

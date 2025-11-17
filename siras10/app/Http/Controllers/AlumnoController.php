@@ -233,20 +233,30 @@ class AlumnoController extends Controller
 
     public function destroy(Alumno $alumno)
     {
-        if ($alumno->foto) {
-            Storage::disk('public')->delete($alumno->foto);
-        }
-        if ($alumno->acuerdo) {
-            Storage::disk('public')->delete($alumno->acuerdo);
-        }
+        try {
+            if ($alumno->foto) {
+                Storage::disk('public')->delete($alumno->foto);
+            }
+            if ($alumno->acuerdo) {
+                Storage::disk('public')->delete($alumno->acuerdo);
+            }
 
-        $alumno->delete();
+            $alumno->delete();
 
-        if (request()->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Estudiante eliminado exitosamente.',
-            ]);
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Estudiante eliminado exitosamente.',
+                ]);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'message' => 'No se puede eliminar este estudiante porque tiene registros asociados (carreras, vacunas, etc.).',
+                ], 409);
+            }
+
+            return redirect()->route('alumnos.index')->with('error', 'No se puede eliminar este estudiante porque tiene registros asociados.');
         }
 
         return redirect()->route('alumnos.index')

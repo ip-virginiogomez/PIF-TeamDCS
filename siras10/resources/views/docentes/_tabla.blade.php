@@ -13,21 +13,21 @@
                         return "<a href=\"{$url}\" class='sort-link text-left font-bold'>{$texto} {$symbol}</a>";
                     };
                 @endphp
-                <th class="py-2 px-4 text-left"> {!! $link('runDocente', 'RUN') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('foto', 'Foto') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('nombresDocente', 'Nombres') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('apellidoPaterno', 'Apellido Paterno') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('apellidoMaterno', 'Apellido Materno') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('fechaNacto', 'Fecha Nacimiento') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('correo', 'Correo Electrónico') !!}</th>
-                <th class="py-2 px-4 text-left"> Documentos </th>
-                <th class="py-2 px-4 text-left">Acciones</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('runDocente', 'RUN') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('foto', 'Foto') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('nombresDocente', 'Nombres') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoPaterno', 'Apellido Paterno') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoMaterno', 'Apellido Materno') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('fechaNacto', 'Fecha Nacimiento') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('correo', 'Correo Electrónico') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> Documentos </th>
+                <th class="py-2 px-4 text-left whitespace-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($docentes as $docente)
             <tr class="border-b" id="docente-{{ $docente->idDocente }}">
-                <td class="py-2 px-4">
+                <td class="py-2 px-4 whitespace-nowrap">
                     <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"">
                         <div>
                             <span class="font-medium">{{ $docente->runDocente }}</span>
@@ -57,27 +57,13 @@
                         </div>
                     </div>
                 </td>
+                <td class="py-2 px-4 text-sm">{{ $docente->apellidoMaterno }}</td>
                 <td class="py-2 px-4">
-                    <div class="flex items-center space-x-3">
-                        <div>
-                            <span class="font-medium">{{ $docente->apellidoMaterno }}</span>
-                        </div>
-                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {{ $docente->fechaNacto ? \Carbon\Carbon::parse($docente->fechaNacto)->format('d/m/Y') : 'N/A' }}
+                    </span>
                 </td>
-                <td class="py-2 px-4">
-                    <div class="flex items-center space-x-3">
-                        <div>
-                            <span class="font-medium">{{ $docente->fechaNacto ? \Carbon\Carbon::parse($docente->fechaNacto)->format('d/m/Y') : 'N/A' }}</span>
-                        </div>
-                    </div>
-                </td>
-                <td class="py-2 px-4">
-                    <div class="flex items-center space-x-3">
-                        <div>
-                            <span class="font-medium">{{ $docente->correo }}</span>
-                        </div>
-                    </div>
-                </td>
+                <td class="py-2 px-4 text-sm">{{ $docente->correo }}</td>
                 <td class="py-2 px-4 text-center">
                     <button data-action="view-documents" 
                             data-id="{{ $docente->runDocente }}"
@@ -99,7 +85,7 @@
             <tr>
                 <td colspan="9" class="py-4 px-4 text-center text-gray-500">
                     <div class="flex flex-col items-center">
-                        <i class="fas fa-building text-4xl text-gray-300 mb-2"></i>
+                        <i class="fas fa-chalkboard-teacher text-4xl text-gray-300 mb-2"></i>
                         <span>No hay docentes registrados.</span>
                     </div>
                 </td>
@@ -107,9 +93,10 @@
             @endforelse
         </tbody>
     </table>
-    @if(method_exists($docentes, 'links'))
-        <div class="mt-4">
-            {{ $docentes->appends(request()->query())->links() }}
-        </div>
-    @endif
 </div>
+
+@if(method_exists($docentes, 'links'))
+    <div class="mt-4">
+        {{ $docentes->appends(request()->query())->links() }}
+    </div>
+@endif

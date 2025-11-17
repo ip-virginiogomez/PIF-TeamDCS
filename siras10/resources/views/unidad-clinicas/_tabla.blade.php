@@ -11,31 +11,42 @@
         <tbody>
             @forelse ($unidadesClinicas as $unidad)
             <tr class="border-b" id="unidad-{{ $unidad->idUnidadClinica }}">
-                <td class="py-2 px-4">{{ $unidad->idUnidadClinica }}</td>
-                <td class="py-2 px-4 font-medium">{{ $unidad->nombreUnidad }}</td>
-                <td class="py-2 px-4">{{ $unidad->centroSalud->nombreCentro ?? 'N/A' }}</td>
+                <td class="py-2 px-4">
+                    <div class="flex items-center space-x-3">
+                        <div>
+                            <span class="font-medium">{{ $unidad->idUnidadClinica }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-2 px-4">
+                    <div class="flex items-center space-x-3">
+                        <div>
+                            <span class="font-medium">{{ $unidad->nombreUnidad }}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-2 px-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ $unidad->centroSalud->nombreCentro ?? 'N/A' }}
+                    </span>
+                </td>
                 <td class="py-2 px-4 flex space-x-2">
-                    @can('unidad-clinicas.update')
-                        <button 
-                            data-action="edit" 
-                            data-id="{{ $unidad->idUnidadClinica }}" 
-                            class="text-yellow-500 hover:text-yellow-700">
-                            Editar
-                        </button>
-                    @endcan
-                    @can('unidad-clinicas.delete')
-                        <button 
-                            data-action="delete" 
-                            data-id="{{ $unidad->idUnidadClinica }}" 
-                            class="text-red-500 hover:text-red-700">
-                            Eliminar
-                        </button>
-                    @endcan
+                    <button data-action="edit" data-id="{{ $unidad->idUnidadClinica }}" class="text-yellow-500 hover:text-yellow-700">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button data-action="delete" data-id="{{ $unidad->idUnidadClinica }}" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="py-4 px-4 text-center">No hay unidades clínicas registradas.</td>
+                <td colspan="4" class="py-4 px-4 text-center text-gray-500">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-clinic-medical text-4xl text-gray-300 mb-2"></i>
+                        <span>No hay unidades clínicas registradas.</span>
+                    </div>
+                </td>
             </tr>
             @endforelse
         </tbody>
@@ -44,6 +55,6 @@
 
 @if(method_exists($unidadesClinicas, 'links'))
     <div class="mt-4">
-        {{ $unidadesClinicas->links() }}
+        {{ $unidadesClinicas->appends(request()->query())->links() }}
     </div>
 @endif
