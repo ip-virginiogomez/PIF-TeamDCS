@@ -13,7 +13,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
@@ -67,7 +67,7 @@
         </div>
 
         <div class="mb-4">
-            <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Apellido Paterno *</label>
+            <label for="apellidoPaterno" class="block text-sm font-medium text-gray-700">Primer Apellido</label>
             <input type="text" 
                 id="apellidoPaterno" 
                 name="apellidoPaterno" 
@@ -77,7 +77,7 @@
         </div>
 
         <div class="mb-4">
-            <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Apellido Materno</label>
+            <label for="apellidoMaterno" class="block text-sm font-medium text-gray-700">Segundo Apellido</label>
             <input type="text" 
                 id="apellidoMaterno" 
                 name="apellidoMaterno" 

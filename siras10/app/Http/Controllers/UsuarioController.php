@@ -17,11 +17,22 @@ class UsuarioController extends Controller
         $this->middleware('can:usuarios.delete')->only('destroy');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $usuarios = Usuario::with('roles')->paginate(10);
+        $sortBy = $request->query('sort_by', 'runUsuario');
+        $sortDirection = $request->query('sort_direction', 'asc');
 
-        return view('usuarios.index', compact('usuarios'));
+        $usuarios = Usuario::with('roles')
+            ->orderBy($sortBy, $sortDirection)
+            ->paginate(10);
+
+        $roles = Role::all();
+
+        if ($request->ajax()) {
+            return view('usuarios._tabla', compact('usuarios', 'sortBy', 'sortDirection'));
+        }
+
+        return view('usuarios.index', compact('usuarios', 'roles', 'sortBy', 'sortDirection'));
     }
 
     public function create()
@@ -33,80 +44,105 @@ class UsuarioController extends Controller
 
     public function store(Request $request)
     {
-        // uso de try catch para capturar errores de validacion
-        try {
-            $request->validate([
-                'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario',
-                'nombreUsuario' => 'required|string|max:45|unique:usuarios,nombreUsuario',
-                'apellidoPaterno' => 'required|string|max:45',
-                'apellidoMaterno' => 'required|string|max:45',
-                'correo' => 'required|email|max:45|unique:usuarios,correo',
-                'telefono' => 'nullable|string|max:20',
-                'contrasenia' => 'required|string|min:8|confirmed',
-                'roles' => 'required|array',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            dd($e->errors());
-        }
+        $validated = $request->validate([
+            'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario',
+            'nombreUsuario' => 'required|string|max:45',
+            'apellidoPaterno' => 'required|string|max:45',
+            'apellidoMaterno' => 'nullable|string|max:45',
+            'correo' => 'required|email|max:45|unique:usuarios,correo',
+            'telefono' => 'nullable|string|max:20',
+            'contrasenia' => 'required|string|min:8|confirmed',
+            'roles' => 'required|array',
+        ]);
 
-        // Si la validación pasa, el código continuará normalmente.
         $usuario = Usuario::create([
-            'runUsuario' => $request->runUsuario,
-            'nombreUsuario' => $request->nombreUsuario,
-            'apellidoPaterno' => $request->apellidoPaterno,
-            'apellidoMaterno' => $request->apellidoMaterno,
-            'correo' => $request->correo,
-            'telefono' => $request->telefono,
-            'contrasenia' => Hash::make($request->contrasenia),
+            'runUsuario' => $validated['runUsuario'],
+            'nombreUsuario' => $validated['nombreUsuario'],
+            'apellidoPaterno' => $validated['apellidoPaterno'],
+            'apellidoMaterno' => $validated['apellidoMaterno'] ?? null,
+            'correo' => $validated['correo'],
+            'telefono' => $validated['telefono'] ?? null,
+            'contrasenia' => Hash::make($validated['contrasenia']),
             'fechaCreacion' => now(),
         ]);
 
-        $usuario->syncRoles($request->roles);
+        $usuario->syncRoles($validated['roles']);
+
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Usuario creado exitosamente.']);
+        }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado exitosamente.');
     }
 
-    public function edit(Usuario $usuario)
+    public function edit($runUsuario)
     {
-        $roles = Role::all();
+        try {
+            $usuario = Usuario::with('roles')->findOrFail($runUsuario);
+            $roles = Role::all();
 
-        return view('usuarios.edit', compact('usuario', 'roles'));
+            return response()->json([
+                'usuario' => $usuario,
+                'roles' => $roles,
+                'usuario_roles' => $usuario->roles->pluck('name')->toArray(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Usuario no encontrado.'], 404);
+        }
     }
 
-    public function update(Request $request, Usuario $usuario)
+    public function update(Request $request, $runUsuario)
     {
+        $usuario = Usuario::findOrFail($runUsuario);
 
-        $request->validate([
-            'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario,'.$usuario->runUsuario.',runUsuario',
-            'nombreUsuario' => 'required|string|max:45|unique:usuarios,nombreUsuario,'.$usuario->runUsuario.',runUsuario',
-            'correo' => 'required|email|max:45|unique:usuarios,correo,'.$usuario->runUsuario.',runUsuario',
-            'contrasenia' => 'nullable|string|min:8|confirmed',
-            'nombres' => 'required|string|max:45',
+        $validated = $request->validate([
+            'nombreUsuario' => 'required|string|max:45',
             'apellidoPaterno' => 'required|string|max:45',
-            'apellidoMaterno' => 'required|string|max:45',
+            'apellidoMaterno' => 'nullable|string|max:45',
+            'correo' => 'required|email|max:45|unique:usuarios,correo,'.$usuario->runUsuario.',runUsuario',
+            'telefono' => 'nullable|string|max:20',
+            'contrasenia' => 'nullable|string|min:8|confirmed',
             'roles' => 'required|array',
         ]);
 
-        $data = $request->except('contrasenia');
+        $data = [
+            'nombreUsuario' => $validated['nombreUsuario'],
+            'apellidoPaterno' => $validated['apellidoPaterno'],
+            'apellidoMaterno' => $validated['apellidoMaterno'] ?? null,
+            'correo' => $validated['correo'],
+            'telefono' => $validated['telefono'] ?? null,
+        ];
 
         if ($request->filled('contrasenia')) {
-            $data['contrasenia'] = Hash::make($request->contrasenia);
+            $data['contrasenia'] = Hash::make($validated['contrasenia']);
         }
 
         $usuario->update($data);
+        $usuario->syncRoles($validated['roles']);
 
-        $usuario->syncRoles($request->roles);
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Usuario actualizado exitosamente.']);
+        }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
-    public function destroy(Usuario $usuario)
+    public function destroy($runUsuario)
     {
-        if (auth()->user()->runUsuario == $usuario->runUsuario) {
-            return back()->with('error', 'No puedes eliminar tu propio usuario.');
+        if (Auth::user()->runUsuario == $runUsuario) {
+            if (request()->ajax()) {
+                return response()->json(['message' => 'No puedes eliminar tu propio usuario.'], 403);
+            }
+
+            return redirect()->route('usuarios.index')->with('error', 'No puedes eliminar tu propio usuario.');
         }
 
+        $usuario = Usuario::findOrFail($runUsuario);
         $usuario->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['message' => 'Usuario eliminado exitosamente.']);
+        }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado exitosamente.');
     }

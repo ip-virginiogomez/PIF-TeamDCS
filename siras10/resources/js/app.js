@@ -15,6 +15,8 @@ import './unidad-clinica.js';
 import './cupo-distribucion.js';
 import './convenio.js';
 import './sede-carrera.js';
+import './usuarios.js';
+import './roles.js';
 
 import Alpine from 'alpinejs';
 

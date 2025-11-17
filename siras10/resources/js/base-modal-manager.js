@@ -187,7 +187,12 @@ export default class BaseModalManager {
         this.clearValidationErrors();
 
         try {
-            const response = await fetch(`${this.config.baseUrl}/${id}/edit`);
+            const response = await fetch(`${this.config.baseUrl}/${id}/edit`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             if (!response.ok) throw new Error('No se pudo obtener la información del registro.');
             const data = await response.json();
 

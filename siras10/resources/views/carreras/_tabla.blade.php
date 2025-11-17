@@ -22,20 +22,32 @@
         <tbody>
             @forelse ($carreras as $carrera)
                 <tr id="carrera-{{ $carrera->idCarrera }}" class="border-b">
-                    <td class="py-2 px-4">{{ $carrera->idCarrera }}</td>
-                    <td class="py-2 px-4">{{ $carrera->nombreCarrera }}</td>
-                    <td class="py-2 px-4">{{ \Carbon\Carbon::parse($carrera->fechaCreacion)->format('d-m-Y') }}</td>
-                    <td class="py-2 px-4 flex items-center space-x-2">
-                        @can('carreras.update')
-                            <button data-action="edit" data-id="{{ $carrera->idCarrera }}" class="text-yellow-500 hover:text-yellow-700">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                        @endcan
-                        @can('carreras.delete')
-                            <button data-action="delete" data-id="{{ $carrera->idCarrera }}" class="text-red-500 hover:text-red-700">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        @endcan
+                    <td class="py-2 px-4">
+                        <div class="flex items-center space-x-3">
+                            <div>
+                                <span class="font-medium">{{ $carrera->idCarrera }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-2 px-4">
+                        <div class="flex items-center space-x-3">
+                            <div>
+                                <span class="font-medium">{{ $carrera->nombreCarrera }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-2 px-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {{ \Carbon\Carbon::parse($carrera->fechaCreacion)->format('d/m/Y') }}
+                        </span>
+                    </td>
+                    <td class="py-2 px-4 flex space-x-2">
+                        <button data-action="edit" data-id="{{ $carrera->idCarrera }}" class="text-yellow-500 hover:text-yellow-700">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button data-action="delete" data-id="{{ $carrera->idCarrera }}" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
                     </td>
                 </tr>
             @empty
@@ -50,9 +62,10 @@
             @endforelse
         </tbody>
     </table>
-    @if(method_exists($carreras, 'links'))
-        <div class="mt-4">
-            {{ $carreras->appends(request()->query())->links() }}
-        </div>
-    @endif
 </div>
+
+@if(method_exists($carreras, 'links'))
+    <div class="mt-4">
+        {{ $carreras->appends(request()->query())->links() }}
+    </div>
+@endif

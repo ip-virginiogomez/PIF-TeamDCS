@@ -14,11 +14,19 @@ class RoleController extends Controller
     /**
      * Muestra una lista de todos los roles.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::paginate(10);
+        $sortBy = $request->get('sortBy', 'name');
+        $sortDirection = $request->get('sortDirection', 'asc');
 
-        return view('roles.index', compact('roles'));
+        $roles = Role::orderBy($sortBy, $sortDirection)->paginate(10);
+
+        // Esta es la comprobación correcta y robusta
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return view('roles._tabla', compact('roles', 'sortBy', 'sortDirection'))->render();
+        }
+
+        return view('roles.index', compact('roles', 'sortBy', 'sortDirection'));
     }
 
     /**
@@ -34,13 +42,31 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:roles,name',
+            ]);
 
-        Role::create(['name' => $request->name]);
+            Role::create(['name' => $validated['name']]);
 
-        return redirect()->route('roles.index')->with('success', 'Rol creado exitosamente.');
+            // =======================================================
+            // ¡CAMBIO AQUÍ! Usamos wantsJson() que es más fiable
+            // =======================================================
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Rol creado exitosamente.']);
+            }
+
+            return redirect()->route('roles.index')->with('success', 'Rol creado exitosamente.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // =======================================================
+            // ¡CAMBIO AQUÍ! Usamos wantsJson()
+            // =======================================================
+            if ($request->wantsJson()) {
+                return response()->json(['errors' => $e->errors()], 422);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -48,6 +74,15 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
+        // =======================================================
+        // ¡CAMBIO AQUÍ! Usamos wantsJson()
+        // =======================================================
+        if (request()->wantsJson()) {
+            return response()->json([
+                'role' => $role,
+            ]);
+        }
+
         return view('roles.edit', compact('role'));
     }
 
@@ -56,13 +91,31 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
+            ]);
 
-        $role->update(['name' => $request->name]);
+            $role->update(['name' => $validated['name']]);
 
-        return redirect()->route('roles.index')->with('success', 'Rol actualizado exitosamente.');
+            // =======================================================
+            // ¡CAMBIO AQUÍ! Usamos wantsJson()
+            // =======================================================
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Rol actualizado exitosamente.']);
+            }
+
+            return redirect()->route('roles.index')->with('success', 'Rol actualizado exitosamente.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // =======================================================
+            // ¡CAMBIO AQUÍ! Usamos wantsJson()
+            // =======================================================
+            if ($request->wantsJson()) {
+                return response()->json(['errors' => $e->errors()], 422);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -72,13 +125,29 @@ class RoleController extends Controller
     {
         // Evitar que el rol de Admin sea eliminado
         if ($role->name == 'Admin') {
+            // =======================================================
+            // ¡CAMBIO AQUÍ! Usamos wantsJson()
+            // =======================================================
+            if (request()->wantsJson()) {
+                return response()->json(['message' => 'No se puede eliminar el rol de Administrador.'], 403);
+            }
+
             return back()->with('error', 'No se puede eliminar el rol de Administrador.');
         }
 
         $role->delete();
 
+        // =======================================================
+        // ¡CAMBIO AQUÍ! Usamos wantsJson()
+        // =======================================================
+        if (request()->wantsJson()) {
+            return response()->json(['message' => 'Rol eliminado exitosamente.']);
+        }
+
         return redirect()->route('roles.index')->with('success', 'Rol eliminado exitosamente.');
     }
+
+    // ... (El resto de tus métodos 'showPermissionMatrix', etc., están bien) ...
 
     public function showPermissionMatrix(Request $request)
     {
@@ -93,7 +162,6 @@ class RoleController extends Controller
             $selectedRole = Role::findById($request->input('role_id'));
         }
 
-        // NUEVO: Si se envía un run de usuario, lo buscamos
         if ($request->filled('user_run')) {
             $selectedUser = Usuario::where('runUsuario', $request->input('user_run'))->first();
         }
@@ -101,25 +169,16 @@ class RoleController extends Controller
         return view('roles.permission-matrix', compact('roles', 'menus', 'permissions', 'selectedRole', 'selectedUser'));
     }
 
-    /**
-     * Guarda la asignación de permisos directos para un USUARIO específico.
-     */
     public function syncPermissionsFromMatrix(Request $request)
     {
-        // 1. Validamos que nos llegue el RUN del usuario
         $request->validate([
             'user_run' => 'required|exists:usuarios,runUsuario',
             'permissions' => 'nullable|array',
         ]);
 
-        // 2. Buscamos al usuario
         $user = Usuario::where('runUsuario', $request->input('user_run'))->firstOrFail();
-
-        // 3. Sincronizamos SUS permisos directos
-        // Esto no afecta los permisos que hereda de su rol.
         $user->syncPermissions($request->input('permissions', []));
 
-        // 4. Redirigimos de vuelta a la misma página, con el rol y usuario ya seleccionados
         return redirect()->route('roles.permission_matrix', [
             'role_id' => $user->roles->first()->id ?? '',
             'user_run' => $user->runUsuario,
@@ -129,7 +188,6 @@ class RoleController extends Controller
 
     public function getUsersByRole(Role $role)
     {
-        // Buscamos los usuarios asociados a ese rol y seleccionamos solo los datos que necesitamos
         $users = $role->users()->select('runUsuario', 'nombreUsuario', 'apellidoPaterno')->get();
 
         return response()->json($users);

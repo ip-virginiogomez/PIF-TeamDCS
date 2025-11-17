@@ -13,19 +13,19 @@
                         return "<a href=\"{$url}\" class='sort-link text-left font-bold'>{$texto} {$symbol}</a>";
                     };
                 @endphp
-                <th class="py-2 px-4 text-left"> {!! $link('idSede', 'ID') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('centroFormador.nombreCentroFormador', 'Centro Formador') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('nombreSede', 'Sede') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('direccion', 'Dirección') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('fechaCreacion', 'Fecha Creación') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('numContacto', 'Contacto') !!}</th>
-                <th class="py-2 px-4 text-left">Acciones</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('idSede', 'ID') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('centroFormador.nombreCentroFormador', 'Centro Formador') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('nombreSede', 'Sede') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('direccion', 'Dirección') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('fechaCreacion', 'Fecha Creación') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('numContacto', 'Contacto') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($sedes as $sede)
             <tr class="border-b" id="sede-{{ $sede->idSede }}">
-                <td class="py-2 px-4">
+                <td class="py-2 px-4 whitespace-nowrap">
                     <div class="flex items-center space-x-3">
                         <div>
                             <span class="font-medium">{{ $sede->idSede }}</span>
@@ -80,9 +80,10 @@
             @endforelse
         </tbody>
     </table>
-    @if(method_exists($sedes, 'links'))
-        <div class="mt-4">
-            {{ $sedes->appends(request()->query())->links() }}
-        </div>
-    @endif
 </div>
+
+@if(method_exists($sedes, 'links'))
+    <div class="mt-4">
+        {{ $sedes->appends(request()->query())->links() }}
+    </div>
+@endif

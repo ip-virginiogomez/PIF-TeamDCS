@@ -52,9 +52,9 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="py-4 px-4 text-center text-gray-500">
+                <td colspan="4" class="py-4 px-4 text-center text-gray-500">
                     <div class="flex flex-col items-center">
-                        <i class="fas fa-building text-4xl text-gray-300 mb-2"></i>
+                        <i class="fas fa-university text-4xl text-gray-300 mb-2"></i>
                         <span>No hay centros formadores registrados.</span>
                     </div>
                 </td>
@@ -62,9 +62,10 @@
             @endforelse
         </tbody>
     </table>
-    @if(method_exists($centrosFormadores, 'links'))
-        <div class="mt-4">
-            {{ $centrosFormadores->appends(request()->query())->links() }}
-        </div>
-    @endif
 </div>
+
+@if(method_exists($centrosFormadores, 'links'))
+    <div class="mt-4">
+        {{ $centrosFormadores->appends(request()->query())->links() }}
+    </div>
+@endif
