@@ -149,7 +149,7 @@ class DocenteSeeder extends Seeder
                 'fechaCreacion' => now(),
                 'fechaNacto' => '1994-12-30',
                 'profesion' => 'Ingeniero',
-            ]
+            ],
         ];
         foreach ($docentes as $docenteData) {
             Docente::create($docenteData);
