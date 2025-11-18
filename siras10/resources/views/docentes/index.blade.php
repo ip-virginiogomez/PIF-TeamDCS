@@ -206,6 +206,6 @@
     </div>
 
     </x-crud-modal>
-    <x-info-modal modalId="documentosModal" title="Documentos del Docente" />
+    <x-info-modal modalId="documentosModal" title="Documentos del Docente" maxWidth="5xl" />
     @vite(['resources/js/app.js'])
 </x-app-layout>

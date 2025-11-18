@@ -73,6 +73,10 @@ class DocenteManager extends BaseModalManager {
         const iframe = document.getElementById('doc-viewer-iframe');
         const titleSpan = document.getElementById('preview-titulo');
         const modalTitle = document.getElementById('documentosModal-title');
+        
+        const modal = document.getElementById('documentosModal');
+
+        const modalPanel = modal.querySelector('.relative.bg-white'); 
 
         if (listaContainer && previewContainer && iframe) {
             listaContainer.classList.add('hidden');
@@ -81,8 +85,12 @@ class DocenteManager extends BaseModalManager {
             iframe.src = url;
             
             if (titleSpan) titleSpan.textContent = title;
-            
             if (modalTitle) modalTitle.textContent = 'Visualizando Documento';
+
+            if (modalPanel) {
+                modalPanel.classList.remove('max-w-lg', 'sm:max-w-lg'); 
+                modalPanel.classList.add('max-w-7xl', 'sm:max-w-7xl', 'w-full');
+            }
         }
     }
 
@@ -91,6 +99,9 @@ class DocenteManager extends BaseModalManager {
         const previewContainer = document.getElementById('preview-documento-container');
         const iframe = document.getElementById('doc-viewer-iframe');
         const modalTitle = document.getElementById('documentosModal-title');
+        
+        const modal = document.getElementById('documentosModal');
+        const modalPanel = modal.querySelector('.relative.bg-white');
 
         if (listaContainer && previewContainer && iframe) {
             iframe.src = '';
@@ -99,6 +110,11 @@ class DocenteManager extends BaseModalManager {
             listaContainer.classList.remove('hidden');
 
             if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
+
+            if (modalPanel) {
+                modalPanel.classList.remove('max-w-7xl', 'sm:max-w-7xl', 'w-full');
+                modalPanel.classList.add('max-w-lg', 'sm:max-w-lg');
+            }
         }
     }
 
