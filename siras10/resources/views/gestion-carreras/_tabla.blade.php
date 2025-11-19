@@ -98,7 +98,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                                 d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h2m9-9V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10m-5 3v6m-3-3h6" />
                                         </svg>
-                                        Malla
+                                        Archivos
                                     </button>
                                     
                                     <!-- Editar -->

@@ -566,6 +566,14 @@ class SedeCarreraManager extends BaseModalManager {
                 this.cerrarModalMallas();
                 return;
             }
+
+            // Event listener para cerrar el modal de mallas presionando en el fondo
+            const overlay = document.getElementById('mallasListModal');
+            if (overlay && e.target === overlay) {
+                e.preventDefault();
+                this.cerrarModalMallas();
+                return;
+            }
         });
     
         // Cambio en el campo de año (ahora es input, no select)

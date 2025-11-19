@@ -371,4 +371,83 @@ class SedeCarreraController extends Controller
             ], 500);
         }
     }
+    public function archivos(SedeCarrera $sedeCarrera)
+    {
+        $sedeCarrera->load([
+            'sede',
+            'carrera',
+            'mallaSedeCarreras.mallaCurricular',
+            'asignaturas.programa',
+        ]);
+
+        $asignaturas = $sedeCarrera->asignaturas()
+            ->with(['programa' => function ($q) {
+                $q->latest('fechaSubida');
+            }])
+            ->orderBy('nombreAsignatura')
+            ->get();
+
+        $mallas = $sedeCarrera->mallaSedeCarreras()
+            ->with('mallaCurricular')
+            ->orderByDesc('fechaSubida')
+            ->get();
+
+        return view('gestion-carreras.archivos', [
+            'sedeCarrera' => $sedeCarrera,
+            'mallas' => $mallas,
+            'asignaturas' => $asignaturas,
+        ]);
+    }
+    public function storePrograma(Request $request, Asignatura $asignatura)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'documento' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        if ($asignatura->programa) {
+            Storage::disk('public')->delete($asignatura->programa->documento);
+            $asignatura->programa()->delete();
+        }
+
+        $file = $request->file('documento');
+        $path = $file->store('programas', 'public');
+
+        $programa = $asignatura->programa()->create([
+            'documento' => $path,
+            'fechaSubida' => now(),
+            'nombre' => $request->nombre,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Programa guardado correctamente',
+            'data' => $programa,
+        ]);
+    }
+
+    public function descargarPrograma(Asignatura $asignatura)
+    {
+        $programa = $asignatura->programa;
+
+        if (!$programa || !Storage::disk('public')->exists($programa->documento)) {
+            abort(404, 'Programa no encontrado');
+        }
+
+        return Storage::disk('public')->download(
+            $programa->documento,
+            $asignatura->nombreAsignatura . ' - Programa.pdf'
+        );
+    }
+
+    public function verPrograma(Asignatura $asignatura)
+    {
+        $programa = $asignatura->programa;
+
+        if (!$programa || !Storage::disk('public')->exists($programa->documento)) {
+            abort(404, 'Programa no encontrado');
+        }
+
+        return response()->file(storage_path('app/public/' . $programa->documento));
+    }
 }
