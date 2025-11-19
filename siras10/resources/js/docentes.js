@@ -29,12 +29,32 @@ class DocenteManager extends BaseModalManager {
         this.addDocenteListeners();
     }
 
+    setModalMaxWidth(panel, sizeClass) {
+        if (!panel) return;
+
+        panel.classList.remove(
+            'max-w-sm', 'sm:max-w-sm',
+            'max-w-md', 'sm:max-w-md',
+            'max-w-lg', 'sm:max-w-lg',
+            'max-w-xl', 'sm:max-w-xl',
+            'max-w-2xl', 'sm:max-w-2xl',
+            'max-w-3xl', 'sm:max-w-3xl',
+            'max-w-4xl', 'sm:max-w-4xl',
+            'max-w-5xl', 'sm:max-w-5xl',
+            'max-w-6xl', 'sm:max-w-6xl',
+            'max-w-7xl', 'sm:max-w-7xl',
+            'w-full'
+        );
+
+        panel.classList.add(sizeClass, 'w-full');
+    }
+
     addDocenteListeners() {
         document.body.addEventListener('click', (e) => {
 
             const btnEdit = e.target.closest('[data-action="edit"]');
             const documentosModal = document.getElementById('documentosModal');
-            
+
             if (btnEdit && documentosModal && documentosModal.contains(btnEdit)) {
                 e.preventDefault();
                 const id = btnEdit.dataset.id;
@@ -58,7 +78,7 @@ class DocenteManager extends BaseModalManager {
                 this.cerrarPreviewDocumento();
                 return;
             }
-            
+
             if (documentosModal && !documentosModal.classList.contains('hidden')) {
                 if (e.target === documentosModal || e.target.closest('[data-dismiss="modal"]')) {
                     this.cerrarModalDocumentos();
@@ -73,24 +93,18 @@ class DocenteManager extends BaseModalManager {
         const iframe = document.getElementById('doc-viewer-iframe');
         const titleSpan = document.getElementById('preview-titulo');
         const modalTitle = document.getElementById('documentosModal-title');
-        
-        const modal = document.getElementById('documentosModal');
-
-        const modalPanel = modal.querySelector('.relative.bg-white'); 
+        const modalPanel = document.getElementById('documentosModal-panel');
 
         if (listaContainer && previewContainer && iframe) {
             listaContainer.classList.add('hidden');
             previewContainer.classList.remove('hidden');
-            
+
             iframe.src = url;
-            
+
             if (titleSpan) titleSpan.textContent = title;
             if (modalTitle) modalTitle.textContent = 'Visualizando Documento';
 
-            if (modalPanel) {
-                modalPanel.classList.remove('max-w-lg', 'sm:max-w-lg'); 
-                modalPanel.classList.add('max-w-7xl', 'sm:max-w-7xl', 'w-full');
-            }
+            this.setModalMaxWidth(modalPanel, 'sm:max-w-7xl');
         }
     }
 
@@ -99,22 +113,19 @@ class DocenteManager extends BaseModalManager {
         const previewContainer = document.getElementById('preview-documento-container');
         const iframe = document.getElementById('doc-viewer-iframe');
         const modalTitle = document.getElementById('documentosModal-title');
-        
+
         const modal = document.getElementById('documentosModal');
-        const modalPanel = modal.querySelector('.relative.bg-white');
+        const modalPanel = modal.querySelector('div[class*="bg-white"]') || modal.querySelector('div[class*="max-w-"]');
 
         if (listaContainer && previewContainer && iframe) {
             iframe.src = '';
-            
+
             previewContainer.classList.add('hidden');
             listaContainer.classList.remove('hidden');
 
             if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
 
-            if (modalPanel) {
-                modalPanel.classList.remove('max-w-7xl', 'sm:max-w-7xl', 'w-full');
-                modalPanel.classList.add('max-w-lg', 'sm:max-w-lg');
-            }
+            this.setModalMaxWidth(modalPanel, 'sm:max-w-3xl');
         }
     }
 
@@ -134,7 +145,7 @@ class DocenteManager extends BaseModalManager {
             const errorMessage = errors[field][0];
 
             if (input) {
-                input.classList.add('border-red-500'); 
+                input.classList.add('border-red-500');
             }
 
             if (errorDiv) {
@@ -148,14 +159,14 @@ class DocenteManager extends BaseModalManager {
         this.form.querySelectorAll('.border-red-500').forEach(el => {
             el.classList.remove('border-red-500');
         });
-        
+
         this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
             errorDiv.classList.add('hidden');
             errorDiv.textContent = '';
         });
     }
 
-    initFotoPreview(){
+    initFotoPreview() {
         const fotoInput = this.form.querySelector('#foto');
         const fotoPreview = document.getElementById('foto-preview');
 
@@ -166,11 +177,11 @@ class DocenteManager extends BaseModalManager {
             if (!file) return;
 
             const reader = new FileReader();
-            
+
             reader.onload = (event) => {
-                fotoPreview.src = event.target.result; 
+                fotoPreview.src = event.target.result;
             };
-            
+
             reader.readAsDataURL(file);
         });
     }
@@ -238,7 +249,7 @@ class DocenteManager extends BaseModalManager {
         this.form.querySelector('[name="correo"]').value = docente.correo;
         this.form.querySelector('[name="profesion"]').value = docente.profesion;
         this.form.querySelector('[name="fechaNacto"]').value = docente.fechaNacto;
-        
+
         if (runInput) {
             runInput.setAttribute('readonly', true);
             runInput.classList.add('bg-gray-100', 'cursor-not-allowed');
@@ -254,15 +265,15 @@ class DocenteManager extends BaseModalManager {
             }
         }
         if (selectSedeCarrera && data.sedesCarrerasDisponibles) {
-            
+
             selectSedeCarrera.innerHTML = '<option value="">Seleccione una opción...</option>';
-            
+
             data.sedesCarrerasDisponibles.forEach(sede => {
                 const option = document.createElement('option');
                 option.value = sede.idSedeCarrera;
                 const nombreSede = (sede.sede && sede.sede.nombreSede) ? sede.sede.nombreSede : '';
                 option.textContent = `${sede.nombreSedeCarrera} (${nombreSede || 'Sin Sede'})`;
-                
+
                 if (sede.idSedeCarrera == data.idSedeCarreraActual) {
                     option.selected = true;
                 }
@@ -275,12 +286,17 @@ class DocenteManager extends BaseModalManager {
         const modal = document.getElementById('documentosModal');
         const modalBody = document.getElementById('documentosModal-body');
         const modalTitle = document.getElementById('documentosModal-title');
+        const modalPanel = modal.querySelector('div[class*="bg-white"]') || modal.querySelector('div[class*="max-w-"]');
 
         if (!modal || !modalBody) return;
 
+        this.setModalMaxWidth(modalPanel, 'sm:max-w-3xl');
+
         modal.classList.remove('hidden');
         modal.classList.add('flex', 'items-center', 'justify-center');
-        modalTitle.textContent = 'Documentos del Docente';
+
+        if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
+
         modalBody.innerHTML = `<div class="flex justify-center items-center h-32"><i class="fas fa-spinner fa-spin fa-2x text-gray-500"></i></div>`;
 
         try {
@@ -288,7 +304,7 @@ class DocenteManager extends BaseModalManager {
             if (!response.ok) throw new Error('No se pudo cargar la lista de documentos.');
 
             const html = await response.text();
-            
+
             modalBody.innerHTML = html;
         } catch (error) {
             console.error('Error al ver documentos:', error);
