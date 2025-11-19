@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Docente;
+use App\Models\SedeCarrera;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -37,6 +38,7 @@ class DocentesController extends Controller
         }
 
         $docentes = $query->paginate(10);
+        $sedesCarreras = SedeCarrera::with('sede')->get();
 
         if (request()->ajax()) {
             return view('docentes._tabla', [
@@ -50,12 +52,14 @@ class DocentesController extends Controller
             'docentes' => $docentes,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
+            'sedesCarreras' => $sedesCarreras,
         ]);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
             'runDocente' => 'required|string|max:12|unique:docente,runDocente',
             'nombresDocente' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
@@ -109,8 +113,12 @@ class DocentesController extends Controller
         }
 
         try {
-            $data = $request->all();
+            $data = $request->except(['idSedeCarrera', 'foto', 'acuerdo', 'certIAAS', 'certRCP', 'certSuperInt', 'curriculum']);
+            $sedeCarreraId = $request->input('idSedeCarrera');
 
+            if ($sedeCarreraId) {
+                $docente->sedesCarreras()->attach($sedeCarreraId);
+            }
             if (empty($data['fechaCreacion'])) {
                 $data['fechaCreacion'] = now()->format('Y-m-d');
             }
@@ -162,9 +170,14 @@ class DocentesController extends Controller
 
     public function edit(Docente $docente)
     {
-        $docente = Docente::findorfail($docente->runDocente);
+        $sedesCarrerasDisponibles = SedeCarrera::with('sede')->get();
+        $sedeCarreraActual = $docente->sedesCarreras()->first();
 
-        return response()->json($docente);
+        return response()->json([
+            'docente' => $docente,
+            'sedesCarrerasDisponibles' => $sedesCarrerasDisponibles,
+            'idSedeCarreraActual' => $sedeCarreraActual ? $sedeCarreraActual->idSedeCarrera : null,
+        ]);
     }
 
     public function update(Request $request, Docente $docente)
@@ -223,7 +236,8 @@ class DocentesController extends Controller
         }
 
         try {
-            $data = $validator->validated();
+            $data = $request->except(['idSedeCarrera', 'foto', 'acuerdo', 'certIAAS', 'certRCP', 'certSuperInt', 'curriculum']);
+            $sedeCarreraId = $request->input('idSedeCarrera');
 
             if ($request->hasFile('foto')) {
                 if ($docente->foto) {
@@ -274,6 +288,12 @@ class DocentesController extends Controller
             }
 
             $docente->update($data);
+
+            if ($sedeCarreraId) {
+                $docente->sedesCarreras()->sync([$sedeCarreraId]);
+            } else {
+                $docente->sedesCarreras()->detach();
+            }
 
             return response()->json([
                 'success' => true,

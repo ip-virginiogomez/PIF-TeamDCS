@@ -49,6 +49,16 @@ class Docente extends Model
         return $this->hasMany(DocenteVacuna::class, 'runDocente', 'runDocente');
     }
 
+    public function sedesCarreras()
+    {
+        return $this->belongsToMany(
+            SedeCarrera::class,
+            'docente_carrera',
+            'runDocente',
+            'idSedeCarrera'
+        );
+    }
+
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);

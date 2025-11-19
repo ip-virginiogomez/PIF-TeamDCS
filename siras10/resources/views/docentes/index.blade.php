@@ -41,6 +41,22 @@
         title="Nuevo Docente">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="mb-4">
+            <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Asignar a Sede/Carrera *</label>
+            <select name="idSedeCarrera" id="idSedeCarrera" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                <option value="">Seleccione una opción...</option>
+                
+                @if(isset($sedesCarreras))
+                    @foreach($sedesCarreras as $sede)
+                        <option value="{{ $sede->idSedeCarrera }}">
+                            {{ $sede->nombreSedeCarrera }} ({{ $sede->sede->nombreSede ?? 'Sin Sede' }})
+                        </option>
+                    @endforeach
+                @endif
+            </select>
+            <div id="error-idSedeCarrera" class="text-red-500 text-sm mt-1 hidden"></div>
+        </div>
         
         <div class="mb-4">
             <label for="runDocente" class="block text-sm font-medium text-gray-700">RUN *</label>
