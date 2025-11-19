@@ -105,6 +105,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('malla/{idMallaSedeCarrera}/ver', [SedeCarreraController::class, 'verMallaPdf'])->name('malla.ver');
         Route::get('malla/{idMallaSedeCarrera}/descargar', [SedeCarreraController::class, 'descargarMallaPdf'])->name('malla.descargar');
         Route::get('{sedeCarrera}/archivos', [SedeCarreraController::class, 'archivos'])->name('archivos');
+        Route::post('malla', [SedeCarreraController::class, 'storeMalla'])->name('malla.store');
+        Route::put('malla/{mallaSedeCarrera}', [SedeCarreraController::class, 'updateMalla'])->name('malla.update');
+        Route::delete('malla/{mallaSedeCarrera}', [SedeCarreraController::class, 'destroyMalla'])->name('malla.destroy');
+        Route::get('años-disponibles', [SedeCarreraController::class, 'getAniosDisponibles'])->name('anios');
         // Subir malla curricular (ya existente)
         Route::post('malla', [SedeCarreraController::class, 'storeMalla'])->name('malla.store');
         // Subir programa de asignatura (nuevo controller sugerido: AsignaturaController)

@@ -88,18 +88,18 @@
                             <td class="px-6 py-4 text-center">
                                 <div class="flex justify-center space-x-3">
                                     
-                                    <!-- Malla -->
-                                    <button 
-                                        type="button"
-                                        data-action="malla" 
-                                        data-id="{{ $sc->idSedeCarrera }}"
-                                        class="group inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg shadow hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all duration-200">
+                                {{-- Archivos --}}
+                                    <a
+                                        href="{{ route('sede-carrera.archivos', $sc->idSedeCarrera) }}"
+                                        class="group inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg shadow hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all duration-200"
+                                    >
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h2m9-9V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10m-5 3v6m-3-3h6" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h2m9-9V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2
+                                                0 012-2h6a2 2 0 012 2v2M7 7h10m-5 3v6m-3-3h6" />
                                         </svg>
                                         Archivos
-                                    </button>
+                                    </a>
                                     
                                     <!-- Editar -->
                                     <button 

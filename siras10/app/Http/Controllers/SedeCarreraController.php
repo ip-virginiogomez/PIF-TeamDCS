@@ -371,10 +371,11 @@ class SedeCarreraController extends Controller
             ], 500);
         }
     }
+
     public function archivos(SedeCarrera $sedeCarrera)
     {
         $sedeCarrera->load([
-            'sede',
+            'sede.centroFormador',  // Agregar esta relación anidada
             'carrera',
             'mallaSedeCarreras.mallaCurricular',
             'asignaturas.programa',
@@ -398,6 +399,7 @@ class SedeCarreraController extends Controller
             'asignaturas' => $asignaturas,
         ]);
     }
+
     public function storePrograma(Request $request, Asignatura $asignatura)
     {
         $request->validate([
@@ -430,13 +432,13 @@ class SedeCarreraController extends Controller
     {
         $programa = $asignatura->programa;
 
-        if (!$programa || !Storage::disk('public')->exists($programa->documento)) {
+        if (! $programa || ! Storage::disk('public')->exists($programa->documento)) {
             abort(404, 'Programa no encontrado');
         }
 
         return Storage::disk('public')->download(
             $programa->documento,
-            $asignatura->nombreAsignatura . ' - Programa.pdf'
+            $asignatura->nombreAsignatura.' - Programa.pdf'
         );
     }
 
@@ -444,10 +446,117 @@ class SedeCarreraController extends Controller
     {
         $programa = $asignatura->programa;
 
-        if (!$programa || !Storage::disk('public')->exists($programa->documento)) {
+        if (! $programa || ! Storage::disk('public')->exists($programa->documento)) {
             abort(404, 'Programa no encontrado');
         }
 
-        return response()->file(storage_path('app/public/' . $programa->documento));
+        return response()->file(storage_path('app/public/'.$programa->documento));
+    }
+    public function updateMalla(Request $request, $mallaSedeCarrera)
+    {
+        try {
+            $malla = \App\Models\MallaSedeCarrera::findOrFail($mallaSedeCarrera);
+            
+            $validated = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'anio' => 'required|integer|min:2020|max:2030',
+                'documento' => 'nullable|file|mimes:pdf|max:2048',
+            ]);
+
+            \DB::beginTransaction();
+
+            try {
+                // Actualizar o crear el año en MallaCurricular
+                $mallaCurricular = \App\Models\MallaCurricular::firstOrCreate(
+                    ['anio' => $validated['anio']],
+                    ['fechaCreacion' => now()->toDateString()]
+                );
+
+                // Verificar si ya existe otra malla para esta sede-carrera en este año
+                $mallaExistente = \App\Models\MallaSedeCarrera::where('idSedeCarrera', $malla->idSedeCarrera)
+                    ->where('idMallaCurricular', $mallaCurricular->idMallaCurricular)
+                    ->where('idMallaSedeCarrera', '!=', $malla->idMallaSedeCarrera)
+                    ->first();
+
+                if ($mallaExistente) {
+                    \DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ya existe una malla curricular para esta sede en el año '.$validated['anio'],
+                    ], 422);
+                }
+
+                // Procesar el archivo si se proporciona uno nuevo
+                $documentoPath = $malla->documento;
+                if ($request->hasFile('documento')) {
+                    // Eliminar el archivo anterior
+                    if ($malla->documento && \Storage::disk('public')->exists($malla->documento)) {
+                        \Storage::disk('public')->delete($malla->documento);
+                    }
+
+                    $file = $request->file('documento');
+                    $nombreArchivo = time().'_malla_'.$malla->idSedeCarrera.'_'.$file->getClientOriginalName();
+                    $documentoPath = $file->storeAs('mallas-curriculares', $nombreArchivo, 'public');
+                }
+
+                // Actualizar el registro
+                $malla->update([
+                    'idMallaCurricular' => $mallaCurricular->idMallaCurricular,
+                    'nombre' => $validated['nombre'],
+                    'documento' => $documentoPath,
+                    'fechaSubida' => now()->toDateString(),
+                ]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Malla curricular actualizada correctamente',
+                    'data' => $malla->load('mallaCurricular'),
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error en updateMalla: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la malla curricular.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+/**
+ * Elimina una malla curricular
+ */
+    public function destroyMalla($mallaSedeCarrera)
+    {
+        try {
+            $malla = \App\Models\MallaSedeCarrera::findOrFail($mallaSedeCarrera);
+            
+            // Eliminar el archivo del almacenamiento
+            if ($malla->documento && \Storage::disk('public')->exists($malla->documento)) {
+                \Storage::disk('public')->delete($malla->documento);
+            }
+
+            $malla->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Malla curricular eliminada correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en destroyMalla: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la malla curricular.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }
