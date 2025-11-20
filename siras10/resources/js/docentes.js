@@ -27,6 +27,7 @@ class DocenteManager extends BaseModalManager {
         });
         this.initFotoPreview();
         this.addDocenteListeners();
+        this.initSearch();
     }
 
     setModalMaxWidth(panel, sizeClass) {
@@ -193,6 +194,7 @@ class DocenteManager extends BaseModalManager {
     }
 
     initFotoPreview() {
+        if (!this.form) return;
         const fotoInput = this.form.querySelector('#foto');
         const fotoPreview = document.getElementById('foto-preview');
 
@@ -209,6 +211,99 @@ class DocenteManager extends BaseModalManager {
             };
 
             reader.readAsDataURL(file);
+        });
+    }
+
+    initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('btn-clear-search');
+        const tablaContainer = document.getElementById('tabla-container');
+
+        if (!searchInput || !tablaContainer) return;
+        if (clearBtn && searchInput.value.trim().length > 0) {
+            clearBtn.classList.remove('hidden');
+        }
+
+        const fetchTabla = async (url) => {
+            tablaContainer.style.opacity = '0.5';
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error al buscar');
+                
+                const html = await response.text();
+                tablaContainer.innerHTML = html;
+                window.history.pushState(null, '', url);
+
+            } catch (error) {
+                console.error('Error en búsqueda:', error);
+            } finally {
+                tablaContainer.style.opacity = '1';
+            }
+        };
+
+        let timeoutId;
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value;
+            if (clearBtn) {
+                if (query.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const currentUrl = new URL(window.location.href);
+                
+                if (query) {
+                    currentUrl.searchParams.set('search', query);
+                } else {
+                    currentUrl.searchParams.delete('search');
+                }
+                
+                currentUrl.searchParams.set('page', 1);
+
+                fetchTabla(currentUrl.toString());
+            }, 400);
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                searchInput.focus();
+                
+                clearBtn.classList.add('hidden');
+
+                const cleanUrl = new URL(window.location.href);
+                cleanUrl.searchParams.delete('search');
+                cleanUrl.searchParams.delete('page');
+                
+                fetchTabla(cleanUrl.toString());
+            });
+        }
+
+        const searchForm = document.getElementById('search-form');
+        if(searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+            });
+        }
+
+        tablaContainer.addEventListener('click', (e) => {
+            const link = e.target.closest('.pagination a'); 
+            if (!link) return;
+            const pageLink = e.target.closest('a[href*="page="]'); 
+
+            if (pageLink) {
+                e.preventDefault();
+                fetchTabla(pageLink.href);
+            }
         });
     }
 

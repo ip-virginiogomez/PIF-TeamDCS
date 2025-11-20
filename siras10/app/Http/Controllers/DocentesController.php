@@ -24,12 +24,23 @@ class DocentesController extends Controller
         $columnasDisponibles = ['runDocente', 'nombresDocente', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
         $sortBy = request()->get('sort_by', 'runDocente');
         $sortDirection = request()->get('sort_direction', 'asc');
+        $search = request()->input('search');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'runDocente';
         }
 
         $query = Docente::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('runDocente', 'like', "%{$search}%")
+                    ->orWhere('nombresDocente', 'like', "%{$search}%")
+                    ->orWhere('apellidoPaterno', 'like', "%{$search}%")
+                    ->orWhere('apellidoMaterno', 'like', "%{$search}%")
+                    ->orWhere('correo', 'like', "%{$search}%");
+            });
+        }
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
