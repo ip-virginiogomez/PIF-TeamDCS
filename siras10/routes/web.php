@@ -127,6 +127,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('asignaciones.asignarRAD');
     Route::delete('/asignaciones/rad/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroRad'])
         ->name('asignaciones.quitarRAD');
+
+    // otros recursos y/o rutas...
+    Route::get('/api/sedes-carreras', [App\Http\Controllers\DocentesController::class, 'getSedesCarrerasByCentro'])->name('api.sedes-carreras');
 });
 
 require __DIR__.'/auth.php';

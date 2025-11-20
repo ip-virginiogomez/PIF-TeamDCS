@@ -218,93 +218,135 @@ class DocenteManager extends BaseModalManager {
         const searchInput = document.getElementById('search-input');
         const clearBtn = document.getElementById('btn-clear-search');
         const tablaContainer = document.getElementById('tabla-container');
+        
+        const filterCentro = document.getElementById('filter-centro');
+        const filterSedeCarrera = document.getElementById('filter-sede-carrera');
 
         if (!searchInput || !tablaContainer) return;
+
+        // Mostrar X si ya hay texto
         if (clearBtn && searchInput.value.trim().length > 0) {
             clearBtn.classList.remove('hidden');
         }
 
+        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
+        const executeSearch = (page = 1) => {
+            const currentUrl = new URL(window.location.href);
+            
+            const query = searchInput.value;
+            const centroId = filterCentro ? filterCentro.value : '';
+            const sedeCarreraId = filterSedeCarrera ? filterSedeCarrera.value : '';
+
+            if (query) currentUrl.searchParams.set('search', query);
+            else currentUrl.searchParams.delete('search');
+
+            if (centroId) currentUrl.searchParams.set('centro_id', centroId);
+            else currentUrl.searchParams.delete('centro_id');
+
+            if (sedeCarreraId) currentUrl.searchParams.set('sede_carrera_id', sedeCarreraId);
+            else currentUrl.searchParams.delete('sede_carrera_id');
+
+            currentUrl.searchParams.set('page', page);
+
+            fetchTabla(currentUrl.toString());
+        };
+
         const fetchTabla = async (url) => {
             tablaContainer.style.opacity = '0.5';
-
             try {
-                const response = await fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                
-                if (!response.ok) throw new Error('Error al buscar');
-                
+                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!response.ok) throw new Error('Error');
                 const html = await response.text();
                 tablaContainer.innerHTML = html;
                 window.history.pushState(null, '', url);
-
-            } catch (error) {
-                console.error('Error en búsqueda:', error);
-            } finally {
-                tablaContainer.style.opacity = '1';
-            }
+            } catch (error) { console.error(error); } 
+            finally { tablaContainer.style.opacity = '1'; }
         };
 
+        // --- LISTENERS ---
+
+        // 1. TEXTO (Debounce)
         let timeoutId;
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value;
             if (clearBtn) {
-                if (query.length > 0) {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
+                query.length > 0 ? clearBtn.classList.remove('hidden') : clearBtn.classList.add('hidden');
             }
             clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                const currentUrl = new URL(window.location.href);
-                
-                if (query) {
-                    currentUrl.searchParams.set('search', query);
-                } else {
-                    currentUrl.searchParams.delete('search');
-                }
-                
-                currentUrl.searchParams.set('page', 1);
-
-                fetchTabla(currentUrl.toString());
-            }, 400);
+            timeoutId = setTimeout(() => executeSearch(1), 400);
         });
 
+        // 2. FILTRO CENTRO FORMADOR (LÓGICA CASCADA EXCLUSIVA)
+        if (filterCentro && filterSedeCarrera) {
+            filterCentro.addEventListener('change', async () => {
+                // A. Limpiamos inmediatamente el valor de la carrera para evitar incongruencias
+                filterSedeCarrera.value = ''; 
+                
+                // B. Bloqueo visual mientras carga
+                filterSedeCarrera.disabled = true;
+                const originalText = filterSedeCarrera.options[0].text;
+                filterSedeCarrera.options[0].text = 'Cargando...';
+
+                try {
+                    const centroId = filterCentro.value;
+                    const url = `/api/sedes-carreras?centro_id=${centroId}`;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Error API');
+                    const data = await response.json();
+
+                    // C. Reconstruimos opciones
+                    filterSedeCarrera.innerHTML = '<option value="">Todas las Carreras</option>';
+                    data.forEach(item => {
+                        const nombreSede = item.sede ? item.sede.nombreSede : '';
+                        const option = document.createElement('option');
+                        option.value = item.idSedeCarrera;
+                        option.textContent = `${item.nombreSedeCarrera} (${nombreSede})`;
+                        filterSedeCarrera.appendChild(option);
+                    });
+
+                } catch (error) {
+                    console.error(error);
+                    filterSedeCarrera.innerHTML = '<option value="">Error al cargar</option>';
+                } finally {
+                    filterSedeCarrera.disabled = false;
+                    // D. SOLO AHORA ejecutamos la búsqueda (1 sola vez)
+                    executeSearch(1); 
+                }
+            });
+        } else if (filterCentro) {
+            // Fallback por si no existe el segundo select
+            filterCentro.addEventListener('change', () => executeSearch(1));
+        }
+
+        // 3. FILTRO SEDE/CARRERA (Simple)
+        if (filterSedeCarrera) {
+            filterSedeCarrera.addEventListener('change', () => executeSearch(1));
+        }
+
+        // 4. LIMPIAR
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 searchInput.value = '';
                 searchInput.focus();
-                
                 clearBtn.classList.add('hidden');
-
-                const cleanUrl = new URL(window.location.href);
-                cleanUrl.searchParams.delete('search');
-                cleanUrl.searchParams.delete('page');
-                
-                fetchTabla(cleanUrl.toString());
+                executeSearch(1);
             });
         }
 
-        const searchForm = document.getElementById('search-form');
-        if(searchForm) {
-            searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-            });
-        }
-
+        // 5. PAGINACIÓN
         tablaContainer.addEventListener('click', (e) => {
-            const link = e.target.closest('.pagination a'); 
-            if (!link) return;
-            const pageLink = e.target.closest('a[href*="page="]'); 
-
+            const pageLink = e.target.closest('a[href*="page="]');
             if (pageLink) {
                 e.preventDefault();
-                fetchTabla(pageLink.href);
+                const url = new URL(pageLink.href);
+                const page = url.searchParams.get('page');
+                executeSearch(page);
             }
         });
+
+        // Prevenir submit
+        const searchForm = document.getElementById('search-form');
+        if(searchForm) searchForm.addEventListener('submit', (e) => e.preventDefault());
     }
 
     validate() {

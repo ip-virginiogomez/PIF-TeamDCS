@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Docente;
 use App\Models\SedeCarrera;
+use App\Models\CentroFormador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -25,6 +26,8 @@ class DocentesController extends Controller
         $sortBy = request()->get('sort_by', 'runDocente');
         $sortDirection = request()->get('sort_direction', 'asc');
         $search = request()->input('search');
+        $filtroCentro = request()->input('centro_id');
+        $filtroSedeCarrera = request()->input('sede_carrera_id');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'runDocente';
@@ -48,8 +51,30 @@ class DocentesController extends Controller
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $docentes = $query->paginate(10);
+        if ($filtroSedeCarrera) {
+            $query->whereHas('sedesCarreras', function($q) use ($filtroSedeCarrera) {
+                $q->where('docente_carrera.idSedeCarrera', $filtroSedeCarrera);
+            });
+        }
+
+        if ($filtroCentro) {
+            $query->whereHas('sedesCarreras.sede.centroFormador', function($q) use ($filtroCentro) {
+                $q->where('idCentroFormador', $filtroCentro);
+            });
+        }
+
+        $docentes = $query->orderBy($sortBy, $sortDirection)->paginate(10);
+
+        $docentes->appends([
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'centro_id' => $filtroCentro,
+            'sede_carrera_id' => $filtroSedeCarrera
+        ]);
+
         $sedesCarreras = SedeCarrera::with('sede')->get();
+        $centrosFormadores = CentroFormador::all(); 
 
         if (request()->ajax()) {
             return view('docentes._tabla', [
@@ -64,6 +89,7 @@ class DocentesController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'sedesCarreras' => $sedesCarreras,
+            'centrosFormadores' => $centrosFormadores,
         ]);
     }
 
@@ -429,5 +455,22 @@ class DocentesController extends Controller
     public function showDocumentos(Docente $docente)
     {
         return view('docentes._documentos_lista', compact('docente'));
+    }
+
+    public function getSedesCarrerasByCentro(Request $request)
+    {
+        $centroId = $request->input('centro_id');
+
+        $query = SedeCarrera::with('sede');
+
+        if ($centroId) {
+            $query->whereHas('sede', function ($q) use ($centroId) {
+                $q->where('idCentroFormador', $centroId);
+            });
+        }
+
+        $sedesCarreras = $query->get();
+
+        return response()->json($sedesCarreras);
     }
 }
