@@ -321,6 +321,6 @@
             // Hacer disponible globalmente
             window.sedeCarreraManager = null;
         </script>
-        @vite(['resources/js/sede-carrera.js'])
+        @vite(['resources/js/app.js'])
     @endpush
 </x-app-layout>
