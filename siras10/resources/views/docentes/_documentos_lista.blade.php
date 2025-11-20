@@ -2,11 +2,11 @@
 <div id="lista-documentos-container" class="space-y-4 p-2 transition-opacity duration-300">
     @php
         $documentos = [
-            ['nombre' => 'Curriculum Vitae', 'campo' => $docente->curriculum],
-            ['nombre' => 'Certificado Superintendencia', 'campo' => $docente->certSuperInt],
-            ['nombre' => 'Certificado RCP', 'campo' => $docente->certRCP],
-            ['nombre' => 'Certificado IAAS', 'campo' => $docente->certIAAS],
-            ['nombre' => 'Documento de Acuerdo', 'campo' => $docente->acuerdo],
+            ['key' => 'curriculum', 'nombre' => 'Curriculum Vitae', 'campo' => $docente->curriculum],
+            ['key' => 'certSuperInt', 'nombre' => 'Certificado Superintendencia', 'campo' => $docente->certSuperInt],
+            ['key' => 'certRCP', 'nombre' => 'Certificado RCP', 'campo' => $docente->certRCP],
+            ['key' => 'certIAAS', 'nombre' => 'Certificado IAAS', 'campo' => $docente->certIAAS],
+            ['key' => 'acuerdo', 'nombre' => 'Documento de Acuerdo', 'campo' => $docente->acuerdo],
         ];
         $hasDocs = false;
     @endphp
@@ -16,6 +16,7 @@
             @php 
                 $hasDocs = true; 
                 $urlArchivo = asset('storage/' . $doc['campo']);
+                $docKey = $doc['key'];
             @endphp
             
             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200 hover:bg-gray-100 transition">
@@ -50,6 +51,29 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </a>
+
+                    <button type="button" 
+                            data-action="change-doc" 
+                            data-doc-key="{{ $docKey }}"
+                            data-docente-id="{{ $docente->runDocente }}"
+                            class="text-yellow-600 hover:text-yellow-800 p-2 rounded-full hover:bg-yellow-100 transition duration-150 ease-in-out"
+                            title="Cambiar archivo">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+
+                    <form id="form-change-{{ $docKey }}-{{ $docente->runDocente }}" class="hidden" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" 
+                            name="{{ $docKey }}" {{-- El nombre del input es la clave del documento --}}
+                            data-doc-key="{{ $docKey }}"
+                            data-docente-id="{{ $docente->runDocente }}"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            class="hidden" 
+                            onchange="docenteManager.handleFileChange(this)"> 
+                    </form>
+
                 </div>
             </div>
         @endif

@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('{docente}', [DocentesController::class, 'update'])->name('update')->middleware('can:docentes.update');
         Route::delete('{docente}', [DocentesController::class, 'destroy'])->name('destroy')->middleware('can:docentes.delete');
         Route::get('{docente}/documentos', [DocentesController::class, 'showDocumentos'])->name('documentos');
+        Route::post('{docente}/upload-document', [DocentesController::class, 'uploadDocument'])->name('uploadDocument')->middleware('can:docentes.update');
     });
 
     // --- GESTIÓN DE CENTROS DE SALUD Y UNIDADES ---

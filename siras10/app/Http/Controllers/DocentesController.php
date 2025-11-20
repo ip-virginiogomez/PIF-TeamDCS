@@ -308,6 +308,76 @@ class DocentesController extends Controller
         }
     }
 
+    public function uploadDocument(Request $request, Docente $docente)
+    {
+        $allowedDocumentKeys = ['curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo', 'foto'];
+
+        $uploadedDocKey = null;
+        foreach ($allowedDocumentKeys as $key) {
+            if ($request->hasFile($key)) {
+                $uploadedDocKey = $key;
+                break;
+            }
+        }
+
+        if (! $uploadedDocKey) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se ha proporcionado ningún archivo para subir.',
+            ], 400);
+        }
+
+        // Validar el archivo específico
+        $validationRules = [
+            $uploadedDocKey => ['required', 'file', 'max:2048'],
+        ];
+
+        // Ajustar reglas de MIME types según el tipo de documento
+        if (in_array($uploadedDocKey, ['curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo'])) {
+            $validationRules[$uploadedDocKey][] = 'mimes:pdf,doc,docx';
+        } elseif ($uploadedDocKey === 'foto') {
+            $validationRules[$uploadedDocKey][] = 'image';
+        }
+
+        $validator = Validator::make($request->all(), $validationRules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación al subir el archivo.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $file = $request->file($uploadedDocKey);
+            $oldFilePath = $docente->$uploadedDocKey;
+
+            // Almacenar el nuevo archivo
+            $path = $file->store("docentes/{$uploadedDocKey}s", 'public');
+
+            // Actualizar la base de datos
+            $docente->update([$uploadedDocKey => $path]);
+
+            // Eliminar el archivo antiguo si existe y no es el placeholder (solo si el nuevo se subió con éxito)
+            if ($oldFilePath && Storage::disk('public')->exists($oldFilePath) && ! str_contains($oldFilePath, 'placeholder.png')) {
+                Storage::disk('public')->delete($oldFilePath);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Documento {$uploadedDocKey} actualizado exitosamente.",
+                'new_path' => $path,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la subida del documento: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function destroy(Docente $docente)
     {
         // Eliminar archivos individualmente

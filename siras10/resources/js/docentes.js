@@ -50,10 +50,17 @@ class DocenteManager extends BaseModalManager {
     }
 
     addDocenteListeners() {
+        if (document.body.dataset.docenteListenersActive === 'true') {
+            return;
+        }
+
+        document.body.dataset.docenteListenersActive = 'true';
+
         document.body.addEventListener('click', (e) => {
 
             const btnEdit = e.target.closest('[data-action="edit"]');
             const documentosModal = document.getElementById('documentosModal');
+            const btnChangeDoc = e.target.closest('[data-action="change-doc"]');
 
             if (btnEdit && documentosModal && documentosModal.contains(btnEdit)) {
                 e.preventDefault();
@@ -69,6 +76,18 @@ class DocenteManager extends BaseModalManager {
                 const url = btnPreview.dataset.url;
                 const title = btnPreview.dataset.title;
                 this.mostrarPreviewDocumento(url, title);
+                return;
+            }
+
+            if (btnChangeDoc) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const docKey = btnChangeDoc.dataset.docKey;
+                const docenteId = btnChangeDoc.dataset.docenteId;
+                const fileInput = document.querySelector(`#form-change-${docKey}-${docenteId} input[type="file"]`);
+                if (fileInput) {
+                    fileInput.click();
+                }
                 return;
             }
 
@@ -99,7 +118,14 @@ class DocenteManager extends BaseModalManager {
             listaContainer.classList.add('hidden');
             previewContainer.classList.remove('hidden');
 
-            iframe.src = url;
+            const extension = url.split('.').pop().toLowerCase();
+            const officeExtensions = ['doc', 'docx'];
+
+            if(officeExtensions.includes(extension)) {
+                iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+            }else{
+                iframe.src = url;
+            }
 
             if (titleSpan) titleSpan.textContent = title;
             if (modalTitle) modalTitle.textContent = 'Visualizando Documento';
@@ -311,7 +337,104 @@ class DocenteManager extends BaseModalManager {
             modalBody.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
         }
     }
+
+    async handleFileChange(fileInput) {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const docKey = fileInput.dataset.docKey; 
+        const docenteId = fileInput.dataset.docenteId;
+
+        const docNameReadable = docKey.replace(/([A-Z])/g, ' $1').trim();
+
+        const result = await Swal.fire({
+            title: '¿Cambiar archivo?',
+            text: `Se reemplazará el documento actual de "${docNameReadable}".`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cambiar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!result.isConfirmed) {
+            fileInput.value = ''; 
+            return;
+        }
+
+        Swal.fire({
+            title: 'Subiendo archivo...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        try {
+            await this.uploadDocument(docenteId, docKey, file);
+            await Swal.fire({
+                title: '¡Actualizado!',
+                text: 'El documento se ha subido correctamente.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            this.verDocumentos(docenteId);
+        } catch (error) {
+            console.error('Error al subir documento:', error);
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'No se pudo subir el archivo.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+        } finally {
+            fileInput.value = '';
+        }
+    }
+
+    async uploadDocument(docenteId, docKey, file) {
+        const formData = new FormData();
+        formData.append('_method', 'POST');
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        formData.append(docKey, file);
+
+        const url = `docentes/${docenteId}/upload-document`;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Error al subir el documento.';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+                
+                if (errorData.errors) {
+                    errorMessage += ': ' + Object.values(errorData.errors).flat().join(', ');
+                }
+            } catch (e) {
+                console.error('Error crítico (HTML recibido):', await response.text());
+                errorMessage = 'Error crítico del servidor. Revisa la consola (F12) para más detalles.';
+            }
+            throw new Error(errorMessage);
+        }
+
+        return response.json();
+    }
 }
+
+window.docenteManager = new DocenteManager();
 
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('docenteForm')) {
