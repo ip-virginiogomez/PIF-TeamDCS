@@ -45,25 +45,31 @@
                 </td>
                 <td class="py-2 px-4">
                     <div class="flex items-center space-x-3">
-                        <div>
-                            <span class="font-medium">{{ $docente->nombresDocente }}</span>
-                        </div>
+                        <span class="font-medium">{{ $docente->nombresDocente }}</span>
                     </div>
                 </td>
                 <td class="py-2 px-4">
                     <div class="flex items-center space-x-3">
-                        <div>
-                            <span class="font-medium">{{ $docente->apellidoPaterno }}</span>
-                        </div>
+                        <span class="font-medium">{{ $docente->apellidoPaterno }}</span>
                     </div>
                 </td>
-                <td class="py-2 px-4 text-sm">{{ $docente->apellidoMaterno }}</td>
+                <td class="py-2 px-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="font-medium">{{ $docente->apellidoMaterno }}</span>
+                    </div>
+                </td>
                 <td class="py-2 px-4">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                         {{ $docente->fechaNacto ? \Carbon\Carbon::parse($docente->fechaNacto)->format('d/m/Y') : 'N/A' }}
                     </span>
                 </td>
-                <td class="py-2 px-4 text-sm">{{ $docente->correo }}</td>
+                <td class="py-2 px-4">
+                    <div>
+                        <div>
+                            <span class="font-medium">{{ $docente->correo }}</span>
+                        </div>
+                    </div>
+                </td>
                 <td class="py-2 px-4 text-center">
                     <button data-action="view-documents" 
                             data-id="{{ $docente->runDocente }}"
