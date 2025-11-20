@@ -1,8 +1,22 @@
-@props(['modalId', 'title'])
+@props(['modalId', 'title', 'maxWidth' => '2xl'])
+@php
+$maxWidthClass = [
+    'sm' => 'sm:max-w-sm',
+    'md' => 'sm:max-w-md',
+    'lg' => 'sm:max-w-lg',
+    'xl' => 'sm:max-w-xl',
+    '2xl' => 'sm:max-w-2xl',
+    '3xl' => 'sm:max-w-3xl',
+    '4xl' => 'sm:max-w-4xl',
+    '5xl' => 'sm:max-w-5xl',
+    '6xl' => 'sm:max-w-6xl',
+    '7xl' => 'sm:max-w-7xl',
+][$maxWidth];
+@endphp
 
 <div id="{{ $modalId }}" class="fixed inset-0 z-50 hidden bg-gray-500 bg-opacity-75 items-center justify-center p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     
-    <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
+    <div id="{{ $modalId }}-panel" class="relative bg-white rounded-lg shadow-xl w-full {{ $maxWidthClass }} flex flex-col max-h-[90vh] transition-all duration-300">
         
         <div class="flex items-center justify-between p-4 border-b flex-shrink-0">
             <h3 class="text-lg font-medium text-gray-900" id="{{ $modalId }}-title">
