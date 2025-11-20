@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CentroFormador;
 use App\Models\Docente;
 use App\Models\SedeCarrera;
-use App\Models\CentroFormador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -52,13 +52,13 @@ class DocentesController extends Controller
         }
 
         if ($filtroSedeCarrera) {
-            $query->whereHas('sedesCarreras', function($q) use ($filtroSedeCarrera) {
+            $query->whereHas('sedesCarreras', function ($q) use ($filtroSedeCarrera) {
                 $q->where('docente_carrera.idSedeCarrera', $filtroSedeCarrera);
             });
         }
 
         if ($filtroCentro) {
-            $query->whereHas('sedesCarreras.sede.centroFormador', function($q) use ($filtroCentro) {
+            $query->whereHas('sedesCarreras.sede.centroFormador', function ($q) use ($filtroCentro) {
                 $q->where('idCentroFormador', $filtroCentro);
             });
         }
@@ -70,11 +70,11 @@ class DocentesController extends Controller
             'sort_by' => $sortBy,
             'sort_direction' => $sortDirection,
             'centro_id' => $filtroCentro,
-            'sede_carrera_id' => $filtroSedeCarrera
+            'sede_carrera_id' => $filtroSedeCarrera,
         ]);
 
         $sedesCarreras = SedeCarrera::with('sede')->get();
-        $centrosFormadores = CentroFormador::all(); 
+        $centrosFormadores = CentroFormador::all();
 
         if (request()->ajax()) {
             return view('docentes._tabla', [

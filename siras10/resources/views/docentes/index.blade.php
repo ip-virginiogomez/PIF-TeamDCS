@@ -43,7 +43,7 @@
             
                         {{-- 2. FILTROS (Flex-shrink-0 evita que se aplasten) --}}
                         <div class="flex flex-col sm:flex-row gap-3 w-full lg:flex-1">
-                            
+                            @hasrole('Admin|Encargado Campo Clínico')
                             {{-- Filtro Centro Formador --}}
                             <div class="w-full sm:flex-1">
                                 <select name="centro_id" id="filter-centro" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 truncate">
@@ -55,6 +55,7 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @endhasrole
             
                             {{-- Filtro Sede/Carrera --}}
                             <div class="w-full flex-1">
