@@ -452,11 +452,12 @@ class SedeCarreraController extends Controller
 
         return response()->file(storage_path('app/public/'.$programa->documento));
     }
+
     public function updateMalla(Request $request, $mallaSedeCarrera)
     {
         try {
             $malla = \App\Models\MallaSedeCarrera::findOrFail($mallaSedeCarrera);
-            
+
             $validated = $request->validate([
                 'nombre' => 'required|string|max:255',
                 'anio' => 'required|integer|min:2020|max:2030',
@@ -480,6 +481,7 @@ class SedeCarreraController extends Controller
 
                 if ($mallaExistente) {
                     \DB::rollBack();
+
                     return response()->json([
                         'success' => false,
                         'message' => 'Ya existe una malla curricular para esta sede en el año '.$validated['anio'],
@@ -522,6 +524,7 @@ class SedeCarreraController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Error en updateMalla: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la malla curricular.',
@@ -530,14 +533,14 @@ class SedeCarreraController extends Controller
         }
     }
 
-/**
- * Elimina una malla curricular
- */
+    /**
+     * Elimina una malla curricular
+     */
     public function destroyMalla($mallaSedeCarrera)
     {
         try {
             $malla = \App\Models\MallaSedeCarrera::findOrFail($mallaSedeCarrera);
-            
+
             // Eliminar el archivo del almacenamiento
             if ($malla->documento && \Storage::disk('public')->exists($malla->documento)) {
                 \Storage::disk('public')->delete($malla->documento);
@@ -552,6 +555,7 @@ class SedeCarreraController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Error en destroyMalla: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al eliminar la malla curricular.',
