@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AsignacionController;
+use App\Http\Controllers\AsignaturaController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
@@ -70,7 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('carreras', CarreraController::class);
     Route::resource('alumnos', AlumnoController::class);
     Route::resource('periodos', PeriodoController::class);
-
+    Route::resource('asignaturas', AsignaturaController::class);
     // --- GESTIÓN DE DOCENTES ---
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
         Route::get('/', [DocentesController::class, 'index'])->name('index');
@@ -104,6 +105,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('sedes/{sedeId}/mallas', [SedeCarreraController::class, 'getMallasPorSede'])->name('mallas.por-sede');
         Route::get('malla/{idMallaSedeCarrera}/ver', [SedeCarreraController::class, 'verMallaPdf'])->name('malla.ver');
         Route::get('malla/{idMallaSedeCarrera}/descargar', [SedeCarreraController::class, 'descargarMallaPdf'])->name('malla.descargar');
+        Route::get('{sedeCarrera}/archivos', [SedeCarreraController::class, 'archivos'])->name('archivos');
+        Route::post('malla', [SedeCarreraController::class, 'storeMalla'])->name('malla.store');
+        Route::put('malla/{mallaSedeCarrera}', [SedeCarreraController::class, 'updateMalla'])->name('malla.update');
+        Route::delete('malla/{mallaSedeCarrera}', [SedeCarreraController::class, 'destroyMalla'])->name('malla.destroy');
+        Route::get('años-disponibles', [SedeCarreraController::class, 'getAniosDisponibles'])->name('anios');
+        // Subir malla curricular (ya existente)
+        Route::post('malla', [SedeCarreraController::class, 'storeMalla'])->name('malla.store');
+        // Subir programa de asignatura (nuevo controller sugerido: AsignaturaController)
+        Route::post('asignaturas/{asignatura}/programa', [AsignaturaController::class, 'storePrograma'])->name('asignaturas.programa.store');
+        // Descargar/visualizar programa de asignatura
+        Route::get('asignaturas/{asignatura}/programa', [AsignaturaController::class, 'descargarPrograma'])->name('asignaturas.programa.download');
     });
 
     // --- GESTIÓN DE ASIGNACIONES ---
