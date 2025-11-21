@@ -19,6 +19,7 @@ use App\Http\Controllers\TipoCentroFormadorController;
 use App\Http\Controllers\TipoPracticaController;
 use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\GrupoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -127,6 +128,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('asignaciones.asignarRAD');
     Route::delete('/asignaciones/rad/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroRad'])
         ->name('asignaciones.quitarRAD');
+
+    // --- GESTIÓN DE GRUPOS ---
+    Route::resource('grupos', GrupoController::class);
+    Route::get('/grupos/por-distribucion/{idDistribucion}', [GrupoController::class, 'getGruposByDistribucion'])
+        ->name('grupos.by-distribucion');
 
     // otros recursos y/o rutas...
     Route::get('/api/sedes-carreras', [App\Http\Controllers\DocentesController::class, 'getSedesCarrerasByCentro'])->name('api.sedes-carreras');

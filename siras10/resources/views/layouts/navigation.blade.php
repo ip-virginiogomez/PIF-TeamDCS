@@ -85,6 +85,7 @@
                                 {{-- Los @can internos estaban bien --}}
                                 @can('periodos.read')<x-dropdown-link :href="route('periodos.index')" wire:navigate>{{ __('Períodos') }}</x-dropdown-link>@endcan
                                 @can('cupo-ofertas.read')<x-dropdown-link :href="route('cupo-ofertas.index')" wire:navigate>{{ __('Oferta de Cupos') }}</x-dropdown-link>@endcan
+                                <x-dropdown-link :href="route('grupos.index')" wire:navigate>{{ __('Grupos') }}</x-dropdown-link>
                                 @can('tipos-practica.read')<x-dropdown-link :href="route('tipos-practica.index')" wire:navigate>{{ __('Tipos de Práctica') }}</x-dropdown-link>@endcan
                             </x-slot>
                         </x-dropdown>

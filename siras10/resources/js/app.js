@@ -17,6 +17,7 @@ import './convenio.js';
 import './sede-carrera.js';
 import './usuarios.js';
 import './roles.js';
+import './grupos.js';
 
 import Alpine from 'alpinejs';
 
