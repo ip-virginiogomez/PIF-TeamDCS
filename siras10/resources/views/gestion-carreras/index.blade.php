@@ -27,27 +27,19 @@
             <div id="gestion-container" class="hidden">
                 <div class="bg-white shadow-sm rounded-lg p-6">
                 <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">
-                    Carreras en: <span id="sede-name-placeholder" class="text-indigo-600"></span>
+                <h3 class="text-lg font-semibold text-gray-800">
+                    Carreras en: <span id="sede-name-placeholder" class="text-blue-600"></span>
                 </h3>
-                <div class="flex space-x-3">
-                    <button type="button"
-                            data-modal-target="crudModal"
-                            class="inline-flex items-center px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow transition">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Añadir Carrera
-                    </button>
-                </div>
+                @can('sede-carrera.create')
+                <button type="button"
+                        data-modal-target="crudModal"
+                        class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                    Registrar Carrera
+                </button>
+                @endcan
             </div>
 
-                <div id="tabla-container" class="bg-gray-50 rounded-lg p-8 text-center text-gray-500">
-                    <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <p class="mt-3">Selecciona una sede para ver sus carreras</p>
-                </div>
+                <div id="tabla-container"></div>
             </div>
         </div>
     </div>
@@ -313,6 +305,6 @@
             // Hacer disponible globalmente
             window.sedeCarreraManager = null;
         </script>
-        @vite(['resources/js/sede-carrera.js'])
+        @vite(['resources/js/app.js'])
     @endpush
 </x-app-layout>

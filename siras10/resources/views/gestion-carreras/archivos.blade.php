@@ -14,14 +14,10 @@
                 </p>
             </div>
 
-            <div class="flex flex-wrap gap-3">
-                <a 
-                href="{{ route('sede-carrera.index', ['id' => $sedeCarrera->idSedeCarrera]) }}"
-                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow"
-                >
-                Volver
-                </a>
-            </div>
+            <a href="{{ route('sede-carrera.index') }}"
+               class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-arrow-left mr-2"></i>Volver
+            </a>
         </div>
     </x-slot>
 
@@ -38,91 +34,94 @@
                         <h3 class="text-lg font-semibold text-gray-900">Mallas curriculares</h3>
                         <p class="text-sm text-gray-500">Historial de mallas asociadas a esta carrera/sede.</p>
                     </div>
-                    <button 
-                        type="button"
-                        data-open-malla
-                        data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
-                        class="inline-flex items-center px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-medium"
-                    >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Nueva Malla
+                    @can('sede-carrera.create')
+                    <button type="button"
+                            data-open-malla
+                            data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
+                            class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                        <i class="fas fa-plus mr-2"></i>Nueva Malla
                     </button>
+                    @endcan
                 </div>
 
-                <div class="space-y-4">
-                    @forelse ($mallas as $malla)
-                        <article class="border border-gray-100 rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                                <h4 class="text-base font-semibold text-gray-900">{{ $malla->nombre }}</h4>
-                                <p class="text-sm text-gray-500">
-                                    Año {{ $malla->mallaCurricular->anio }} · Subida el {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap gap-2 items-center">
-                                {{-- Botón Ver --}}
-                                <button 
-                                    type="button"
-                                    data-action="preview-malla" 
-                                    data-url="{{ Storage::url($malla->documento) }}"
-                                    data-title="{{ $malla->nombre }}"
-                                    data-info="Año {{ $malla->mallaCurricular->anio }} · Subida el {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
-                                    class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Ver documento"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="py-2 px-4 text-left">Nombre</th>
+                                <th class="py-2 px-4 text-left">Año</th>
+                                <th class="py-2 px-4 text-left">Fecha Subida</th>
+                                <th class="py-2 px-4 text-left">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($mallas as $malla)
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-2 px-4">
+                                        <span class="font-medium">{{ $malla->nombre }}</span>
+                                    </td>
+                                    <td class="py-2 px-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $malla->mallaCurricular->anio }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2 px-4">
+                                        <span class="text-sm text-gray-600">{{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}</span>
+                                    </td>
+                                    <td class="py-2 px-4 flex space-x-2">
+                                        <button type="button"
+                                                data-action="preview-malla" 
+                                                data-url="{{ Storage::url($malla->documento) }}"
+                                                data-title="{{ $malla->nombre }}"
+                                                data-info="Año {{ $malla->mallaCurricular->anio }} · {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
+                                                class="text-blue-500 hover:text-blue-700"
+                                                title="Ver documento">
+                                            <i class="fas fa-eye"></i> Ver
+                                        </button>
 
-                                {{-- Botón Editar --}}
-                                <button 
-                                    type="button"
-                                    data-action="edit-malla" 
-                                    data-id="{{ $malla->idMallaSedeCarrera }}"
-                                    data-nombre="{{ $malla->nombre }}"
-                                    data-anio="{{ $malla->mallaCurricular->anio }}"
-                                    data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
-                                    class="p-2 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Editar malla"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
+                                        @can('sede-carrera.update')
+                                        <button type="button"
+                                                data-action="edit-malla" 
+                                                data-id="{{ $malla->idMallaSedeCarrera }}"
+                                                data-nombre="{{ $malla->nombre }}"
+                                                data-anio="{{ $malla->mallaCurricular->anio }}"
+                                                data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
+                                                class="text-yellow-500 hover:text-yellow-700"
+                                                title="Editar malla">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        @endcan
 
-                                {{-- Botón Eliminar --}}
-                                <button 
-                                    type="button"
-                                    data-action="delete-malla" 
-                                    data-id="{{ $malla->idMallaSedeCarrera }}"
-                                    data-nombre="{{ $malla->nombre }}"
-                                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Eliminar malla"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
+                                        @can('sede-carrera.delete')
+                                        <button type="button"
+                                                data-action="delete-malla" 
+                                                data-id="{{ $malla->idMallaSedeCarrera }}"
+                                                data-nombre="{{ $malla->nombre }}"
+                                                class="text-red-500 hover:text-red-700"
+                                                title="Eliminar malla">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                        @endcan
 
-                                {{-- Botón Descargar --}}
-                                <a
-                                    href="{{ route('sede-carrera.malla.descargar', $malla->idMallaSedeCarrera) }}"
-                                    class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Descargar documento"
-                                    download {{-- --}}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </article>
-                    @empty
-                        <p class="text-center text-gray-500 py-6">Aún no existen mallas registradas.</p>
-                    @endforelse
+                                        <a href="{{ route('sede-carrera.malla.descargar', $malla->idMallaSedeCarrera) }}"
+                                           class="text-gray-500 hover:text-gray-700"
+                                           title="Descargar documento">
+                                            <i class="fas fa-download"></i> Descargar
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="py-8">
+                                        <div class="flex flex-col items-center justify-center text-gray-400">
+                                            <i class="fas fa-file-pdf text-6xl mb-4"></i>
+                                            <p class="text-lg">Aún no existen mallas registradas</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -134,64 +133,61 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 text-left text-sm font-medium text-gray-500">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-200">
                             <tr>
-                                <th class="px-4 py-3">Asignatura</th>
-                                <th class="px-4 py-3">Programa vigente</th>
-                                <th class="px-4 py-3">Acciones</th>
+                                <th class="py-2 px-4 text-left">Asignatura</th>
+                                <th class="py-2 px-4 text-left">Programa Vigente</th>
+                                <th class="py-2 px-4 text-left">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        <tbody>
                             @forelse ($asignaturas as $asignatura)
                                 @php
                                     $programa = $asignatura->programa;
                                 @endphp
-                                <tr>
-                                    <td class="px-4 py-4">
-                                        <span class="font-semibold text-gray-900">{{ $asignatura->nombreAsignatura }}</span>
-                                        <p class="text-xs text-gray-500">Código: {{ $asignatura->codigoAsignatura ?? 'N/A' }}</p>
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-2 px-4">
+                                        <div>
+                                            <span class="font-medium">{{ $asignatura->nombreAsignatura }}</span>
+                                            <p class="text-xs text-gray-500">Código: {{ $asignatura->codigoAsignatura ?? 'N/A' }}</p>
+                                        </div>
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="py-2 px-4">
                                         @if ($programa)
-                                            <div class="text-green-700">
-                                                {{ $programa->nombre }}
-                                                <span class="block text-xs text-gray-500">
-                                                    Última subida: {{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
-                                                </span>
+                                            <div>
+                                                <span class="text-sm text-green-700">{{ $programa->nombre }}</span>
+                                                <span class="block text-xs text-gray-500">{{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}</span>
                                             </div>
                                         @else
-                                            <span class="text-gray-400">Sin programa cargado</span>
+                                            <span class="text-sm text-gray-400">Sin programa cargado</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex flex-wrap gap-2">
-                                            <button
-                                                type="button"
-                                                class="px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg"
+                                    <td class="py-2 px-4 flex space-x-2">
+                                        <button type="button"
                                                 data-open-programa
                                                 data-id-asignatura="{{ $asignatura->idAsignatura }}"
                                                 data-nombre-asignatura="{{ $asignatura->nombreAsignatura }}"
                                                 data-programa-nombre="{{ $programa->nombre ?? '' }}"
-                                            >
-                                                {{ $programa ? 'Actualizar' : 'Subir' }} programa
-                                            </button>
+                                                class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-upload"></i> {{ $programa ? 'Actualizar' : 'Subir' }}
+                                        </button>
 
-                                            @if ($programa)
-                                                <a
-                                                    href="{{ route('sede-carrera.asignaturas.programa.download', $asignatura->idAsignatura) }}"
-                                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                                                >
-                                                    Descargar
-                                                </a>
-                                            @endif
-                                        </div>
+                                        @if ($programa)
+                                        <a href="{{ route('sede-carrera.asignaturas.programa.download', $asignatura->idAsignatura) }}"
+                                           class="text-gray-500 hover:text-gray-700">
+                                            <i class="fas fa-download"></i> Descargar
+                                        </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-4 py-6 text-center text-gray-500">
-                                        No hay asignaturas asociadas a esta carrera/sede.
+                                    <td colspan="3" class="py-8">
+                                        <div class="flex flex-col items-center justify-center text-gray-400">
+                                            <i class="fas fa-book text-6xl mb-4"></i>
+                                            <p class="text-lg">No hay asignaturas asociadas</p>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -418,6 +414,6 @@
         </div>
     </div>
     @push('scripts')
-        @vite(['resources/js/sede-carrera.js'])
+        @vite(['resources/js/app.js'])
     @endpush
 </x-app-layout>

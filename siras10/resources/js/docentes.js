@@ -183,6 +183,8 @@ class DocenteManager extends BaseModalManager {
     }
 
     clearValidationErrors() {
+        if (!this.form) return;
+        
         this.form.querySelectorAll('.border-red-500').forEach(el => {
             el.classList.remove('border-red-500');
         });
@@ -571,10 +573,9 @@ class DocenteManager extends BaseModalManager {
     }
 }
 
-window.docenteManager = new DocenteManager();
-
+// Solo inicializar si estamos en la página de docentes
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('docenteForm')) {
-        new DocenteManager();
+        window.docenteManager = new DocenteManager();
     }
 });
