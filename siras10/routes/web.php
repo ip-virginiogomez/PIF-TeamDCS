@@ -70,7 +70,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('carreras', CarreraController::class);
     Route::resource('alumnos', AlumnoController::class);
     Route::resource('periodos', PeriodoController::class);
-
     // --- GESTIÓN DE DOCENTES ---
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
         Route::get('/', [DocentesController::class, 'index'])->name('index');
@@ -99,11 +98,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{sedeCarrera}/edit', [SedeCarreraController::class, 'edit'])->name('edit');
         Route::put('{sedeCarrera}', [SedeCarreraController::class, 'update'])->name('update');
         Route::delete('{sedeCarrera}', [SedeCarreraController::class, 'destroy'])->name('destroy');
+
+        // Rutas de Malla Curricular
         Route::post('malla', [SedeCarreraController::class, 'storeMalla'])->name('malla.store');
         Route::get('años-disponibles', [SedeCarreraController::class, 'getAniosDisponibles'])->name('anios');
         Route::get('sedes/{sedeId}/mallas', [SedeCarreraController::class, 'getMallasPorSede'])->name('mallas.por-sede');
         Route::get('malla/{idMallaSedeCarrera}/ver', [SedeCarreraController::class, 'verMallaPdf'])->name('malla.ver');
         Route::get('malla/{idMallaSedeCarrera}/descargar', [SedeCarreraController::class, 'descargarMallaPdf'])->name('malla.descargar');
+        Route::put('malla/{mallaSedeCarrera}', [SedeCarreraController::class, 'updateMalla'])->name('malla.update');
+        Route::delete('malla/{mallaSedeCarrera}', [SedeCarreraController::class, 'destroyMalla'])->name('malla.destroy');
+
+        // Rutas de Asignatura (CRUD)
+        Route::post('asignaturas', [SedeCarreraController::class, 'storeAsignatura'])->name('asignaturas.store');
+        Route::get('asignaturas/{asignatura}/edit', [SedeCarreraController::class, 'editAsignatura'])->name('asignaturas.edit');
+        Route::put('asignaturas/{asignatura}', [SedeCarreraController::class, 'updateAsignatura'])->name('asignaturas.update');
+        Route::delete('asignaturas/{asignatura}', [SedeCarreraController::class, 'destroyAsignatura'])->name('asignaturas.destroy');
+        Route::get('sede-carreras/{sedeCarrera}/asignaturas', [SedeCarreraController::class, 'getAsignaturasPorSedeCarrera'])->name('asignaturas.por-sede-carrera');
+
+        // Rutas de Programa de Asignatura
+        Route::get('{sedeCarrera}/archivos', [SedeCarreraController::class, 'archivos'])->name('archivos');
+        Route::post('asignaturas/{asignatura}/programa', [SedeCarreraController::class, 'storePrograma'])->name('asignaturas.programa.store');
+        Route::get('asignaturas/{asignatura}/programa/descargar', [SedeCarreraController::class, 'descargarPrograma'])->name('asignaturas.programa.download');
+        Route::get('asignaturas/{asignatura}/programa/ver', [SedeCarreraController::class, 'verPrograma'])->name('asignaturas.programa.ver');
+        // Mostrar todos los programas de una asignatura (AJAX o modal)
+        Route::get('asignaturas/{asignatura}/programas', [SedeCarreraController::class, 'showProgramas'])->name('asignaturas.programas.list');
+        // Descargar un programa específico por id
+        Route::get('programas/{programa}/descargar', [SedeCarreraController::class, 'descargarProgramaEspecifico'])->name('programas.download');
     });
 
     // --- GESTIÓN DE ASIGNACIONES ---

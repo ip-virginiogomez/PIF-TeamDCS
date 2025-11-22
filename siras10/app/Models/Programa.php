@@ -17,7 +17,7 @@ class Programa extends Model
 
     protected $fillable = [
         'idAsignatura',
-        'doc',
+        'documento',
         'fechaSubida',
     ];
 
