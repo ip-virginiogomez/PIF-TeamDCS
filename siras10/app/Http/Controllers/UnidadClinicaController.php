@@ -19,7 +19,7 @@ class UnidadClinicaController extends Controller
 
     public function index(Request $request)
     {
-        $unidadesClinicas = UnidadClinica::with('centroSalud')->paginate(10);
+        $unidadesClinicas = UnidadClinica::with('centroSalud')->orderBy('idUnidadClinica', 'desc')->paginate(10);
 
         if ($request->ajax()) {
             return View::make('unidad-clinicas._tabla', compact('unidadesClinicas'))->render();

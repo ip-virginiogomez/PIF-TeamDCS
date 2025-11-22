@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bienvenido a SIRAS</title>
+    <title>SIRAS</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -60,7 +60,7 @@
                 <!-- Columna de Texto -->
                 <div class="text-center lg:text-left">
                     <h1 class="text-4xl font-bold text-white tracking-tight sm:text-5xl lg:text-6xl">
-                        Bienvenido a <span class="text-yellow-400">SIRAS</span>
+                        Bienvenido a SIRAS</span>
                     </h1>
                     
                     <p class="mt-6 text-xl leading-8 text-gray-100 max-w-lg mx-auto lg:mx-0">
@@ -68,14 +68,14 @@
                     </p>
                     
                     <p class="mt-4 text-base leading-7 text-gray-200 max-w-lg mx-auto lg:mx-0">
-                        Una plataforma diseñada para facilitar la gestión de prácticas profesionales y rotaciones clínicas entre instituciones formadoras y centros de salud.
+                        Una plataforma diseñada para facilitar la gestión de cupos de prácticas profesionales y rotaciones entre instituciones formadoras y centros de salud.
                     </p>
                     
                     <!-- Información adicional -->
                     <div class="mt-10 border-l-4 border-yellow-400 pl-6 bg-white/10 backdrop-blur-sm p-6 rounded-r-lg">
-                        <h3 class="text-lg font-semibold text-yellow-400 mb-2">Nuestro Objetivo</h3>
+                        <h3 class="text-lg font-semibold text-white mb-2">Nuestro Objetivo</h3>
                         <p class="text-gray-100 leading-relaxed">
-                            Optimizar la asignación de cupos, centralizar la gestión de documentos y fortalecer la comunicación entre universidades, institutos y centros de salud de la comuna de Los Ángeles.
+                            Optimizar la asignación de cupos de práctica, centralizar la gestión de documentos y fortalecer la comunicación entre universidades, institutos y centros de salud de la comuna de Los Ángeles.
                         </p>
                     </div>
                 </div>
@@ -83,7 +83,6 @@
                 <!-- Columna de Imagen -->
                 <div class="flex justify-center lg:justify-end">
                     <div class="relative">
-                        <div class="absolute -inset-4 bg-gradient-to-r from-yellow-400/30 to-dcs-blue-400/30 rounded-2xl blur-2xl"></div>
                         <img class="relative rounded-xl shadow-2xl w-full max-w-md object-cover ring-1 ring-white/20" 
                             src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop" 
                             alt="Profesionales de la salud colaborando">
@@ -101,7 +100,7 @@
                 <h2 class="text-base font-semibold leading-7 text-dcs-blue-600">Funcionalidades Principales</h2>
                 <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Una solución integral para la gestión de prácticas</p>
                 <p class="mt-6 text-lg leading-8 text-gray-600 max-w-3xl mx-auto">
-                    SIRAS facilita cada etapa del proceso de rotación académica, desde la oferta inicial de cupos hasta el seguimiento y evaluación de las prácticas profesionales.
+                    SIRAS facilita cada etapa del proceso de rotación de práctica, desde la publicación de la oferta inicial de cupo, hasta la asignación por centro formador y terminando en la asignación por alumnos para la práctica profesional.
                 </p>
             </div>
             
@@ -258,10 +257,7 @@
                 <div>
                     <h3 class="text-white font-semibold text-lg mb-4">Soporte</h3>
                     <p class="text-gray-300 text-sm mb-2">
-                        Para consultas o asistencia técnica, contacte a su coordinador institucional.
-                    </p>
-                    <p class="text-gray-300 text-sm">
-                        <span class="font-medium text-white">Versión:</span> 1.0.0 (Beta)
+                        Para consultas o asistencia técnica, contacte al área de TI de la DCS.
                     </p>
                 </div>
             </div>

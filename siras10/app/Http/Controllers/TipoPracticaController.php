@@ -19,7 +19,7 @@ class TipoPracticaController extends Controller
 
     public function index(Request $request)
     {
-        $tiposPractica = TipoPractica::paginate(10);
+        $tiposPractica = TipoPractica::orderBy('idTipoPractica', 'desc')->paginate(10);
 
         if ($request->ajax()) {
             return View::make('tipos-practica._tabla', compact('tiposPractica'))->render();
@@ -40,25 +40,25 @@ class TipoPracticaController extends Controller
     }
 
     // Devuelve los datos de un registro en JSON para el modal de edición
-    public function edit(TipoPractica $tipo_practica)
+    public function edit(TipoPractica $tipos_practica)
     {
-        return response()->json($tipo_practica);
+        return response()->json($tipos_practica);
     }
 
-    public function update(Request $request, TipoPractica $tipo_practica)
+    public function update(Request $request, TipoPractica $tipos_practica)
     {
         $request->validate([
-            'nombrePractica' => 'required|string|max:45|unique:tipo_practica,nombrePractica,'.$tipo_practica->idTipoPractica.',idTipoPractica',
+            'nombrePractica' => 'required|string|max:45|unique:tipo_practica,nombrePractica,'.$tipos_practica->idTipoPractica.',idTipoPractica',
         ]);
 
-        $tipo_practica->update($request->all());
+        $tipos_practica->update($request->all());
 
         return response()->json(['success' => true, 'message' => 'Tipo de Práctica actualizado exitosamente.']);
     }
 
-    public function destroy(TipoPractica $tipo_practica)
+    public function destroy(TipoPractica $tipos_practica)
     {
-        $tipo_practica->delete();
+        $tipos_practica->delete();
 
         return response()->json(['success' => true, 'message' => 'Tipo de Práctica eliminado exitosamente.']);
     }

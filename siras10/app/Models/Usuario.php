@@ -33,6 +33,7 @@ class Usuario extends Authenticatable
         'contrasenia',
         'fechaCreacion',
         'idTipoPersonalSalud',
+        'remember_token',
     ];
 
     protected $hidden = [

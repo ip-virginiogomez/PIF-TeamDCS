@@ -19,7 +19,7 @@ class PeriodoController extends Controller
 
     public function index(Request $request)
     {
-        $periodos = Periodo::paginate(10);
+        $periodos = Periodo::orderBy('idPeriodo', 'desc')->paginate(10);
 
         // Si la petición es AJAX, devolvemos solo la vista de la tabla
         if ($request->ajax()) {
