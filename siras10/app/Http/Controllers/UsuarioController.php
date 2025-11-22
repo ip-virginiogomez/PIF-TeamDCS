@@ -20,7 +20,7 @@ class UsuarioController extends Controller
     public function index(Request $request)
     {
         $sortBy = $request->query('sort_by', 'runUsuario');
-        $sortDirection = $request->query('sort_direction', 'asc');
+        $sortDirection = $request->query('sort_direction', 'desc');
 
         $usuarios = Usuario::with('roles')
             ->orderBy($sortBy, $sortDirection)

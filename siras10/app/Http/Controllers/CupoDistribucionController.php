@@ -30,7 +30,7 @@ class CupoDistribucionController extends Controller
 
         // Capturar parámetros de ordenamiento
         $sortBy = $request->query('sort_by', 'idCupoDistribucion');
-        $sortDirection = $request->query('sort_direction', 'asc');
+        $sortDirection = $request->query('sort_direction', 'desc');
 
         // Aplicar ordenamiento
         $query = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)

@@ -3,316 +3,331 @@
 @endphp
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex justify-between items-center">
             <div>
-                <h2 class="font-semibold text-xl text-black leading-tight">
-                    Archivos de: {{ $sedeCarrera->sede->centroFormador->nombreCentroFormador }}
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Archivos de: ') }}{{ $sedeCarrera->sede->centroFormador->nombreCentroFormador }}
                 </h2>
-                <p class="text-sm text-gray-600">
-                    Sede {{ $sedeCarrera->sede->nombreSede }} · Carrera {{ $sedeCarrera->carrera->nombreCarrera }}
-                    · Código {{ $sedeCarrera->codigoCarrera }}
+                <p class="text-sm text-gray-500 mt-1">
+                    Sede {{ $sedeCarrera->sede->nombreSede }} · Carrera {{ $sedeCarrera->carrera->nombreCarrera }} · Código {{ $sedeCarrera->codigoCarrera }}
                 </p>
             </div>
-
-            <div class="flex flex-wrap gap-3">
-                <a 
-                href="{{ route('sede-carrera.index', ['id' => $sedeCarrera->idSedeCarrera]) }}"
-                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow"
-                >
-                Volver
-                </a>
-            </div>
+            <a href="{{ route('sede-carrera.index') }}"
+               class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-arrow-left mr-2"></i>Volver
+            </a>
         </div>
     </x-slot>
 
     {{-- CSRF TOKEN (OBLIGATORIO) --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <div class="py-10">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- BLOQUE MALLAS --}}
-            <section class="bg-white shadow-sm rounded-xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Mallas curriculares</h3>
-                        <p class="text-sm text-gray-500">Historial de mallas asociadas a esta carrera/sede.</p>
+            <section class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Mallas Curriculares</h3>
+                            <p class="text-sm text-gray-500">Historial de mallas asociadas a esta carrera/sede.</p>
+                        </div>
+                        @can('sede-carrera.create')
+                        <button type="button"
+                                data-open-malla
+                                data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
+                                class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                            <i class="fas fa-plus mr-2"></i>Nueva Malla
+                        </button>
+                        @endcan
                     </div>
-                    <button 
-                        type="button"
-                        data-open-malla
-                        data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
-                        class="inline-flex items-center px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-medium"
-                    >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Nueva Malla
-                    </button>
-                </div>
 
-                <div class="space-y-4">
-                    @forelse ($mallas as $malla)
-                        <article class="border border-gray-100 rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                                <h4 class="text-base font-semibold text-gray-900">{{ $malla->nombre }}</h4>
-                                <p class="text-sm text-gray-500">
-                                    Año {{ $malla->mallaCurricular->anio }} · Subida el {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap gap-2 items-center">
-                                {{-- Botón Ver --}}
-                                <button 
-                                    type="button"
-                                    data-action="preview-malla" 
-                                    data-url="{{ Storage::url($malla->documento) }}"
-                                    data-title="{{ $malla->nombre }}"
-                                    data-info="Año {{ $malla->mallaCurricular->anio }} · Subida el {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
-                                    class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Ver documento"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
-
-                                {{-- Botón Editar --}}
-                                <button 
-                                    type="button"
-                                    data-action="edit-malla" 
-                                    data-id="{{ $malla->idMallaSedeCarrera }}"
-                                    data-nombre="{{ $malla->nombre }}"
-                                    data-anio="{{ $malla->mallaCurricular->anio }}"
-                                    data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
-                                    class="p-2 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Editar malla"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-
-                                {{-- Botón Eliminar --}}
-                                <button 
-                                    type="button"
-                                    data-action="delete-malla" 
-                                    data-id="{{ $malla->idMallaSedeCarrera }}"
-                                    data-nombre="{{ $malla->nombre }}"
-                                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Eliminar malla"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-
-                                {{-- Botón Descargar --}}
-                                <a
-                                    href="{{ route('sede-carrera.malla.descargar', $malla->idMallaSedeCarrera) }}"
-                                    class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition duration-200 focus:outline-none"
-                                    title="Descargar documento"
-                                    download {{-- --}}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </article>
-                    @empty
-                        <p class="text-center text-gray-500 py-6">Aún no existen mallas registradas.</p>
-                    @endforelse
-                </div>
-            </section>
-
-            {{-- BLOQUE PROGRAMAS DE ASIGNATURA --}}
-            <section class="bg-white shadow-sm rounded-xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Asignaturas</h3>
-                        <p class="text-sm text-gray-500">Se crea asignatura para la carrera</p>
-                    </div>
-                    <button 
-                        type="button"
-                        data-open-asignatura
-                        data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
-                        class="inline-flex items-center px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-medium"
-                    >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Nueva Asignatura
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 text-left text-sm font-medium text-gray-500">
-                            <tr>
-                                <th class="px-4 py-3">Asignatura</th>
-                                <th class="px-4 py-3">Código</th>
-                                <th class="px-4 py-3">Semestre</th>
-                                <th class="px-4 py-3">Tipo Práctica</th>
-                                <th class="px-4 py-3">Programa vigente</th>
-                                <th class="px-4 py-3">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
-                            @forelse ($asignaturas as $asignatura)
-                                @php
-                                    $programa = $asignatura->programa;
-                                @endphp
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-200">
                                 <tr>
-                                    <td class="px-4 py-4">
-                                        <span class="font-semibold text-gray-900">{{ $asignatura->nombreAsignatura }}</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <span class="text-gray-700">{{ $asignatura->codAsignatura ?? 'N/A' }}</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <span class="text-gray-700">{{ $asignatura->Semestre ?? 'N/A' }}</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <span class="text-gray-700">{{ $asignatura->tipoPractica->nombrePractica ?? 'N/A' }}</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        @if ($programa)
-                                            <div class="text-green-700">
-                                                <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                                </svg>
-                                                Programa cargado
-                                                <span class="block text-xs text-gray-500">
-                                                    Última subida: {{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
-                                                </span>
-                                            </div>
-                                        @else
-                                            <span class="text-gray-400">Sin programa cargado</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex flex-wrap gap-2">
-                                            {{-- Botón Ver Programa (si existe) --}}
-                                            @if ($programa)
-                                                <button
-                                                    type="button"
-                                                    data-action="preview-programa"
-                                                    data-url="{{ Storage::url($programa->documento) }}"
-                                                    data-title="Programa de {{ $asignatura->nombreAsignatura }}"
-                                                    data-asignatura="{{ $asignatura->nombreAsignatura }}"
-                                                    data-fecha="{{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
-                                                    class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition duration-200 focus:outline-none"
-                                                    title="Ver programa"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <th class="py-2 px-4 text-left font-bold">Nombre</th>
+                                    <th class="py-2 px-4 text-left font-bold">Año</th>
+                                    <th class="py-2 px-4 text-left font-bold">Fecha Subida</th>
+                                    <th class="py-2 px-4 text-left font-bold">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($mallas as $malla)
+                                    <tr class="border-b">
+                                        <td class="py-2 px-4">
+                                            <span>{{ $malla->nombre }}</span>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ $malla->mallaCurricular->anio }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <div class="flex space-x-2">
+                                                <button type="button"
+                                                        data-action="preview-malla" 
+                                                        data-url="{{ Storage::url($malla->documento) }}"
+                                                        data-title="{{ $malla->nombre }}"
+                                                        data-info="Año {{ $malla->mallaCurricular->anio }} · {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
+                                                        title="Ver documento"
+                                                        class="inline-flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
                                                 </button>
-                                            @endif
 
-                                            {{-- Botón Ver todos los programas --}}
-                                            <button
-                                                type="button"
-                                                data-action="view-all-programas"
-                                                data-id="{{ $asignatura->idAsignatura }}"
-                                                class="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded-full transition duration-200 focus:outline-none"
-                                                title="Ver historial de programas"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-                                                </svg>
-                                            </button>
-    {{-- Modal para historial de programas --}}
-    <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full overflow-auto max-h-[80vh]">
-            <div class="flex justify-between items-center border-b px-6 py-4">
-                <h2 class="text-lg font-semibold">Historial de Programas</h2>
-                <button data-action="close-programas-modal" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
-            </div>
-            <div id="programasModalContent" class="p-4">
-                <!-- Aquí se carga la tabla de programas -->
-            </div>
-        </div>
-    </div>
+                                                @can('sede-carrera.update')
+                                                <button type="button"
+                                                        data-action="edit-malla" 
+                                                        data-id="{{ $malla->idMallaSedeCarrera }}"
+                                                        data-nombre="{{ $malla->nombre }}"
+                                                        data-anio="{{ $malla->mallaCurricular->anio }}"
+                                                        data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
+                                                        title="Editar malla"
+                                                        class="inline-flex items-center justify-center w-8 h-8 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                </button>
+                                                @endcan
 
-                                            {{-- Botón Editar Asignatura --}}
-                                            <button
-                                                type="button"
-                                                data-action="edit-asignatura"
-                                                data-id="{{ $asignatura->idAsignatura }}"
-                                                data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
-                                                class="p-2 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition duration-200 focus:outline-none"
-                                                title="Editar asignatura"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
+                                                @can('sede-carrera.delete')
+                                                <button type="button"
+                                                        data-action="delete-malla" 
+                                                        data-id="{{ $malla->idMallaSedeCarrera }}"
+                                                        data-nombre="{{ $malla->nombre }}"
+                                                        title="Eliminar malla"
+                                                        class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                                @endcan
 
-                                            {{-- Botón Eliminar Asignatura --}}
-                                            <button
-                                                type="button"
-                                                data-action="delete-asignatura"
-                                                data-id="{{ $asignatura->idAsignatura }}"
-                                                data-nombre="{{ $asignatura->nombreAsignatura }}"
-                                                class="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition duration-200 focus:outline-none"
-                                                title="Eliminar asignatura"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-
-                                            {{-- Botón Subir/Actualizar Programa --}}
-                                            <button
-                                                type="button"
-                                                class="px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg"
-                                                data-open-programa
-                                                data-id-asignatura="{{ $asignatura->idAsignatura }}"
-                                                data-nombre-asignatura="{{ $asignatura->nombreAsignatura }}"
-                                                data-programa-nombre="{{ $programa->nombre ?? '' }}"
-                                            >
-                                                {{ $programa ? 'Actualizar' : 'Subir' }} programa
-                                            </button>
-
-                                            @if ($programa)
-                                                <a
-                                                    href="{{ route('sede-carrera.asignaturas.programa.download', $asignatura->idAsignatura) }}"
-                                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                                                >
-                                                    Descargar
+                                                <a href="{{ route('sede-carrera.malla.descargar', $malla->idMallaSedeCarrera) }}"
+                                                   title="Descargar documento"
+                                                   class="inline-flex items-center justify-center w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
                                                 </a>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="py-4 px-4 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i class="fas fa-file-pdf text-4xl text-gray-300 mb-2"></i>
+                                                <span>No hay mallas registradas.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            {{-- BLOQUE PROGRAMAS DE ASIGNATURA --}}
+            <section class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Asignaturas</h3>
+                            <p class="text-sm text-gray-500">Gestión de asignaturas y programas para la carrera.</p>
+                        </div>
+                        <button 
+                            type="button"
+                            data-open-asignatura
+                            data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
+                            class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
+                            <i class="fas fa-plus mr-2"></i>Nueva Asignatura
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-200">
                                 <tr>
-                                    <td colspan="6" class="px-4 py-6 text-center text-gray-500">
-                                        No hay asignaturas asociadas a esta carrera/sede.
-                                    </td>
+                                    <th class="py-2 px-4 text-left font-bold">Asignatura</th>
+                                    <th class="py-2 px-4 text-left font-bold">Código</th>
+                                    <th class="py-2 px-4 text-left font-bold">Semestre</th>
+                                    <th class="py-2 px-4 text-left font-bold">Tipo Práctica</th>
+                                    <th class="py-2 px-4 text-left font-bold">Programa Vigente</th>
+                                    <th class="py-2 px-4 text-left font-bold">Acciones</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($asignaturas as $asignatura)
+                                    @php
+                                        $programa = $asignatura->programa;
+                                    @endphp
+                                    <tr class="border-b">
+                                        <td class="py-2 px-4">
+                                            <span>{{ $asignatura->nombreAsignatura }}</span>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ $asignatura->codAsignatura ?? 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <span class="text-sm">{{ $asignatura->Semestre ?? 'N/A' }}</span>
+                                        </td>
+                                        <td class="py-2 px-4 text-sm">
+                                            {{ $asignatura->tipoPractica->nombrePractica ?? 'N/A' }}
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            @if ($programa)
+                                                <div>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Programa cargado
+                                                    </span>
+                                                    <span class="block text-xs text-gray-500 mt-1">
+                                                        {{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
+                                                    </span>
+                                                </div>
+                                            @else
+                                                <span class="text-sm text-gray-400">Sin programa</span>
+                                            @endif
+                                        </td>
+                                            <div class="flex space-x-2">
+                                                {{-- Botón Ver Programa (si existe) --}}
+                                                @if ($programa)
+                                                    <button
+                                                        type="button"
+                                                        data-action="preview-programa"
+                                                        data-url="{{ Storage::url($programa->documento) }}"
+                                                        data-title="Programa de {{ $asignatura->nombreAsignatura }}"
+                                                        data-asignatura="{{ $asignatura->nombreAsignatura }}"
+                                                        data-fecha="{{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
+                                                        title="Ver programa"
+                                                        class="inline-flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-150">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </button>
+                                                @endif
+
+                                                {{-- Botón Ver todos los programas --}}
+                                                <button
+                                                    type="button"
+                                                    data-action="view-all-programas"
+                                                    data-id="{{ $asignatura->idAsignatura }}"
+                                                    title="Ver historial de programas"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+                                                    </svg>
+                                                </button>
+                                            {{-- Modal para historial de programas --}}
+                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                                                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh]">
+                                                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                                                        <h3 class="text-lg font-semibold text-gray-900">Historial de Programas</h3>
+                                                        <button data-action="close-programas-modal" class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <div id="programasModalContent" class="p-6">
+                                                        <!-- Aquí se carga la tabla de programas -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                                {{-- Botón Editar Asignatura --}}
+                                                <button
+                                                    type="button"
+                                                    data-action="edit-asignatura"
+                                                    data-id="{{ $asignatura->idAsignatura }}"
+                                                    data-id-sede-carrera="{{ $sedeCarrera->idSedeCarrera }}"
+                                                    title="Editar asignatura"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                </button>
+
+                                                {{-- Botón Eliminar Asignatura --}}
+                                                <button
+                                                    type="button"
+                                                    data-action="delete-asignatura"
+                                                    data-id="{{ $asignatura->idAsignatura }}"
+                                                    data-nombre="{{ $asignatura->nombreAsignatura }}"
+                                                    title="Eliminar asignatura"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+
+                                                {{-- Botón Subir/Actualizar Programa --}}
+                                                <button
+                                                    type="button"
+                                                    data-open-programa
+                                                    data-id-asignatura="{{ $asignatura->idAsignatura }}"
+                                                    data-nombre-asignatura="{{ $asignatura->nombreAsignatura }}"
+                                                    data-programa-nombre="{{ $programa->nombre ?? '' }}"
+                                                    title="{{ $programa ? 'Actualizar programa' : 'Subir programa' }}"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                                    </svg>
+                                                </button>
+
+                                                @if ($programa)
+                                                <a href="{{ route('sede-carrera.asignaturas.programa.download', $asignatura->idAsignatura) }}"
+                                                   title="Descargar programa"
+                                                   class="inline-flex items-center justify-center w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                </a>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="py-4 px-4 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i class="fas fa-book text-4xl text-gray-300 mb-2"></i>
+                                                <span>No hay asignaturas registradas.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>
     </div>
 
-    {{-- MODAL MALLA CURRICULAR (reutilizado desde index.blade.php) --}}
+    {{-- MODAL MALLA CURRICULAR --}}
     <div id="mallaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 id="mallaModalTitle" class="text-2xl font-bold text-gray-900">Gestionar Malla Curricular</h3>
+                    <h3 id="mallaModalTitle" class="text-lg font-semibold text-gray-900">Gestionar Malla Curricular</h3>
                     <button
                         type="button"
                         data-action="close-malla-modal"
-                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100"
-                    >
+                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -381,14 +396,12 @@
                             <button
                                 type="button"
                                 data-action="close-malla-modal"
-                                class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg"
-                            >
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg px-5 py-2.5">
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm"
-                            >
+                                class="bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-6 py-2.5">
                                 Guardar Malla
                             </button>
                         </div>
@@ -401,14 +414,13 @@
     {{-- MODAL ASIGNATURA --}}
     <div id="asignaturaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 id="asignaturaModalTitle" class="text-2xl font-bold text-gray-900">Crear Asignatura</h3>
+                    <h3 id="asignaturaModalTitle" class="text-lg font-semibold text-gray-900">Crear Asignatura</h3>
                     <button
                         type="button"
                         data-action="close-asignatura-modal"
-                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100"
-                    >
+                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -486,14 +498,12 @@
                             <button
                                 type="button"
                                 data-action="close-asignatura-modal"
-                                class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg"
-                            >
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg px-5 py-2.5">
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm"
-                            >
+                                class="bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-6 py-2.5">
                                 Guardar Asignatura
                             </button>
                         </div>
@@ -506,17 +516,16 @@
     {{-- MODAL PROGRAMA --}}
     <div id="programaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div>
-                        <h3 id="programaModalTitle" class="text-2xl font-bold text-gray-900">Subir Programa</h3>
-                        <p id="programaAsignaturaName" class="text-sm text-gray-600 mt-1"></p>
+                        <h3 id="programaModalTitle" class="text-lg font-semibold text-gray-900">Subir Programa</h3>
+                        <p id="programaAsignaturaName" class="text-sm text-gray-500 mt-1"></p>
                     </div>
                     <button
                         type="button"
                         data-action="close-programa-modal"
-                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100"
-                    >
+                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -554,14 +563,12 @@
                             <button
                                 type="button"
                                 data-action="close-programa-modal"
-                                class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg"
-                            >
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg px-5 py-2.5">
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm"
-                            >
+                                class="bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-6 py-2.5">
                                 Guardar Programa
                             </button>
                         </div>
@@ -574,18 +581,18 @@
     {{-- MODAL VISTA PREVIA PDF --}}
     <div id="pdfPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl" style="max-height: 90vh;">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-green-50 to-blue-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl" style="max-height: 90vh;">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex-1">
-                        <h3 id="pdfModalTitle" class="text-2xl font-bold text-gray-900">Vista Previa de Malla Curricular</h3>
-                        <p id="pdfModalInfo" class="text-sm text-gray-600 mt-1"></p>
+                        <h3 id="pdfModalTitle" class="text-lg font-semibold text-gray-900">Vista Previa de Documento</h3>
+                        <p id="pdfModalInfo" class="text-sm text-gray-500 mt-1"></p>
                     </div>
                     <div class="flex items-center space-x-3">
                         <a id="pdfDownloadBtn" 
                             href="#" 
                             download
-                            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow transition">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-4 py-2">
+                            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             Descargar
@@ -593,7 +600,7 @@
                         <button 
                             type="button"
                             data-action="close-pdf-modal" 
-                            class="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100">
+                            class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>

@@ -26,7 +26,7 @@ class CentroSaludController extends Controller
         ];
 
         $sortBy = request()->get('sort_by', 'idCentroSalud');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idCentroSalud';

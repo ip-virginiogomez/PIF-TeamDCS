@@ -75,7 +75,7 @@ class SedeCarreraController extends Controller
     {
         $carrerasEspecificas = SedeCarrera::with('carrera')
             ->where('idSede', $sedeId)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('fechaCreacion', 'desc')
             ->get();
 
         // CORRECTO: 'gestion-carreras._tabla'

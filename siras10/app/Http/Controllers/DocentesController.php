@@ -23,14 +23,14 @@ class DocentesController extends Controller
     public function index()
     {
         $columnasDisponibles = ['runDocente', 'nombresDocente', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
-        $sortBy = request()->get('sort_by', 'runDocente');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortBy = request()->get('sort_by', 'fechaCreacion');
+        $sortDirection = request()->get('sort_direction', 'desc');
         $search = request()->input('search');
         $filtroCentro = request()->input('centro_id');
         $filtroSedeCarrera = request()->input('sede_carrera_id');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
-            $sortBy = 'runDocente';
+            $sortBy = 'fechaCreacion';
         }
 
         $query = Docente::query();

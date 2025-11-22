@@ -21,7 +21,7 @@ class CarreraController extends Controller
         $columnasDisponibles = ['idCarrera', 'nombreCarrera', 'fechaCreacion'];
 
         $sortBy = request()->get('sort_by', 'idCarrera');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idCarrera';

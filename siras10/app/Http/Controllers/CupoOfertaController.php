@@ -23,7 +23,9 @@ class CupoOfertaController extends Controller
     public function index(Request $request)
     {
         // Cargamos las relaciones para mostrar la información en la tabla
-        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica', 'tipoPractica', 'carrera'])->paginate(10);
+        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica', 'tipoPractica', 'carrera'])
+            ->orderBy('idCupoOferta', 'desc')
+            ->paginate(10);
 
         // Si es una petición AJAX, devolvemos solo la tabla
         if ($request->ajax()) {

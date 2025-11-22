@@ -30,23 +30,41 @@
         formId="periodoForm" 
         title="Gestión de Período"
         primaryKey="idPeriodo"
-        closeFunction="cerrarModalPeriodo()"> {{-- 1. Le decimos al modal cómo cerrarse --}}
+        closeFunction="cerrarModalPeriodo()">
         
         <div class="mb-4">
             <label for="Año" class="block text-sm font-medium text-gray-700">Año *</label>
-            <input type="number" id="Año" name="Año" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            <input type="number" 
+                   id="Año" 
+                   name="Año" 
+                   min="2025" 
+                   max="2099" 
+                   maxlength="4" 
+                   placeholder="Ej: 2025"
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
+                   required>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-Año"></div>
         </div>
         
         <div class="mb-4">
             <label for="fechaInicio" class="block text-sm font-medium text-gray-700">Fecha de Inicio *</label>
-            <input type="date" id="fechaInicio" name="fechaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            <input type="date" 
+                   id="fechaInicio" 
+                   name="fechaInicio" 
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
+                   required>
+            <p class="text-xs text-gray-500 mt-1">Debe corresponder al año indicado arriba</p>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-fechaInicio"></div>
         </div>
 
         <div class="mb-4">
             <label for="fechaFin" class="block text-sm font-medium text-gray-700">Fecha de Fin *</label>
-            <input type="date" id="fechaFin" name="fechaFin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+            <input type="date" 
+                   id="fechaFin" 
+                   name="fechaFin" 
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
+                   required>
+            <p class="text-xs text-gray-500 mt-1">Debe corresponder al año indicado y ser posterior a la fecha de inicio</p>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-fechaFin"></div>
         </div>
 

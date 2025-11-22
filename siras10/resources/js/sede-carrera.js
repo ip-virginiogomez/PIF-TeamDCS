@@ -102,7 +102,7 @@ class SedeCarreraManager extends BaseModalManager {
         grid.children[1].innerHTML = `
             <label class="block text-sm font-medium text-gray-700 mb-2">Sede</label>
             <select id="sede-selector" class="w-full rounded-md border-gray-300 shadow-sm" disabled>
-                <option>-- Seleccione centro primero --</option>
+                <option value="">-- Seleccione centro primero --</option>
             </select>
         `;
 
@@ -191,16 +191,32 @@ class SedeCarreraManager extends BaseModalManager {
     }
 
     async handleSedeChange() {
-        this.currentSedeId = this.sedeSelector.value;
-        if (!this.currentSedeId) return this.hideGestion();
+        const selectedValue = this.sedeSelector.value;
+        
+        // Ignorar si el valor está vacío o no ha cambiado
+        if (!selectedValue || selectedValue === this.currentSedeId) {
+            if (!selectedValue) this.hideGestion();
+            return;
+        }
 
+        this.currentSedeId = selectedValue;
         this.updateSedeName();
         this.showGestion();
+        
+        // Re-obtener tableContainer después de mostrar gestion-container
+        await this.$nextTick();
+        this.tableContainer = document.getElementById('tabla-container');
+        
         await this.loadTable();
+    }
+    
+    // Helper para esperar el próximo tick del DOM
+    $nextTick() {
+        return new Promise(resolve => setTimeout(resolve, 0));
     }
 
     updateSedeSelector(centroId) {
-        this.sedeSelector.innerHTML = '<option>-- Seleccione sede --</option>';
+        this.sedeSelector.innerHTML = '<option value="">-- Seleccione sede --</option>';
         this.sedeSelector.disabled = true;
 
         if (!centroId) return;
