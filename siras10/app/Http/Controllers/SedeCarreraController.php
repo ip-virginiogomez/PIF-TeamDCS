@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Asignatura;
 use App\Models\Carrera;
 use App\Models\CentroFormador;
 use App\Models\MallaCurricular;
 use App\Models\MallaSedeCarrera;
+use App\Models\Programa;
 use App\Models\Sede;
 use App\Models\SedeCarrera;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -378,11 +381,11 @@ class SedeCarreraController extends Controller
             'sede.centroFormador',  // Agregar esta relación anidada
             'carrera',
             'mallaSedeCarreras.mallaCurricular',
-            'asignaturas.programa',
+            'asignaturas.programas',
         ]);
 
         $asignaturas = $sedeCarrera->asignaturas()
-            ->with(['programa' => function ($q) {
+            ->with(['programas' => function ($q) {
                 $q->latest('fechaSubida');
             }])
             ->orderBy('nombreAsignatura')
@@ -402,42 +405,91 @@ class SedeCarreraController extends Controller
 
     public function storePrograma(Request $request, Asignatura $asignatura)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'documento' => 'required|file|mimes:pdf|max:2048',
-        ]);
+        try {
+            // Validación
+            $validated = $request->validate([
+                'documento' => 'required|file|mimes:pdf|max:2048',
+            ]);
 
-        if ($asignatura->programa) {
-            Storage::disk('public')->delete($asignatura->programa->documento);
-            $asignatura->programa()->delete();
+            // Iniciar transacción
+            \DB::beginTransaction();
+
+            try {
+                // Si ya existe un programa, eliminar el archivo anterior
+                if ($asignatura->programa) {
+                    $programaAnterior = $asignatura->programa;
+                    // Intentar eliminar archivo usando el campo doc
+                    if ($programaAnterior->documento && Storage::disk('public')->exists($programaAnterior->doc)) {
+                        Storage::disk('public')->delete($programaAnterior->doc);
+                    }
+                    $programaAnterior->delete();
+                }
+
+                // Procesar el archivo
+                $file = $request->file('documento');
+
+                // Generar nombre único para el archivo
+                $nombreArchivo = time().'_programa_'.$asignatura->idAsignatura.'_'.$file->getClientOriginalName();
+                $documentoPath = $file->storeAs('programas', $nombreArchivo, 'public');
+
+                // Crear el registro del programa
+                $programa = Programa::create([
+                    'idAsignatura' => $asignatura->idAsignatura,
+                    'documento' => $documentoPath,
+                    'fechaSubida' => now()->toDateString(),
+                ]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Programa guardado correctamente',
+                    'data' => [
+                        'id' => $programa->idPrograma,
+                        'fechaSubida' => $programa->fechaSubida,
+                        'size' => round($file->getSize() / (1024 * 1024), 2).'MB',
+                    ],
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error('Error en transacción storePrograma: '.$e->getMessage());
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos inválidos.',
+                'errors' => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en storePrograma: '.$e->getMessage());
+
+            $errorMessage = 'Error al guardar el programa.';
+            if (config('app.debug')) {
+                $errorMessage .= ' '.$e->getMessage();
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
         }
-
-        $file = $request->file('documento');
-        $path = $file->store('programas', 'public');
-
-        $programa = $asignatura->programa()->create([
-            'documento' => $path,
-            'fechaSubida' => now(),
-            'nombre' => $request->nombre,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Programa guardado correctamente',
-            'data' => $programa,
-        ]);
     }
 
     public function descargarPrograma(Asignatura $asignatura)
     {
         $programa = $asignatura->programa;
 
-        if (! $programa || ! Storage::disk('public')->exists($programa->documento)) {
+        if (! $programa || ! $programa->doc || ! Storage::disk('public')->exists($programa->doc)) {
             abort(404, 'Programa no encontrado');
         }
 
         return Storage::disk('public')->download(
-            $programa->documento,
+            $programa->doc,
             $asignatura->nombreAsignatura.' - Programa.pdf'
         );
     }
@@ -446,11 +498,17 @@ class SedeCarreraController extends Controller
     {
         $programa = $asignatura->programa;
 
-        if (! $programa || ! Storage::disk('public')->exists($programa->documento)) {
+        if (! $programa || ! $programa->documento || ! \Storage::disk('public')->exists($programa->documento)) {
             abort(404, 'Programa no encontrado');
         }
 
-        return response()->file(storage_path('app/public/'.$programa->documento));
+        $filePath = storage_path('app/public/'.$programa->documento);
+        $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.($asignatura->nombreAsignatura ?? 'programa').'.pdf"',
+        ];
+
+        return response()->file($filePath, $headers);
     }
 
     public function updateMalla(Request $request, $mallaSedeCarrera)
@@ -562,5 +620,239 @@ class SedeCarreraController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
+    }
+
+    /**
+     * Guarda una nueva asignatura
+     */
+    public function storeAsignatura(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'idSedeCarrera' => 'required|exists:sede_carrera,idSedeCarrera',
+                'nombreAsignatura' => 'required|string|max:255',
+                'codAsignatura' => 'required|string|max:50',
+                'Semestre' => 'required|integer|min:1|max:12',
+                'idTipoPractica' => 'required|exists:tipo_practica,idTipoPractica',
+            ]);
+
+            \DB::beginTransaction();
+
+            try {
+                $asignatura = Asignatura::create([
+                    'nombreAsignatura' => $validated['nombreAsignatura'],
+                    'codAsignatura' => $validated['codAsignatura'],
+                    'Semestre' => $validated['Semestre'],
+                    'idTipoPractica' => $validated['idTipoPractica'],
+                    'idSedeCarrera' => $validated['idSedeCarrera'],
+                    'fechaCreacion' => now()->toDateString(),
+                ]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Asignatura creada exitosamente',
+                    'data' => $asignatura->load('tipoPractica'),
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error('Error en transacción storeAsignatura: '.$e->getMessage());
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos inválidos.',
+                'errors' => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en storeAsignatura: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear la asignatura.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene los datos de una asignatura para edición
+     */
+    public function editAsignatura($asignatura)
+    {
+        try {
+            $asig = Asignatura::with('tipoPractica')->findOrFail($asignatura);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'idAsignatura' => $asig->idAsignatura,
+                    'nombreAsignatura' => $asig->nombreAsignatura,
+                    'codAsignatura' => $asig->codAsignatura,
+                    'Semestre' => $asig->Semestre,
+                    'idTipoPractica' => $asig->idTipoPractica,
+                    'idSedeCarrera' => $asig->idSedeCarrera,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en editAsignatura: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la asignatura.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Actualiza una asignatura existente
+     */
+    public function updateAsignatura(Request $request, $asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            $validated = $request->validate([
+                'nombreAsignatura' => 'required|string|max:255',
+                'codAsignatura' => 'required|string|max:50',
+                'Semestre' => 'required|integer|min:1|max:12',
+                'idTipoPractica' => 'required|exists:tipo_practica,idTipoPractica',
+            ]);
+
+            \DB::beginTransaction();
+
+            try {
+                $asig->update([
+                    'nombreAsignatura' => $validated['nombreAsignatura'],
+                    'codAsignatura' => $validated['codAsignatura'],
+                    'Semestre' => $validated['Semestre'],
+                    'idTipoPractica' => $validated['idTipoPractica'],
+                ]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Asignatura actualizada correctamente',
+                    'data' => $asig->load('tipoPractica'),
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error en updateAsignatura: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la asignatura.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Elimina una asignatura
+     */
+    public function destroyAsignatura($asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            // Eliminar todos los programas asociados (y sus archivos)
+            foreach ($asig->programas as $programa) {
+                if ($programa->documento && \Storage::disk('public')->exists($programa->documento)) {
+                    \Storage::disk('public')->delete($programa->documento);
+                }
+                $programa->delete();
+            }
+
+            $asig->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Asignatura eliminada correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en destroyAsignatura: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la asignatura.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene las asignaturas de una sede-carrera
+     */
+    public function getAsignaturasPorSedeCarrera($sedeCarrera)
+    {
+        try {
+            $asignaturas = Asignatura::with('tipoPractica')
+                ->where('idSedeCarrera', $sedeCarrera)
+                ->orderBy('Semestre')
+                ->orderBy('nombreAsignatura')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $asignaturas->map(function ($asig) {
+                    return [
+                        'idAsignatura' => $asig->idAsignatura,
+                        'nombreAsignatura' => $asig->nombreAsignatura,
+                        'codAsignatura' => $asig->codAsignatura,
+                        'Semestre' => $asig->Semestre,
+                        'tipoPractica' => $asig->tipoPractica->nombreTipoPractica ?? '',
+                        'idTipoPractica' => $asig->idTipoPractica,
+                    ];
+                }),
+            ]);
+
+        } catch (Exception $e) {
+            \Log::error('Error en getAsignaturasPorSedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar las asignaturas',
+            ], 500);
+        }
+    }
+
+    /**
+     * Muestra la lista de programas de una asignatura
+     */
+    public function showProgramas(Asignatura $asignatura)
+    {
+        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->get();
+        \Log::debug('[showProgramas] idAsignatura: '.$asignatura->idAsignatura.' | count: '.$programas->count());
+        foreach ($programas as $p) {
+            \Log::debug('[showProgramas] Programa id: '.$p->idPrograma.' | documento: '.$p->documento);
+        }
+
+        return view('asignaturas._programas', compact('programas'));
+    }
+
+    /**
+     * Descargar un programa específico por id
+     */
+    public function descargarProgramaEspecifico(\App\Models\Programa $programa)
+    {
+        if (! $programa->documento || ! \Storage::disk('public')->exists($programa->documento)) {
+            abort(404, 'Programa no encontrado');
+        }
+        $nombre = 'Programa_'.($programa->asignatura->nombreAsignatura ?? 'asignatura').'_'.($programa->fechaSubida ?? '').'.pdf';
+
+        return \Storage::disk('public')->download($programa->documento, $nombre);
     }
 }
