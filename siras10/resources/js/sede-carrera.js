@@ -1,3 +1,42 @@
+// Modal para historial de programas
+let programasModal = null;
+let programasModalContent = null;
+function initProgramasModal() {
+    programasModal = document.getElementById('programasModal');
+    programasModalContent = document.getElementById('programasModalContent');
+    if (!programasModal) return;
+
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action="view-all-programas"]');
+        if (!btn) return;
+        const asignaturaId = btn.dataset.id;
+        if (!asignaturaId) return;
+        programasModal.classList.remove('hidden');
+        programasModalContent.innerHTML = '<div class="p-8 text-center text-gray-400">Cargando...</div>';
+        try {
+            const resp = await fetch(`/gestion-carreras/asignaturas/${asignaturaId}/programas`);
+            if (!resp.ok) throw new Error('No se pudo cargar el historial');
+            const html = await resp.text();
+            programasModalContent.innerHTML = html;
+        } catch (err) {
+            programasModalContent.innerHTML = '<div class="p-8 text-center text-red-400">Error al cargar el historial</div>';
+        }
+    });
+
+    // Cerrar modal
+    programasModal.addEventListener('click', (e) => {
+        if (e.target === programasModal) {
+            programasModal.classList.add('hidden');
+        }
+    });
+    document.querySelectorAll('[data-action="close-programas-modal"]').forEach(btn =>
+        btn.addEventListener('click', () => programasModal.classList.add('hidden'))
+    );
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initProgramasModal();
+});
 import BaseModalManager from './base-modal-manager.js';
 import Swal from 'sweetalert2';
 
@@ -33,8 +72,13 @@ class SedeCarreraManager extends BaseModalManager {
         this.anioFiltroMallas = document.getElementById('anioFiltroMallas');
         this.mallasContainer = document.getElementById('mallas-container');
 
+        // Elementos del modal de asignatura
+        this.asignaturaModal = document.getElementById('asignaturaModal');
+        this.asignaturaForm = document.getElementById('asignaturaForm');
+
         this.initSedeCarrera();
         this.initMallaModal();
+        this.initAsignaturaModal();
     }
 
     initSedeCarrera() {
@@ -575,6 +619,15 @@ class SedeCarreraManager extends BaseModalManager {
                 this.abrirModalMallas();
                 return;
             }
+            // Event listener para el botón "Ver Programas de Asignatura"
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action="ver-programas"]');
+                if (btn) {
+                    e.preventDefault();
+                    this.abrirModalMallas();
+                    return;
+                }
+            });
 
             // Event listener para cerrar el modal de mallas
             const closeBtn = e.target.closest('[data-action="close-mallas-modal"]');
@@ -603,6 +656,306 @@ class SedeCarreraManager extends BaseModalManager {
                     this.cargarMallas();
                 }, 500); // Esperar 500ms después de que el usuario deje de escribir
             });
+        }
+    }
+
+    // ========================================================================
+    // MÉTODOS PARA MODAL DE ASIGNATURA
+    // ========================================================================
+    initAsignaturaModal() {
+        if (!this.asignaturaModal || !this.asignaturaForm) return;
+
+        // Event listeners para el modal de asignatura
+        this.asignaturaForm.addEventListener('submit', (e) => this.handleAsignaturaSubmit(e));
+
+        // Cerrar modal
+        this.asignaturaModal.addEventListener('click', (e) => {
+            if (e.target.id === 'asignaturaModal') {
+                this.cerrarModalAsignatura();
+            }
+
+            if (e.target.closest('[data-action="close-asignatura-modal"]')) {
+                this.cerrarModalAsignatura();
+            }
+        });
+
+        // Event listener para la tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.asignaturaModal && !this.asignaturaModal.classList.contains('hidden')) {
+                this.cerrarModalAsignatura();
+            }
+        });
+    }
+
+    async abrirModalAsignatura(idSedeCarrera, asignaturaId = null) {
+        if (!this.asignaturaModal) return;
+
+        // Limpiar formulario
+        this.asignaturaForm.reset();
+
+        const idInput = document.getElementById('asignaturaIdSedeCarrera');
+        if (idInput) {
+            idInput.value = idSedeCarrera;
+        }
+
+        if (asignaturaId) {
+            // Modo edición: cargar datos de la asignatura
+            await this.cargarDatosAsignatura(asignaturaId);
+
+            const modalTitle = document.getElementById('asignaturaModalTitle');
+            if (modalTitle) modalTitle.textContent = 'Editar Asignatura';
+
+            const submitBtn = this.asignaturaForm.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'Actualizar Asignatura';
+
+            this.asignaturaForm.dataset.isEdit = 'true';
+            this.asignaturaForm.dataset.asignaturaId = asignaturaId;
+        } else {
+            // Modo creación
+            const modalTitle = document.getElementById('asignaturaModalTitle');
+            if (modalTitle) modalTitle.textContent = 'Crear Asignatura';
+
+            const submitBtn = this.asignaturaForm.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'Guardar Asignatura';
+
+            delete this.asignaturaForm.dataset.isEdit;
+            delete this.asignaturaForm.dataset.asignaturaId;
+        }
+
+        // Mostrar modal
+        this.asignaturaModal.classList.remove('hidden');
+        this.asignaturaModal.classList.add('flex', 'items-center', 'justify-center');
+
+        // Focus en el primer campo
+        setTimeout(() => {
+            const nombreInput = document.getElementById('nombreAsignatura');
+            if (nombreInput) nombreInput.focus();
+        }, 100);
+    }
+
+    async cargarDatosAsignatura(asignaturaId) {
+        try {
+            const response = await fetch(`/gestion-carreras/asignaturas/${asignaturaId}/edit`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos de la asignatura');
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Rellenar el formulario con los datos
+                document.getElementById('nombreAsignatura').value = result.data.nombreAsignatura || '';
+                document.getElementById('codAsignatura').value = result.data.codAsignatura || '';
+                document.getElementById('Semestre').value = result.data.Semestre || '';
+                document.getElementById('idTipoPractica').value = result.data.idTipoPractica || '';
+            } else {
+                throw new Error(result.message || 'Error al cargar los datos');
+            }
+
+        } catch (error) {
+            console.error('Error al cargar asignatura:', error);
+            this.showAlert('Error', 'No se pudo cargar la asignatura', 'error');
+            this.cerrarModalAsignatura();
+        }
+    }
+
+    cerrarModalAsignatura() {
+        if (!this.asignaturaModal) return;
+
+        // Ocultar modal
+        this.asignaturaModal.classList.add('hidden');
+        this.asignaturaModal.classList.remove('flex', 'items-center', 'justify-center');
+
+        // Limpiar formulario
+        if (this.asignaturaForm) {
+            this.asignaturaForm.reset();
+            delete this.asignaturaForm.dataset.isEdit;
+            delete this.asignaturaForm.dataset.asignaturaId;
+        }
+    }
+
+    async handleAsignaturaSubmit(e) {
+        e.preventDefault();
+
+        if (!this.validateAsignaturaForm()) return;
+
+        const form = this.asignaturaForm || document.getElementById('asignaturaForm');
+        if (!form) {
+            console.error('Formulario asignaturaForm no encontrado');
+            this.showAlert('Error', 'Error al encontrar el formulario', 'error');
+            return;
+        }
+
+        const formData = new FormData(form);
+        const isEdit = form.dataset.isEdit === 'true';
+        const asignaturaId = form.dataset.asignaturaId;
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton ? (submitButton.textContent || 'Guardar Asignatura') : 'Guardar Asignatura';
+
+        try {
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Guardando...';
+            }
+
+            const url = isEdit
+                ? `/gestion-carreras/asignaturas/${asignaturaId}`
+                : '/gestion-carreras/asignaturas';
+
+            if (isEdit) {
+                formData.append('_method', 'PUT');
+            }
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error en la petición');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.cerrarModalAsignatura();
+                this.showAlert('¡Éxito!', data.message || 'Asignatura guardada correctamente', 'success');
+
+                // Recargar la tabla de asignaturas si existe
+                if (typeof this.recargarTablaAsignaturas === 'function') {
+                    await this.recargarTablaAsignaturas();
+                }
+            } else {
+                this.showAlert('Error', data.message || 'Error al guardar la asignatura', 'error');
+            }
+
+        } catch (error) {
+            console.error('Error completo:', error);
+            this.showAlert('Error', 'Error al guardar asignatura: ' + error.message, 'error');
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        }
+    }
+
+    validateAsignaturaForm() {
+        const nombreAsignatura = document.getElementById('nombreAsignatura')?.value?.trim();
+        const codAsignatura = document.getElementById('codAsignatura')?.value?.trim();
+        const semestre = document.getElementById('Semestre')?.value;
+        const idTipoPractica = document.getElementById('idTipoPractica')?.value;
+
+        if (!nombreAsignatura) {
+            this.showAlert('Error', 'Por favor, ingresa el nombre de la asignatura.', 'error');
+            return false;
+        }
+
+        if (!codAsignatura) {
+            this.showAlert('Error', 'Por favor, ingresa el código de la asignatura.', 'error');
+            return false;
+        }
+
+        if (!semestre) {
+            this.showAlert('Error', 'Por favor, selecciona el semestre.', 'error');
+            return false;
+        }
+
+        const semestreNum = parseInt(semestre);
+        if (isNaN(semestreNum) || semestreNum < 1 || semestreNum > 12) {
+            this.showAlert('Error', 'El semestre debe estar entre 1 y 12.', 'error');
+            return false;
+        }
+
+        if (!idTipoPractica) {
+            this.showAlert('Error', 'Por favor, selecciona el tipo de práctica.', 'error');
+            return false;
+        }
+
+        return true;
+    }
+
+    async eliminarAsignatura(asignaturaId, nombreAsignatura) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            html: `¿Estás seguro de eliminar la asignatura "<strong>${nombreAsignatura}</strong>"?<br>Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await fetch(`/gestion-carreras/asignaturas/${asignaturaId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error('Error al eliminar');
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.showAlert('¡Eliminado!', data.message || 'Asignatura eliminada correctamente', 'success');
+
+                // Recargar la tabla de asignaturas
+                if (typeof this.recargarTablaAsignaturas === 'function') {
+                    await this.recargarTablaAsignaturas();
+                }
+            } else {
+                this.showAlert('Error', data.message || 'Error al eliminar la asignatura', 'error');
+            }
+
+        } catch (error) {
+            console.error('Error al eliminar asignatura:', error);
+            this.showAlert('Error', 'Error al eliminar la asignatura', 'error');
+        }
+    }
+
+    async cargarAsignaturasPorSedeCarrera(sedeCarreraId) {
+        try {
+            const response = await fetch(`/gestion-carreras/sede-carreras/${sedeCarreraId}/asignaturas`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar asignaturas');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                return data.data;
+            } else {
+                throw new Error(data.message || 'Error al cargar asignaturas');
+            }
+
+        } catch (error) {
+            console.error('Error al cargar asignaturas:', error);
+            this.showAlert('Error', 'Error al cargar las asignaturas', 'error');
+            return [];
         }
     }
 
@@ -700,7 +1053,7 @@ class SedeCarreraManager extends BaseModalManager {
                         </div>
                     </div>
                     <div class="ml-4">
-                        <a href="/storage/${malla.documento}" 
+                        <a href="/storage/${malla.doc}" 
                         target="_blank"
                         class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow transition">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1036,24 +1389,391 @@ function initArchivosPage() {
     const programaNombre = document.getElementById('programaNombre');
     const programaAsignaturaName = document.getElementById('programaAsignaturaName');
 
+    // --------- ASIGNATURA ----------
+    const asignaturaModal = document.getElementById('asignaturaModal');
+    const asignaturaForm = document.getElementById('asignaturaForm');
+
+    // Abrir modal de asignatura (modo crear)
+    document.querySelectorAll('[data-open-asignatura]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idSedeCarrera = btn.dataset.idSedeCarrera;
+
+            if (window.sedeCarreraManager && typeof window.sedeCarreraManager.abrirModalAsignatura === 'function') {
+                window.sedeCarreraManager.abrirModalAsignatura(idSedeCarrera);
+            } else {
+                // Fallback: abrir modal manualmente si sedeCarreraManager no está disponible
+                if (asignaturaModal && asignaturaForm) {
+                    const idInput = document.getElementById('asignaturaIdSedeCarrera');
+                    if (idInput) idInput.value = idSedeCarrera;
+
+                    asignaturaForm.reset();
+                    delete asignaturaForm.dataset.isEdit;
+                    delete asignaturaForm.dataset.asignaturaId;
+
+                    const modalTitle = document.getElementById('asignaturaModalTitle');
+                    if (modalTitle) modalTitle.textContent = 'Crear Asignatura';
+
+                    const submitBtn = asignaturaForm.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.textContent = 'Guardar Asignatura';
+
+                    toggleModal(asignaturaModal, true);
+                    setTimeout(() => {
+                        const nombreInput = document.getElementById('nombreAsignatura');
+                        if (nombreInput) nombreInput.focus();
+                    }, 100);
+                }
+            }
+        });
+    });
+
+    // Cerrar modal de asignatura
+    document.querySelectorAll('[data-action="close-asignatura-modal"]').forEach(btn =>
+        btn.addEventListener('click', () => {
+            if (window.sedeCarreraManager && typeof window.sedeCarreraManager.cerrarModalAsignatura === 'function') {
+                window.sedeCarreraManager.cerrarModalAsignatura();
+            } else {
+                toggleModal(asignaturaModal, false);
+            }
+        })
+    );
+
+    // Cerrar modal al hacer clic en el fondo
+    asignaturaModal?.addEventListener('click', (e) => {
+        if (e.target === asignaturaModal) {
+            if (window.sedeCarreraManager && typeof window.sedeCarreraManager.cerrarModalAsignatura === 'function') {
+                window.sedeCarreraManager.cerrarModalAsignatura();
+            } else {
+                toggleModal(asignaturaModal, false);
+            }
+        }
+    });
+
+    // Manejar submit del formulario de asignatura
+    if (asignaturaForm) {
+        asignaturaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (window.sedeCarreraManager && typeof window.sedeCarreraManager.handleAsignaturaSubmit === 'function') {
+                await window.sedeCarreraManager.handleAsignaturaSubmit(e);
+            } else {
+                // Fallback: enviar formulario manualmente
+                const formData = new FormData(asignaturaForm);
+                const isEdit = asignaturaForm.dataset.isEdit === 'true';
+                const asignaturaId = asignaturaForm.dataset.asignaturaId;
+
+                const submitButton = asignaturaForm.querySelector('button[type="submit"]');
+                const originalText = submitButton?.textContent || 'Guardar';
+
+                try {
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Guardando...';
+                    }
+
+                    const url = isEdit
+                        ? `/gestion-carreras/asignaturas/${asignaturaId}`
+                        : '/gestion-carreras/asignaturas';
+
+                    if (isEdit) {
+                        formData.append('_method', 'PUT');
+                    }
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        toggleModal(asignaturaModal, false);
+                        await Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: data.message || 'Asignatura guardada correctamente',
+                            confirmButtonColor: '#3085d6'
+                        });
+                        window.location.reload();
+                    } else {
+                        throw new Error(data.message || 'Error al guardar');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Error al guardar la asignatura',
+                        confirmButtonColor: '#3085d6'
+                    });
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalText;
+                    }
+                }
+            }
+        });
+    }
+
+    // Editar asignatura
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action="edit-asignatura"]');
+        if (!btn) return;
+
+        e.preventDefault();
+        const asignaturaId = btn.dataset.id;
+        const idSedeCarrera = btn.dataset.idSedeCarrera;
+
+        if (window.sedeCarreraManager && typeof window.sedeCarreraManager.abrirModalAsignatura === 'function') {
+            await window.sedeCarreraManager.abrirModalAsignatura(idSedeCarrera, asignaturaId);
+        } else {
+            // Fallback: cargar y mostrar datos manualmente
+            try {
+                const response = await fetch(`/gestion-carreras/asignaturas/${asignaturaId}/edit`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar los datos');
+
+                const result = await response.json();
+
+                if (result.success && asignaturaForm) {
+                    document.getElementById('nombreAsignatura').value = result.data.nombreAsignatura || '';
+                    document.getElementById('codAsignatura').value = result.data.codAsignatura || '';
+                    document.getElementById('Semestre').value = result.data.Semestre || '';
+                    document.getElementById('idTipoPractica').value = result.data.idTipoPractica || '';
+
+                    const idInput = document.getElementById('asignaturaIdSedeCarrera');
+                    if (idInput) idInput.value = idSedeCarrera;
+
+                    asignaturaForm.dataset.isEdit = 'true';
+                    asignaturaForm.dataset.asignaturaId = asignaturaId;
+
+                    const modalTitle = document.getElementById('asignaturaModalTitle');
+                    if (modalTitle) modalTitle.textContent = 'Editar Asignatura';
+
+                    const submitBtn = asignaturaForm.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.textContent = 'Actualizar Asignatura';
+
+                    toggleModal(asignaturaModal, true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo cargar la asignatura',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        }
+    });
+
+    // Eliminar asignatura
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action="delete-asignatura"]');
+        if (!btn) return;
+
+        e.preventDefault();
+        const asignaturaId = btn.dataset.id;
+        const nombreAsignatura = btn.dataset.nombre;
+
+        if (window.sedeCarreraManager && typeof window.sedeCarreraManager.eliminarAsignatura === 'function') {
+            await window.sedeCarreraManager.eliminarAsignatura(asignaturaId, nombreAsignatura);
+        } else {
+            // Fallback: eliminar manualmente
+            const result = await Swal.fire({
+                title: '¿Estás seguro?',
+                html: `¿Estás seguro de eliminar la asignatura "<strong>${nombreAsignatura}</strong>"?<br>Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/gestion-carreras/asignaturas/${asignaturaId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: data.message || 'Asignatura eliminada correctamente',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Error al eliminar');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al eliminar la asignatura',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        }
+    });
+
+    // Método para recargar la página después de operaciones exitosas en asignaturas
+    if (window.sedeCarreraManager) {
+        window.sedeCarreraManager.recargarTablaAsignaturas = () => {
+            window.location.reload();
+        };
+    }
+
     document.querySelectorAll('[data-open-programa]').forEach(btn => {
         btn.addEventListener('click', () => {
             const asignaturaId = btn.dataset.idAsignatura;
             const nombreAsignatura = btn.dataset.nombreAsignatura || 'Asignatura';
-            const programaActual = btn.dataset.programaNombre || '';
 
             if (programaForm) {
                 programaForm.action = `/gestion-carreras/asignaturas/${asignaturaId}/programa`;
                 programaForm.reset();
             }
 
-            if (programaNombre) programaNombre.value = programaActual || `Programa ${nombreAsignatura}`;
             if (programaAsignaturaName) programaAsignaturaName.textContent = nombreAsignatura;
 
+            // Limpiar preview de archivo
+            const programaArchivoPreview = document.getElementById('programaArchivoSeleccionado');
+            if (programaArchivoPreview) programaArchivoPreview.classList.add('hidden');
+
             toggleModal(programaModal, true);
-            setTimeout(() => programaNombre?.focus(), 100);
+            setTimeout(() => {
+                const programaArchivoInput = document.getElementById('programaArchivo');
+                if (programaArchivoInput) programaArchivoInput.focus();
+            }, 100);
         });
     });
+
+    // Validación y preview del archivo de programa
+    const programaArchivoInput = document.getElementById('programaArchivo');
+    const programaArchivoPreview = document.getElementById('programaArchivoSeleccionado');
+    const programaNombreArchivo = document.getElementById('programaNombreArchivo');
+
+    programaArchivoInput?.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            programaArchivoPreview?.classList.add('hidden');
+            return;
+        }
+
+        if (file.type !== 'application/pdf') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Solo se permiten archivos PDF.',
+                confirmButtonColor: '#3085d6'
+            });
+            programaArchivoInput.value = '';
+            programaArchivoPreview?.classList.add('hidden');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'El archivo no debe superar los 2MB.',
+                confirmButtonColor: '#3085d6'
+            });
+            programaArchivoInput.value = '';
+            programaArchivoPreview?.classList.add('hidden');
+            return;
+        }
+
+        if (programaNombreArchivo) {
+            programaNombreArchivo.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+        }
+        programaArchivoPreview?.classList.remove('hidden');
+    });
+
+    // Manejar envío del formulario de programa
+    if (programaForm) {
+        programaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const archivo = programaArchivoInput?.files?.[0];
+
+            if (!archivo) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Archivo requerido',
+                    text: 'Por favor, selecciona un archivo PDF.',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            const submitBtn = programaForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn?.textContent || 'Guardar Programa';
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Guardando...';
+                }
+
+                const formData = new FormData(programaForm);
+                const response = await fetch(programaForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    toggleModal(programaModal, false);
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: data.message || 'Programa guardado correctamente',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Error al guardar el programa');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al guardar el programa',
+                    confirmButtonColor: '#3085d6'
+                });
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            }
+        });
+    }
 
     document.querySelectorAll('[data-action="close-programa-modal"]').forEach(btn =>
         btn.addEventListener('click', () => toggleModal(programaModal, false))
@@ -1067,6 +1787,7 @@ function initArchivosPage() {
         if (e.key === 'Escape') {
             toggleModal(mallaModal, false);
             toggleModal(programaModal, false);
+            toggleModal(asignaturaModal, false);
         }
     });
 
@@ -1081,7 +1802,7 @@ function initArchivosPage() {
         const pdfDownloadBtn = document.getElementById('pdfDownloadBtn');
         const pdfFallbackLink = document.getElementById('pdfFallbackLink');
 
-        // Manejar clic en botones de previsualización
+        // Manejar clic en botones de previsualización de MALLA
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('[data-action="preview-malla"]');
             if (!btn) return;
@@ -1090,6 +1811,27 @@ function initArchivosPage() {
             const url = btn.dataset.url;
             const title = btn.dataset.title || 'Malla Curricular';
             const info = btn.dataset.info || '';
+
+            if (pdfViewer) pdfViewer.src = url;
+            if (pdfModalTitle) pdfModalTitle.textContent = title;
+            if (pdfModalInfo) pdfModalInfo.textContent = info;
+            if (pdfDownloadBtn) pdfDownloadBtn.href = url;
+            if (pdfFallbackLink) pdfFallbackLink.href = url;
+
+            pdfModal.classList.remove('hidden');
+        });
+
+        // Manejar clic en botones de previsualización de PROGRAMA
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action="preview-programa"]');
+            if (!btn) return;
+
+            e.preventDefault();
+            const url = btn.dataset.url;
+            const title = btn.dataset.title || 'Programa de Asignatura';
+            const asignatura = btn.dataset.asignatura || '';
+            const fecha = btn.dataset.fecha || '';
+            const info = `${asignatura} · Subida el ${fecha}`;
 
             if (pdfViewer) pdfViewer.src = url;
             if (pdfModalTitle) pdfModalTitle.textContent = title;
