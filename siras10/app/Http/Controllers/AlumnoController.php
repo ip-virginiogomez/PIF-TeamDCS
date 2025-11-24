@@ -30,11 +30,11 @@ class AlumnoController extends Controller
     {
         $columnasDisponibles = ['runAlumno', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
 
-        $sortBy = request()->get('sort_by', 'runAlumno');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortBy = request()->get('sort_by', 'fechaCreacion');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
-            $sortBy = 'runAlumno';
+            $sortBy = 'fechaCreacion';
         }
 
         $query = Alumno::query();

@@ -22,7 +22,7 @@ class SedeController extends Controller
         $columnasDisponibles = ['idSede', 'nombreSede', 'direccion', 'centroFormador.nombreCentroFormador', 'fechaCreacion', 'numContacto'];
 
         $sortBy = request()->get('sort_by', 'idSede');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idSede';

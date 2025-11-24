@@ -22,7 +22,7 @@ class CentroFormadorController extends Controller
         $columnasDisponibles = ['idCentroFormador', 'tipoCentroFormador.nombreTipo', 'nombreCentroFormador', 'fechaCreacion'];
 
         $sortBy = request()->get('sort_by', 'idCentroFormador');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idCentroFormador';

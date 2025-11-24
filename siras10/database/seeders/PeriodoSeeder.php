@@ -11,12 +11,6 @@ class PeriodoSeeder extends Seeder
     {
         $periodos = [
             [
-                'Año' => 2024,
-                'fechaCreacion' => now(),
-                'fechaInicio' => '2024-01-15',
-                'fechaFin' => '2024-12-31',
-            ],
-            [
                 'Año' => 2025,
                 'fechaCreacion' => now(),
                 'fechaInicio' => '2025-01-15',

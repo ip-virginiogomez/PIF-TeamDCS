@@ -1,11 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <div>
-                {{-- CAMBIO: Color de texto del header igual a Sede --}}
-                <h2 class="font-semibold text-xl text-black leading-tight">
-                    Distribución de Cupos
-                </h2>
+            <div class="flex items-center gap-4">
+                {{-- Botón Volver --}}
+                <a href="{{ route('cupo-ofertas.index') }}" 
+                    class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver
+                </a>
+                
+                <div>
+                    {{-- CAMBIO: Color de texto del header igual a Sede --}}
+                    <h2 class="font-semibold text-xl text-black leading-tight">
+                        Distribución de Cupos
+                    </h2>
                 {{-- CAMBIO: Color de texto del párrafo --}}
                 <p class="text-sm text-gray-600"> 
                     Estás distribuyendo <strong>{{ $oferta->cantCupos }}</strong> cupos para
@@ -16,6 +23,7 @@
                     en <strong>{{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'Centro Desconocido' }}</strong>
                     ({{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad Desc.' }})
                 </p>
+                </div>
             </div>
 
             {{-- Botón "Nuevo" (Estilo Sede) --}}
@@ -88,6 +96,5 @@
 
     </x-crud-modal>
     
-    {{-- Carga de JS (Tu código estaba perfecto) --}}
     @vite(['resources/js/app.js'])
 </x-app-layout>
