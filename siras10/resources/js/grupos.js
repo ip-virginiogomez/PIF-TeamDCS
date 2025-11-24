@@ -9,7 +9,7 @@ class GrupoManager extends BaseModalManager {
             entityGender: 'm',
             baseUrl: '/grupos',
             primaryKey: 'idGrupo',
-            fields: ['nombreGrupo', 'idCupoDistribucion']
+            fields: ['nombreGrupo', 'idCupoDistribucion','idAsignatura', 'idDocenteCarrera']
         });
 
         this.initDistribucionSelector();

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\CupoDistribucion;
 use App\Models\Grupo;
+use App\Models\DocenteCarrera;
+use App\Models\Asignatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -32,18 +34,23 @@ class GrupoController extends Controller
         }
 
         $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
+        $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
+
+        $listaAsignaturas = Asignatura::orderBy('nombreAsignatura')->get();
 
         if ($request->ajax() && ! $request->has('get_grupos')) {
             return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
         }
 
-        return view('grupos.index', compact('distribuciones'));
+        return view('grupos.index', compact('distribuciones','listaDocentesCarrera', 'listaAsignaturas'));
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'nombreGrupo' => 'required|string|max:45',
+            'idAsignatura' => 'required|exists:asignatura,idAsignatura',
+            'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
         ]);
 
         if ($validator->fails()) {
@@ -64,6 +71,8 @@ class GrupoController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombreGrupo' => 'required|string|max:45',
+            'idAsignatura' => 'required|exists:asignatura,idAsignatura',
+            'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
         ]);
 
         if ($validator->fails()) {

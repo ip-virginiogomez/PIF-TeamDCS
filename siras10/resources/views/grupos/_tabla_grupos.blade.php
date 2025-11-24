@@ -1,96 +1,85 @@
 <div class="overflow-x-auto">
     <table class="w-full text-sm text-left text-gray-500">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+        {{-- HEADERS --}}
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
             <tr>
-                {{-- Nombre del Grupo (Siempre es útil saber qué grupo es) --}}
-                <th scope="col" class="px-4 py-3">Grupo</th>
-                
-                {{-- DATOS SOLICITADOS --}}
-                <th scope="col" class="px-4 py-3">Sede / Carrera</th>
-                <th scope="col" class="px-4 py-3">Unidad Clínica</th>
-                <th scope="col" class="px-4 py-3 text-center">Cupos</th>
-                
-                <th scope="col" class="px-4 py-3 text-center">Entrada</th>
-                <th scope="col" class="px-4 py-3 text-center">Salida</th>
-                
-                <th scope="col" class="px-4 py-3 text-center">Horario</th>
-                
-                <th scope="col" class="px-4 py-3 text-right">Acciones</th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">
+                    Nombre del Grupo
+                </th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">
+                    Docente Encargado
+                </th>
+                {{-- Centramos el encabezado de acciones --}}
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center w-32">
+                    Acciones
+                </th>
             </tr>
         </thead>
-        <tbody>
+        
+        {{-- BODY --}}
+        <tbody class="divide-y divide-gray-200">
             @forelse($grupos as $grupo)
-                @php
-                    $dist = $grupo->cupoDistribucion;
-                @endphp
-                <tr class="bg-white border-b hover:bg-gray-50 transition">
+                <tr class="bg-white hover:bg-gray-50 transition-colors duration-200">
                     
-                    <td class="px-4 py-4 font-bold text-gray-900">
-                        {{ $grupo->nombreGrupo }}
+                    {{-- 1. Nombre del Grupo --}}
+                    <td class="px-6 py-4 align-middle">
+                        <span class="text-sm font-bold text-gray-900">
+                            {{ $grupo->nombreGrupo }}
+                        </span>
                     </td>
 
-                    {{-- Sede Carrera --}}
-                    <td class="px-4 py-4">
-                        @if($dist && $dist->sedeCarrera)
-                            <div class="text-gray-900 font-medium">{{ $dist->sedeCarrera->nombreSedeCarrera }}</div>
-                            <div class="text-xs text-gray-500">{{ $dist->sedeCarrera->sede->nombreSede ?? '' }}</div>
+                    {{-- 2. Docente Encargado --}}
+                    <td class="px-6 py-4 align-middle">
+                        @if($grupo->docenteCarrera && $grupo->docenteCarrera->docente)
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900">
+                                    {{ $grupo->docenteCarrera->docente->nombresDocente }} 
+                                    {{ $grupo->docenteCarrera->docente->apellidoPaterno }}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    {{ $grupo->docenteCarrera->docente->apellidoMaterno }}
+                                </span>
+                            </div>
                         @else
-                            <span class="text-gray-400 italic">Sin Asignar</span>
-                        @endif
-                    </td>
-
-                    {{-- Unidad Clínica --}}
-                    <td class="px-4 py-4">
-                        {{ $dist->unidadClinica->nombreUnidad ?? 'No def.' }}
-                    </td>
-
-                    {{-- Cupos --}}
-                    <td class="px-4 py-4 text-center">
-                        @if($dist)
-                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400">
-                                {{ $dist->cantidadCupos ?? 0 }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Sin Asignar
                             </span>
-                        @else
-                            -
                         @endif
                     </td>
 
-                    {{-- Fechas (Formateadas) --}}
-                    <td class="px-4 py-4 text-center whitespace-nowrap">
-                        @if($dist && $dist->fechaInicio)
-                            {{ \Carbon\Carbon::parse($dist->fechaInicio)->format('d/m/Y') }}
-                        @else - @endif
-                    </td>
-                    <td class="px-4 py-4 text-center whitespace-nowrap">
-                        @if($dist && $dist->fechaTermino)
-                            {{ \Carbon\Carbon::parse($dist->fechaTermino)->format('d/m/Y') }}
-                        @else - @endif
-                    </td>
+                    {{-- 3. Acciones (Centradas) --}}
+                    <td class="px-6 py-4 align-middle text-center">
+                        {{-- Usamos justify-center para centrar los botones --}}
+                        <div class="flex justify-center space-x-2 items-center">
+                            
+                            {{-- Botón Editar --}}
+                            <button data-action="edit" data-id="{{ $grupo->idGrupo }}" title="Editar" 
+                                class="inline-flex items-center justify-center w-8 h-8 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            
+                            {{-- Botón Eliminar --}}
+                            <button data-action="delete" data-id="{{ $grupo->idGrupo }}" title="Eliminar" 
+                                class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
 
-                    {{-- Horas (Combinadas Entrada/Salida) --}}
-                    <td class="px-4 py-4 text-center whitespace-nowrap text-xs">
-                        @if($dist && $dist->horaInicio && $dist->horaTermino)
-                            <div><i class="fas fa-clock text-gray-400 mr-1"></i>{{ \Carbon\Carbon::parse($dist->horaInicio)->format('H:i') }}</div>
-                            <div><i class="fas fa-sign-out-alt text-gray-400 mr-1"></i>{{ \Carbon\Carbon::parse($dist->horaTermino)->format('H:i') }}</div>
-                        @else - @endif
-                    </td>
-
-                    {{-- Acciones --}}
-                    <td class="px-4 py-4 text-right whitespace-nowrap">
-                        <button data-action="edit" data-id="{{ $grupo->idGrupo }}" class="text-blue-600 hover:text-blue-900 mx-1 p-1" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button data-action="delete" data-id="{{ $grupo->idGrupo }}" class="text-red-600 hover:text-red-900 mx-1 p-1" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">
-                        <div class="flex flex-col items-center justify-center">
-                            <i class="fas fa-users-slash text-4xl mb-2 text-gray-300"></i>
-                            <p>No se encontraron grupos.</p>
+                    <td colspan="3" class="px-6 py-10 text-center text-gray-500 bg-white">
+                        <div class="flex flex-col items-center justify-center space-y-2">
+                            <div class="p-3 bg-gray-100 rounded-full">
+                                <i class="fas fa-layer-group text-gray-400 text-2xl"></i>
+                            </div>
+                            <p class="text-base font-medium text-gray-600">No hay grupos creados</p>
+                            <p class="text-sm text-gray-400">Selecciona una distribución arriba y agrega un grupo.</p>
                         </div>
                     </td>
                 </tr>
@@ -98,7 +87,9 @@
         </tbody>
     </table>
     
-    <div class="px-4 py-3 border-t bg-gray-50">
-        {{ $grupos->links() }}
-    </div>
+    @if($grupos instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        <div class="px-6 py-3 border-t bg-gray-50">
+            {{ $grupos->links() }}
+        </div>
+    @endif
 </div>

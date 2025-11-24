@@ -46,14 +46,41 @@
         </div>
     </div>
 
-    {{-- MODAL DE GRUPOS (Ya lo tienes, solo asegúrate que tenga el campo oculto idCupoDistribucion) --}}
+    {{-- MODAL DE GRUPOS --}}
     <x-crud-modal modalId="grupoModal" formId="grupoForm" primaryKey="idGrupo" title="Grupo">
-        {{-- CAMPO OCULTO PARA RELACIONAR EL GRUPO --}}
         <input type="hidden" id="idCupoDistribucion" name="idCupoDistribucion">
 
         <div class="mb-4">
             <label for="nombreGrupo" class="block text-sm font-medium text-gray-700">Nombre del Grupo *</label>
             <input type="text" id="nombreGrupo" name="nombreGrupo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required maxlength="45">
+        </div>
+
+        <div class="mb-4">
+            <label for="idAsignatura" class="block text-sm font-medium text-gray-700">Asignatura *</label>
+            <select id="idAsignatura" name="idAsignatura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+                <option value="">Seleccione una asignatura...</option>
+                @if(isset($listaAsignaturas))
+                    @foreach($listaAsignaturas as $asig)
+                        <option value="{{ $asig->idAsignatura }}">{{ $asig->nombreAsignatura }}</option>
+                    @endforeach
+                @endif
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="idDocenteCarrera" class="block text-sm font-medium text-gray-700">Docente Encargado *</label>
+            <select id="idDocenteCarrera" name="idDocenteCarrera" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+                <option value="">Seleccione un docente...</option>
+                @if(isset($listaDocentesCarrera))
+                    @foreach($listaDocentesCarrera as $dc)
+                        <option value="{{ $dc->idDocenteCarrera }}">
+                            {{ $dc->docente->nombresDocente ?? 'Sin Nombre' }} 
+                            {{ $dc->docente->apellidoPaterno ?? '' }} 
+                            ({{ $dc->sedeCarrera->nombreSedeCarrera ?? 'N/A' }})
+                        </option>
+                    @endforeach
+                @endif
+            </select>
         </div>
     </x-crud-modal>
 
