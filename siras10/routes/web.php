@@ -11,6 +11,7 @@ use App\Http\Controllers\ConvenioController;
 use App\Http\Controllers\CupoDistribucionController;
 use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DocentesController;
+use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeCarreraController;
@@ -19,7 +20,6 @@ use App\Http\Controllers\TipoCentroFormadorController;
 use App\Http\Controllers\TipoPracticaController;
 use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\GrupoController;
 use Illuminate\Support\Facades\Route;
 
 /*

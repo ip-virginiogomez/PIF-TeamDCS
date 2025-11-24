@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Grupo;
 use App\Models\CupoDistribucion;
+use App\Models\Grupo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class GrupoController extends Controller
@@ -24,16 +24,16 @@ class GrupoController extends Controller
         $query = CupoDistribucion::with(['sedeCarrera.sede', 'cupoOferta.unidadClinica']);
 
         if ($search) {
-            $query->whereHas('sedeCarrera', function($q) use ($search) {
+            $query->whereHas('sedeCarrera', function ($q) use ($search) {
                 $q->where('nombreSedeCarrera', 'like', "%{$search}%");
-            })->orWhereHas('unidadClinica', function($q) use ($search) {
+            })->orWhereHas('unidadClinica', function ($q) use ($search) {
                 $q->where('nombreUnidad', 'like', "%{$search}%");
             });
         }
 
         $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
 
-        if ($request->ajax() && !$request->has('get_grupos')) {
+        if ($request->ajax() && ! $request->has('get_grupos')) {
             return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
         }
 
@@ -78,19 +78,20 @@ class GrupoController extends Controller
     public function destroy(Grupo $grupo)
     {
         $grupo->delete();
+
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);
     }
 
     public function getGruposByDistribucion($idDistribucion)
     {
         $grupos = Grupo::where('idCupoDistribucion', $idDistribucion)->paginate(5);
-        
+
         $distribucion = CupoDistribucion::with([
-            'sedeCarrera.sede', 
-            'cupoOferta.unidadClinica'
+            'sedeCarrera.sede',
+            'cupoOferta.unidadClinica',
         ])->find($idDistribucion);
 
-        if (!$distribucion) {
+        if (! $distribucion) {
             return response()->json(['error' => 'Distribución no encontrada'], 404);
         }
 
