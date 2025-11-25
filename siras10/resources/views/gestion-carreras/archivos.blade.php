@@ -233,7 +233,7 @@
                                                     </svg>
                                                 </button>
                                             {{-- Modal para historial de programas --}}
-                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 items-center justify-center hidden">
                                                 <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh]">
                                                     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                                                         <h3 class="text-lg font-semibold text-gray-900">Historial de Programas</h3>
