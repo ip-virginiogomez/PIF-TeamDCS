@@ -154,6 +154,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/grupos/por-distribucion/{idDistribucion}', [GrupoController::class, 'getGruposByDistribucion'])
         ->name('grupos.by-distribucion');
 
+    Route::get('/grupos/{grupo}/dossier', [GrupoController::class, 'generarDossier'])->name('grupos.dossier');
+
     // otros recursos y/o rutas...
     Route::get('/api/sedes-carreras', [App\Http\Controllers\DocentesController::class, 'getSedesCarrerasByCentro'])->name('api.sedes-carreras');
 });

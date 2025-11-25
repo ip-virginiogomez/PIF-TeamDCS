@@ -3,6 +3,7 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
                 <th scope="col" class="px-6 py-3">Sede / Carrera</th>
+                <th scope="col" class="px-6 py-3">Centro de Salud</th>
                 <th scope="col" class="px-6 py-3">Unidad Clínica</th>
                 <th scope="col" class="px-6 py-3 text-center">Cupos</th>
                 <th scope="col" class="px-6 py-3 text-center">Fechas</th>
@@ -21,12 +22,16 @@
                         <div class="font-medium text-gray-900">{{ $dist->sedeCarrera->nombreSedeCarrera ?? 'N/A' }}</div>
                         <div class="text-xs text-gray-500">{{ $dist->sedeCarrera->sede->nombreSede ?? '' }}</div>
                     </td>
-                    
+                    {{-- Centro de Salud --}}
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">
+                            {{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'N/A' }}
+                        </div>
+                    </td>
                     {{-- Unidad Clínica --}}
                     <td class="px-6 py-4 font-medium text-gray-900">
                         {{ $oferta->unidadClinica->nombreUnidad ?? 'N/A' }}
                     </td>
-                    
                     {{-- Cupos --}}
                     <td class="px-6 py-4 text-center">
                         <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400">
@@ -42,7 +47,6 @@
                             <div class="text-gray-900">{{ \Carbon\Carbon::parse($oferta->fechaSalida)->format('d/m/Y') }}</div>
                         @else - @endif
                     </td>
-                    
                     {{-- Horario --}}
                     <td class="px-6 py-4 text-center whitespace-nowrap">
                         @if($oferta)
@@ -56,7 +60,6 @@
                             </div>
                         @else - @endif
                     </td>
-                    
                     {{-- Botón Acción --}}
                     <td class="px-6 py-4 text-center">
                         <button 
@@ -76,7 +79,6 @@
             @endforelse
         </tbody>
     </table>
-    
     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
         {{ $distribuciones->links() }} 
     </div>

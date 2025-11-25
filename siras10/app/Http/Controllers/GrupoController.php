@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CupoDistribucion;
-use App\Models\Grupo;
-use App\Models\DocenteCarrera;
 use App\Models\Asignatura;
+use App\Models\CupoDistribucion;
+use App\Models\DocenteCarrera;
+use App\Models\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -23,14 +23,21 @@ class GrupoController extends Controller
     {
         $search = $request->input('search');
 
-        $query = CupoDistribucion::with(['sedeCarrera.sede', 'cupoOferta.unidadClinica']);
+        $query = CupoDistribucion::with([
+            'sedeCarrera.sede',
+            'cupoOferta.unidadClinica.centroSalud',
+        ]);
 
         if ($search) {
             $query->whereHas('sedeCarrera', function ($q) use ($search) {
                 $q->where('nombreSedeCarrera', 'like', "%{$search}%");
-            })->orWhereHas('unidadClinica', function ($q) use ($search) {
-                $q->where('nombreUnidad', 'like', "%{$search}%");
-            });
+            })
+                ->orWhereHas('unidadClinica', function ($q) use ($search) {
+                    $q->where('nombreUnidad', 'like', "%{$search}%");
+                })
+                ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($q) use ($search) {
+                    $q->where('nombreCentroSalud', 'like', "%{$search}%");
+                });
         }
 
         $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
@@ -42,7 +49,7 @@ class GrupoController extends Controller
             return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
         }
 
-        return view('grupos.index', compact('distribuciones','listaDocentesCarrera', 'listaAsignaturas'));
+        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas'));
     }
 
     public function store(Request $request)
@@ -93,7 +100,9 @@ class GrupoController extends Controller
 
     public function getGruposByDistribucion($idDistribucion)
     {
-        $grupos = Grupo::where('idCupoDistribucion', $idDistribucion)->paginate(5);
+        $grupos = Grupo::with(['docenteCarrera.docente', 'asignatura'])
+            ->where('idCupoDistribucion', $idDistribucion)
+            ->paginate(5);
 
         $distribucion = CupoDistribucion::with([
             'sedeCarrera.sede',

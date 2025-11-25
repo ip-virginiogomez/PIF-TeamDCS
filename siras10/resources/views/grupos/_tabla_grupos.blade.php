@@ -7,10 +7,12 @@
                     Nombre del Grupo
                 </th>
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600">
+                    Asignatura
+                </th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">
                     Docente Encargado
                 </th>
-                {{-- Centramos el encabezado de acciones --}}
-                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center w-32">
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center w-40">
                     Acciones
                 </th>
             </tr>
@@ -26,6 +28,16 @@
                         <span class="text-sm font-bold text-gray-900">
                             {{ $grupo->nombreGrupo }}
                         </span>
+                    </td>
+
+                    <td class="px-6 py-4 align-middle">
+                        @if($grupo->asignatura)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                {{ $grupo->asignatura->nombreAsignatura }}
+                            </span>
+                        @else
+                            <span class="text-gray-400 text-xs italic">No especificada</span>
+                        @endif
                     </td>
 
                     {{-- 2. Docente Encargado --}}
@@ -67,7 +79,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
                             </button>
-
+                            <a href="{{ route('grupos.dossier', $grupo->idGrupo) }}"
+                            target="_blank" 
+                            title="Ver Dossier" 
+                            class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                {{-- Icono de Documento/Reporte --}}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </a>
                         </div>
                     </td>
                 </tr>
