@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
-use App\Models\Docente;
-use App\Models\CupoOferta;
-use App\Models\Usuario;
 use App\Models\CentroFormador;
+use App\Models\CupoOferta;
+use App\Models\Docente;
+use App\Models\Usuario;
 
 class DashboardController extends Controller
 {
