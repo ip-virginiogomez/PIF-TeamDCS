@@ -115,4 +115,17 @@ class GrupoController extends Controller
 
         return view('grupos._tabla_grupos', compact('grupos', 'distribucion'))->render();
     }
+
+    public function generarDossier($idGrupo)
+    {
+        $grupo = Grupo::with([
+            'asignatura',
+            'docenteCarrera.docente',
+            'cupoDistribucion.sedeCarrera.sede.centroFormador',
+            'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
+            'cupoDistribucion.cupoOferta.tipoPractica',
+        ])->findOrFail($idGrupo);
+
+        return view('grupos.dossier', compact('grupo'));
+    }
 }

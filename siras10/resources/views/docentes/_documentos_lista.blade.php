@@ -51,7 +51,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </a>
-
+                    @if(!isset($readonly) || !$readonly)
                     <button type="button" 
                             data-action="change-doc" 
                             data-doc-key="{{ $docKey }}"
@@ -62,7 +62,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                     </button>
-
                     <form id="form-change-{{ $docKey }}-{{ $docente->runDocente }}" class="hidden" enctype="multipart/form-data">
                         @csrf
                         <input type="file" 
@@ -73,7 +72,7 @@
                             class="hidden" 
                             onchange="docenteManager.handleFileChange(this)"> 
                     </form>
-
+                    @endif
                 </div>
             </div>
         @endif
@@ -86,12 +85,15 @@
             </svg>
             <p class="font-medium text-lg text-gray-600">No hay documentos</p>
             <p class="text-sm mb-4 text-gray-400">Este docente aún no tiene archivos.</p>
+
+            @if(!isset($readonly) || !$readonly)
             <button type="button" data-action="edit" data-id="{{ $docente->runDocente }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-blue-700 transition ease-in-out duration-150 shadow-md text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
                 </svg>
                 Subir Documentos
             </button>
+            @endif
         </div>
     @endif
 </div>

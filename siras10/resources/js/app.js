@@ -19,6 +19,7 @@ import './unidad-clinica.js';
 import './usuarios.js';
 import './roles.js';
 import './grupos.js';
+import './grupodossier.js';
 
 import Alpine from 'alpinejs';
 

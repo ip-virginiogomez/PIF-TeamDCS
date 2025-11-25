@@ -80,7 +80,6 @@
                                 </svg>
                             </button>
                             <a href="{{ route('grupos.dossier', $grupo->idGrupo) }}"
-                            target="_blank" 
                             title="Ver Dossier" 
                             class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 {{-- Icono de Documento/Reporte --}}
