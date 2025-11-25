@@ -17,6 +17,7 @@ import './tipo-centro-formador.js';
 import './tipo-practica.js';
 import './unidad-clinica.js';
 import './usuarios.js';
+import './dashboard.js';
 
 import Alpine from 'alpinejs';
 
