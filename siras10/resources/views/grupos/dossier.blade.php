@@ -18,8 +18,10 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Dossier del Grupo') }}: {{ $grupo->nombreGrupo }}
             </h2>
-            <a href="{{ route('grupos.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
-                <i class="fas fa-arrow-left mr-2"></i> Volver
+            <a href="{{ route('grupos.index') }}" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
+                <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
             </a>
         </div>
     </x-slot>
@@ -163,12 +165,7 @@
                 </div>
                 
                 <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                    <button class="text-gray-600 hover:text-gray-900 font-medium text-sm transition flex items-center">
-                        <i class="fas fa-print mr-2"></i> Imprimir Ficha
-                    </button>
-                    <button class="bg-sky-700 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded shadow-sm text-sm transition flex items-center">
-                        <i class="fas fa-file-pdf mr-2"></i> Descargar PDF
-                    </button>
+                    
                 </div>
             </div>
         </div>
@@ -251,19 +248,16 @@
                                 <i class="fas fa-folder-open text-yellow-500 mr-2"></i> 
                                 Documentos de {{ $docente->nombresDocente }}
                             </h3>
-                            <button id="btn-close-docs" class="text-gray-400 hover:text-gray-600 transition">
-                                <i class="fas fa-times text-xl"></i>
+                            <button id="btn-close-docs" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
+                                <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                                </svg>
                             </button>
                         </div>
 
                         <div class="flex-1 overflow-hidden flex">
                             <div id="lista-docs-panel" class="w-full md:w-1/3 border-r border-gray-200 bg-white flex flex-col">
                                 @include('docentes._documentos_lista', ['docente' => $docente, 'readonly' => true])
-                            </div>
-                            <div class="p-4 border-t border-gray-200 bg-gray-50">
-                                <button id="btn-back-docs" type="button" class="p-4 border-t border-gray-200 bg-gray-50 shrink-0 text-gray-600 hover:text-gray-900 font-medium text-sm transition flex items-center">
-                                    <i class="fas fa-arrow-left mr-2 text-gray-400"></i> Volver
-                                </button>
                             </div>
                             {{-- PREVIEW --}}
                             <div id="preview-panel" class="hidden md:flex w-full md:w-2/3 bg-gray-100 flex-col items-center justify-center p-4">
