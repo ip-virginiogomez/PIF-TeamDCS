@@ -20,6 +20,7 @@ import './usuarios.js';
 import './roles.js';
 import './grupos.js';
 import './grupodossier.js';
+import './dashboard.js';
 
 import Alpine from 'alpinejs';
 
