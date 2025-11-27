@@ -13,7 +13,7 @@
                 </p>
             </div>
             <a href="{{ route('sede-carrera.index') }}"
-               class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
+            class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
                 <i class="fas fa-arrow-left mr-2"></i>Volver
             </a>
         </div>
@@ -201,6 +201,7 @@
                                                 <span class="text-sm text-gray-400">Sin programa</span>
                                             @endif
                                         </td>
+                                        <td>
                                             <div class="flex space-x-2">
                                                 {{-- Botón Ver Programa (si existe) --}}
                                                 @if ($programa)
@@ -232,7 +233,7 @@
                                                     </svg>
                                                 </button>
                                             {{-- Modal para historial de programas --}}
-                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 items-center justify-center hidden">
                                                 <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh]">
                                                     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                                                         <h3 class="text-lg font-semibold text-gray-900">Historial de Programas</h3>
@@ -290,8 +291,8 @@
 
                                                 @if ($programa)
                                                 <a href="{{ route('sede-carrera.asignaturas.programa.download', $asignatura->idAsignatura) }}"
-                                                   title="Descargar programa"
-                                                   class="inline-flex items-center justify-center w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-150">
+                                                title="Descargar programa"
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-150">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                                     </svg>

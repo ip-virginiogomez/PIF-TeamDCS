@@ -60,6 +60,16 @@ class Alumno extends Model
         );
     }
 
+    public function grupos()
+    {
+        return $this->belongsToMany(
+            Grupo::class,
+            'dossier_grupo',
+            'runAlumno',
+            'idGrupo'
+        );
+    }
+
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);

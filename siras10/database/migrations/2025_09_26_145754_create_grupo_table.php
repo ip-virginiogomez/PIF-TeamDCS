@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('idGrupo');
             $table->unsignedBigInteger('idCupoDistribucion')->nullable();
             $table->unsignedBigInteger('idDocenteCarrera')->nullable();
+            $table->unsignedBigInteger('idAsignatura')->nullable();
             $table->date('fechaCreacion')->nullable();
             $table->string('nombreGrupo', 45)->nullable();
             $table->timestamps();
@@ -28,6 +29,12 @@ return new class extends Migration
             $table->foreign('idDocenteCarrera')
                 ->references('idDocenteCarrera')
                 ->on('docente_carrera')
+                ->onUpdate('no action')
+                ->onDelete('no action');
+
+            $table->foreign('idAsignatura')
+                ->references('idAsignatura')
+                ->on('asignatura')
                 ->onUpdate('no action')
                 ->onDelete('no action');
         });

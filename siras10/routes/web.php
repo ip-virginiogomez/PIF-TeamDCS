@@ -12,6 +12,8 @@ use App\Http\Controllers\CupoDistribucionController;
 use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocentesController;
+use App\Http\Controllers\DossierGrupoController;
+use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeCarreraController;
@@ -149,6 +151,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('asignaciones.asignarRAD');
     Route::delete('/asignaciones/rad/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroRad'])
         ->name('asignaciones.quitarRAD');
+
+    // --- GESTIÓN DE GRUPOS ---
+    Route::resource('grupos', GrupoController::class);
+    Route::get('/grupos/por-distribucion/{idDistribucion}', [GrupoController::class, 'getGruposByDistribucion'])
+        ->name('grupos.by-distribucion');
+
+    // --- GESTIÓN DE DOSSIER DE GRUPO ---
+    Route::prefix('dossier/{grupo}')->name('dossier.')->group(function () {
+
+        Route::get('/', [DossierGrupoController::class, 'index'])->name('index');
+        Route::get('/buscar-alumnos', [DossierGrupoController::class, 'buscarAlumnos'])->name('buscarAlumnos');
+        Route::post('/agregar-alumno', [DossierGrupoController::class, 'agregarAlumno'])->name('agregarAlumno');
+        Route::delete('/eliminar-alumno/{alumno}', [DossierGrupoController::class, 'eliminarAlumno'])->name('eliminarAlumno');
+    });
 
     // otros recursos y/o rutas...
     Route::get('/api/sedes-carreras', [App\Http\Controllers\DocentesController::class, 'getSedesCarrerasByCentro'])->name('api.sedes-carreras');
