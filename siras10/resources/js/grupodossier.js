@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ GrupoDossier: Script cargado');
 
     initDocenteModal();
-    initDocumentosModal();
     initAddAlumnoModal();
     initRemoveAlumno();
     initAlumnoDocsModal();
