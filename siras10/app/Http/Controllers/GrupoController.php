@@ -124,7 +124,7 @@ class GrupoController extends Controller
             'cupoDistribucion.sedeCarrera.sede.centroFormador',
             'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
             'cupoDistribucion.cupoOferta.tipoPractica',
-            'alumnos'
+            'alumnos',
         ])->findOrFail($idGrupo);
 
         return view('grupos.dossier', compact('grupo'));

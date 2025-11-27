@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Alumno;
 
 class Grupo extends Model
 {
@@ -46,12 +45,13 @@ class Grupo extends Model
     {
         return $this->belongsTo(Asignatura::class, 'idAsignatura', 'idAsignatura');
     }
+
     public function alumnos()
     {
         return $this->belongsToMany(
-            Alumno::class,      
+            Alumno::class,
             'dossier_grupo',
-            'idGrupo',          
+            'idGrupo',
             'runAlumno'
         );
     }
