@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Grupo;
 
 class Alumno extends Model
 {
@@ -57,6 +58,16 @@ class Alumno extends Model
             'alumno_carrera',
             'runAlumno',
             'idSedeCarrera'
+        );
+    }
+
+    public function grupos()
+    {
+        return $this->belongsToMany(
+            Grupo::class, 
+            'dossier_grupo', 
+            'runAlumno',
+            'idGrupo'
         );
     }
 

@@ -21,6 +21,7 @@ use App\Http\Controllers\TipoCentroFormadorController;
 use App\Http\Controllers\TipoPracticaController;
 use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\DossierGrupoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -156,7 +157,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/grupos/por-distribucion/{idDistribucion}', [GrupoController::class, 'getGruposByDistribucion'])
         ->name('grupos.by-distribucion');
 
-    Route::get('/grupos/{grupo}/dossier', [GrupoController::class, 'generarDossier'])->name('grupos.dossier');
+    // --- GESTIÓN DE DOSSIER DE GRUPO ---
+    Route::prefix('dossier/{grupo}')->name('dossier.')->group(function() {
+        
+        Route::get('/', [DossierGrupoController::class, 'index'])->name('index');
+        Route::get('/buscar-alumnos', [DossierGrupoController::class, 'buscarAlumnos'])->name('buscarAlumnos');
+        Route::post('/agregar-alumno', [DossierGrupoController::class, 'agregarAlumno'])->name('agregarAlumno');
+        Route::delete('/eliminar-alumno/{alumno}', [DossierGrupoController::class, 'eliminarAlumno'])->name('eliminarAlumno');
+    });
 
     // otros recursos y/o rutas...
     Route::get('/api/sedes-carreras', [App\Http\Controllers\DocentesController::class, 'getSedesCarrerasByCentro'])->name('api.sedes-carreras');
