@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('cuposPorCarreraChart').getContext('2d');
+    const chartElement = document.getElementById('cuposPorCarreraChart');
+    if (!chartElement) return; // Solo ejecutar si el canvas existe
+    
+    const ctx = chartElement.getContext('2d');
     const mainColor = window.dashboardMainColor || '#0369a1';
     const data = {
         labels: window.cuposPorCarreraLabels || [],
