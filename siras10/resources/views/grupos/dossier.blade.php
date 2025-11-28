@@ -27,7 +27,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             
             {{-- TARJETA PRINCIPAL --}}
             <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg border border-gray-200">
@@ -156,7 +156,7 @@
                     {{-- SECCIÓN NUEVA: ASIGNATURA                                --}}
                     {{-- ======================================================== --}}
                     <div class="mt-8">
-                        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
+                        <div class="w-fit bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
                             {{-- Borde decorativo izquierdo --}}
                             <div class="absolute top-0 left-0 w-1 h-full bg-sky-700"></div>
                             
@@ -182,7 +182,7 @@
                                             type="button"
                                             data-url="{{ $urlPrograma }}"
                                             data-nombre="{{ $grupo->asignatura->nombreAsignatura }}"
-                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
+                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 ml-4 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
                                             title="Ver Programa de la Asignatura">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
