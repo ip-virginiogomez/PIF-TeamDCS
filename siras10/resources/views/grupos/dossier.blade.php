@@ -46,7 +46,7 @@
                 <div class="p-8">
                     
                     {{-- BARRA DE CUPOS --}}
-                    <div class="bg-sky-50 border border-sky-100 rounded-lg p-5 mb-8 flex items-center justify-between shadow-sm">
+                    <div class="bg-sky-50 border w-fit border-sky-100 rounded-lg p-5 mb-8 flex items-center justify-between shadow-sm">
                         <div class="flex items-center">
                             <div>
                                 <h4 class="text-sky-900 font-bold text-lg">Cupos Distribuidos</h4>
@@ -54,7 +54,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="block text-4xl font-extrabold text-sky-700">
+                            <span class="block text-4xl ml-4 font-extrabold text-sky-700">
                                 {{ $dist->cantCupos ?? 0 }}
                             </span>
                         </div>
