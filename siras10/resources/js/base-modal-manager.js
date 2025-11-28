@@ -1,3 +1,5 @@
+import Swal from 'sweetalert2';
+
 /**
  * Base Modal Manager
  */
@@ -187,7 +189,12 @@ export default class BaseModalManager {
         this.clearValidationErrors();
 
         try {
-            const response = await fetch(`${this.config.baseUrl}/${id}/edit`);
+            const response = await fetch(`${this.config.baseUrl}/${id}/edit`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             if (!response.ok) throw new Error('No se pudo obtener la información del registro.');
             const data = await response.json();
 
@@ -277,6 +284,13 @@ export default class BaseModalManager {
     setButtonText(text) { document.getElementById('btnTexto').textContent = text; }
     clearValidationErrors() { /* Tu código existente aquí es correcto */ }
     showValidationErrors(errors) { /* Tu código existente aquí es correcto */ }
-    async showAlert(title, text, icon) { return await Swal.fire(title, text, icon); }
+    async showAlert(title, text, icon) { 
+        return await Swal.fire({
+            title: title,
+            text: text,
+            icon: icon || 'info',
+            confirmButtonColor: icon === 'error' ? '#d33' : '#3085d6'
+        }); 
+    }
 }
 

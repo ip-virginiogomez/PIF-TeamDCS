@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('contrasenia', 255)->nullable();
             $table->string('fechaCreacion', 45)->nullable();
             $table->unsignedBigInteger('idTipoPersonalSalud')->nullable();
+            $table->rememberToken();
             $table->timestamps();
 
             $table->foreign('idTipoPersonalSalud')

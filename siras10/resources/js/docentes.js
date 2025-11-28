@@ -26,6 +26,142 @@ class DocenteManager extends BaseModalManager {
             ]
         });
         this.initFotoPreview();
+        this.addDocenteListeners();
+        this.initSearch();
+    }
+
+    setModalMaxWidth(panel, sizeClass) {
+        if (!panel) return;
+
+        panel.classList.remove(
+            'max-w-sm', 'sm:max-w-sm',
+            'max-w-md', 'sm:max-w-md',
+            'max-w-lg', 'sm:max-w-lg',
+            'max-w-xl', 'sm:max-w-xl',
+            'max-w-2xl', 'sm:max-w-2xl',
+            'max-w-3xl', 'sm:max-w-3xl',
+            'max-w-4xl', 'sm:max-w-4xl',
+            'max-w-5xl', 'sm:max-w-5xl',
+            'max-w-6xl', 'sm:max-w-6xl',
+            'max-w-7xl', 'sm:max-w-7xl',
+            'w-full'
+        );
+
+        panel.classList.add(sizeClass, 'w-full');
+    }
+
+    addDocenteListeners() {
+        if (document.body.dataset.docenteListenersActive === 'true') {
+            return;
+        }
+
+        document.body.dataset.docenteListenersActive = 'true';
+
+        document.body.addEventListener('click', (e) => {
+
+            const btnEdit = e.target.closest('[data-action="edit"]');
+            const documentosModal = document.getElementById('documentosModal');
+            const btnChangeDoc = e.target.closest('[data-action="change-doc"]');
+
+            if (btnEdit && documentosModal && documentosModal.contains(btnEdit)) {
+                e.preventDefault();
+                const id = btnEdit.dataset.id;
+                this.cerrarModalDocumentos();
+                this.editarRegistro(id);
+                return;
+            }
+
+            const btnPreview = e.target.closest('[data-action="preview-doc"]');
+            if (btnPreview) {
+                e.preventDefault();
+                const url = btnPreview.dataset.url;
+                const title = btnPreview.dataset.title;
+                this.mostrarPreviewDocumento(url, title);
+                return;
+            }
+
+            if (btnChangeDoc) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const docKey = btnChangeDoc.dataset.docKey;
+                const docenteId = btnChangeDoc.dataset.docenteId;
+                const fileInput = document.querySelector(`#form-change-${docKey}-${docenteId} input[type="file"]`);
+                if (fileInput) {
+                    fileInput.click();
+                }
+                return;
+            }
+
+            const btnBack = e.target.closest('#btn-cerrar-preview');
+            if (btnBack) {
+                e.preventDefault();
+                this.cerrarPreviewDocumento();
+                return;
+            }
+
+            if (documentosModal && !documentosModal.classList.contains('hidden')) {
+                if (e.target === documentosModal || e.target.closest('[data-dismiss="modal"]')) {
+                    this.cerrarModalDocumentos();
+                }
+            }
+        });
+    }
+
+    mostrarPreviewDocumento(url, title) {
+        const listaContainer = document.getElementById('lista-documentos-container');
+        const previewContainer = document.getElementById('preview-documento-container');
+        const iframe = document.getElementById('doc-viewer-iframe');
+        const titleSpan = document.getElementById('preview-titulo');
+        const modalTitle = document.getElementById('documentosModal-title');
+        const modalPanel = document.getElementById('documentosModal-panel');
+
+        if (listaContainer && previewContainer && iframe) {
+            listaContainer.classList.add('hidden');
+            previewContainer.classList.remove('hidden');
+
+            const extension = url.split('.').pop().toLowerCase();
+            const officeExtensions = ['doc', 'docx'];
+
+            if(officeExtensions.includes(extension)) {
+                iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+            }else{
+                iframe.src = url;
+            }
+
+            if (titleSpan) titleSpan.textContent = title;
+            if (modalTitle) modalTitle.textContent = 'Visualizando Documento';
+
+            this.setModalMaxWidth(modalPanel, 'sm:max-w-7xl');
+        }
+    }
+
+    cerrarPreviewDocumento() {
+        const listaContainer = document.getElementById('lista-documentos-container');
+        const previewContainer = document.getElementById('preview-documento-container');
+        const iframe = document.getElementById('doc-viewer-iframe');
+        const modalTitle = document.getElementById('documentosModal-title');
+
+        const modal = document.getElementById('documentosModal');
+        const modalPanel = modal.querySelector('div[class*="bg-white"]') || modal.querySelector('div[class*="max-w-"]');
+
+        if (listaContainer && previewContainer && iframe) {
+            iframe.src = '';
+
+            previewContainer.classList.add('hidden');
+            listaContainer.classList.remove('hidden');
+
+            if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
+
+            this.setModalMaxWidth(modalPanel, 'sm:max-w-3xl');
+        }
+    }
+
+    cerrarModalDocumentos() {
+        const modal = document.getElementById('documentosModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
 
     showValidationErrors(errors) {
@@ -36,7 +172,7 @@ class DocenteManager extends BaseModalManager {
             const errorMessage = errors[field][0];
 
             if (input) {
-                input.classList.add('border-red-500'); 
+                input.classList.add('border-red-500');
             }
 
             if (errorDiv) {
@@ -47,17 +183,20 @@ class DocenteManager extends BaseModalManager {
     }
 
     clearValidationErrors() {
+        if (!this.form) return;
+        
         this.form.querySelectorAll('.border-red-500').forEach(el => {
             el.classList.remove('border-red-500');
         });
-        
+
         this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
             errorDiv.classList.add('hidden');
             errorDiv.textContent = '';
         });
     }
 
-    initFotoPreview(){
+    initFotoPreview() {
+        if (!this.form) return;
         const fotoInput = this.form.querySelector('#foto');
         const fotoPreview = document.getElementById('foto-preview');
 
@@ -68,13 +207,148 @@ class DocenteManager extends BaseModalManager {
             if (!file) return;
 
             const reader = new FileReader();
-            
+
             reader.onload = (event) => {
-                fotoPreview.src = event.target.result; 
+                fotoPreview.src = event.target.result;
             };
-            
+
             reader.readAsDataURL(file);
         });
+    }
+
+    initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('btn-clear-search');
+        const tablaContainer = document.getElementById('tabla-container');
+        
+        const filterCentro = document.getElementById('filter-centro');
+        const filterSedeCarrera = document.getElementById('filter-sede-carrera');
+
+        if (!searchInput || !tablaContainer) return;
+
+        // Mostrar X si ya hay texto
+        if (clearBtn && searchInput.value.trim().length > 0) {
+            clearBtn.classList.remove('hidden');
+        }
+
+        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
+        const executeSearch = (page = 1) => {
+            const currentUrl = new URL(window.location.href);
+            
+            const query = searchInput.value;
+            const centroId = filterCentro ? filterCentro.value : '';
+            const sedeCarreraId = filterSedeCarrera ? filterSedeCarrera.value : '';
+
+            if (query) currentUrl.searchParams.set('search', query);
+            else currentUrl.searchParams.delete('search');
+
+            if (centroId) currentUrl.searchParams.set('centro_id', centroId);
+            else currentUrl.searchParams.delete('centro_id');
+
+            if (sedeCarreraId) currentUrl.searchParams.set('sede_carrera_id', sedeCarreraId);
+            else currentUrl.searchParams.delete('sede_carrera_id');
+
+            currentUrl.searchParams.set('page', page);
+
+            fetchTabla(currentUrl.toString());
+        };
+
+        const fetchTabla = async (url) => {
+            tablaContainer.style.opacity = '0.5';
+            try {
+                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!response.ok) throw new Error('Error');
+                const html = await response.text();
+                tablaContainer.innerHTML = html;
+                window.history.pushState(null, '', url);
+            } catch (error) { console.error(error); } 
+            finally { tablaContainer.style.opacity = '1'; }
+        };
+
+        // --- LISTENERS ---
+
+        // 1. TEXTO (Debounce)
+        let timeoutId;
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value;
+            if (clearBtn) {
+                query.length > 0 ? clearBtn.classList.remove('hidden') : clearBtn.classList.add('hidden');
+            }
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => executeSearch(1), 400);
+        });
+
+        // 2. FILTRO CENTRO FORMADOR (LÓGICA CASCADA EXCLUSIVA)
+        if (filterCentro && filterSedeCarrera) {
+            filterCentro.addEventListener('change', async () => {
+                // A. Limpiamos inmediatamente el valor de la carrera para evitar incongruencias
+                filterSedeCarrera.value = ''; 
+                
+                // B. Bloqueo visual mientras carga
+                filterSedeCarrera.disabled = true;
+                const originalText = filterSedeCarrera.options[0].text;
+                filterSedeCarrera.options[0].text = 'Cargando...';
+
+                try {
+                    const centroId = filterCentro.value;
+                    const url = `/api/sedes-carreras?centro_id=${centroId}`;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Error API');
+                    const data = await response.json();
+
+                    // C. Reconstruimos opciones
+                    filterSedeCarrera.innerHTML = '<option value="">Todas las Carreras</option>';
+                    data.forEach(item => {
+                        const nombreSede = item.sede ? item.sede.nombreSede : '';
+                        const option = document.createElement('option');
+                        option.value = item.idSedeCarrera;
+                        option.textContent = `${item.nombreSedeCarrera} (${nombreSede})`;
+                        filterSedeCarrera.appendChild(option);
+                    });
+
+                } catch (error) {
+                    console.error(error);
+                    filterSedeCarrera.innerHTML = '<option value="">Error al cargar</option>';
+                } finally {
+                    filterSedeCarrera.disabled = false;
+                    // D. SOLO AHORA ejecutamos la búsqueda (1 sola vez)
+                    executeSearch(1); 
+                }
+            });
+        } else if (filterCentro) {
+            // Fallback por si no existe el segundo select
+            filterCentro.addEventListener('change', () => executeSearch(1));
+        }
+
+        // 3. FILTRO SEDE/CARRERA (Simple)
+        if (filterSedeCarrera) {
+            filterSedeCarrera.addEventListener('change', () => executeSearch(1));
+        }
+
+        // 4. LIMPIAR
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                searchInput.focus();
+                clearBtn.classList.add('hidden');
+                executeSearch(1);
+            });
+        }
+
+        // 5. PAGINACIÓN
+        tablaContainer.addEventListener('click', (e) => {
+            const pageLink = e.target.closest('a[href*="page="]');
+            if (pageLink) {
+                e.preventDefault();
+                const url = new URL(pageLink.href);
+                const page = url.searchParams.get('page');
+                executeSearch(page);
+            }
+        });
+
+        // Prevenir submit
+        const searchForm = document.getElementById('search-form');
+        if(searchForm) searchForm.addEventListener('submit', (e) => e.preventDefault());
     }
 
     validate() {
@@ -126,23 +400,50 @@ class DocenteManager extends BaseModalManager {
 
     async editarRegistro(id) {
         const data = await super.editarRegistro(id);
+        if (!data) return;
 
         const runInput = this.form.querySelector('#runDocente');
         const runHelpText = document.getElementById('run-help-text');
         const fotoPreview = document.getElementById('foto-preview');
-        
+        const selectSedeCarrera = this.form.querySelector('[name="idSedeCarrera"]');
+        const docente = data.docente;
+        this.form.querySelector('[name="runDocente"]').value = docente.runDocente;
+        this.form.querySelector('[name="nombresDocente"]').value = docente.nombresDocente;
+        this.form.querySelector('[name="apellidoPaterno"]').value = docente.apellidoPaterno;
+        this.form.querySelector('[name="apellidoMaterno"]').value = docente.apellidoMaterno || '';
+        this.form.querySelector('[name="correo"]').value = docente.correo;
+        this.form.querySelector('[name="profesion"]').value = docente.profesion;
+        this.form.querySelector('[name="fechaNacto"]').value = docente.fechaNacto;
+
         if (runInput) {
             runInput.setAttribute('readonly', true);
+            runInput.classList.add('bg-gray-100', 'cursor-not-allowed');
         }
         if (runHelpText) {
             runHelpText.classList.remove('hidden');
         }
         if (fotoPreview) {
             if (data && data.foto) {
-                fotoPreview.src = `/storage/${data.foto}`;
+                fotoPreview.src = `/storage/${docente.foto}`;
             } else {
                 fotoPreview.src = "/storage/placeholder.png";
             }
+        }
+        if (selectSedeCarrera && data.sedesCarrerasDisponibles) {
+
+            selectSedeCarrera.innerHTML = '<option value="">Seleccione una opción...</option>';
+
+            data.sedesCarrerasDisponibles.forEach(sede => {
+                const option = document.createElement('option');
+                option.value = sede.idSedeCarrera;
+                const nombreSede = (sede.sede && sede.sede.nombreSede) ? sede.sede.nombreSede : '';
+                option.textContent = `${sede.nombreSedeCarrera} (${nombreSede || 'Sin Sede'})`;
+
+                if (sede.idSedeCarrera == data.idSedeCarreraActual) {
+                    option.selected = true;
+                }
+                selectSedeCarrera.appendChild(option);
+            });
         }
     }
 
@@ -150,12 +451,17 @@ class DocenteManager extends BaseModalManager {
         const modal = document.getElementById('documentosModal');
         const modalBody = document.getElementById('documentosModal-body');
         const modalTitle = document.getElementById('documentosModal-title');
+        const modalPanel = modal.querySelector('div[class*="bg-white"]') || modal.querySelector('div[class*="max-w-"]');
 
         if (!modal || !modalBody) return;
 
+        this.setModalMaxWidth(modalPanel, 'sm:max-w-3xl');
+
         modal.classList.remove('hidden');
         modal.classList.add('flex', 'items-center', 'justify-center');
-        modalTitle.textContent = 'Documentos del Docente';
+
+        if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
+
         modalBody.innerHTML = `<div class="flex justify-center items-center h-32"><i class="fas fa-spinner fa-spin fa-2x text-gray-500"></i></div>`;
 
         try {
@@ -163,17 +469,113 @@ class DocenteManager extends BaseModalManager {
             if (!response.ok) throw new Error('No se pudo cargar la lista de documentos.');
 
             const html = await response.text();
-            
+
             modalBody.innerHTML = html;
         } catch (error) {
             console.error('Error al ver documentos:', error);
             modalBody.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
         }
     }
+
+    async handleFileChange(fileInput) {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const docKey = fileInput.dataset.docKey; 
+        const docenteId = fileInput.dataset.docenteId;
+
+        const docNameReadable = docKey.replace(/([A-Z])/g, ' $1').trim();
+
+        const result = await Swal.fire({
+            title: '¿Cambiar archivo?',
+            text: `Se reemplazará el documento actual de "${docNameReadable}".`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cambiar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!result.isConfirmed) {
+            fileInput.value = ''; 
+            return;
+        }
+
+        Swal.fire({
+            title: 'Subiendo archivo...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        try {
+            await this.uploadDocument(docenteId, docKey, file);
+            await Swal.fire({
+                title: '¡Actualizado!',
+                text: 'El documento se ha subido correctamente.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            this.verDocumentos(docenteId);
+        } catch (error) {
+            console.error('Error al subir documento:', error);
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'No se pudo subir el archivo.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+        } finally {
+            fileInput.value = '';
+        }
+    }
+
+    async uploadDocument(docenteId, docKey, file) {
+        const formData = new FormData();
+        formData.append('_method', 'POST');
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        formData.append(docKey, file);
+
+        const url = `docentes/${docenteId}/upload-document`;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            let errorMessage = 'Error al subir el documento.';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+                
+                if (errorData.errors) {
+                    errorMessage += ': ' + Object.values(errorData.errors).flat().join(', ');
+                }
+            } catch (e) {
+                console.error('Error crítico (HTML recibido):', await response.text());
+                errorMessage = 'Error crítico del servidor. Revisa la consola (F12) para más detalles.';
+            }
+            throw new Error(errorMessage);
+        }
+
+        return response.json();
+    }
 }
 
+// Solo inicializar si estamos en la página de docentes
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('docenteForm')) {
-        new DocenteManager();
+        window.docenteManager = new DocenteManager();
     }
 });

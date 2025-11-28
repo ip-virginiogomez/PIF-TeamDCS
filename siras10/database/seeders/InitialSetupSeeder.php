@@ -22,6 +22,7 @@ class InitialSetupSeeder extends Seeder
                 'docentes' => ['create', 'read', 'update', 'delete'],
                 'carreras' => ['create', 'read', 'update', 'delete'],
                 'sede-carrera' => ['create', 'read', 'update', 'delete'],
+                'asignaturas' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión Centro Formador' => [
                 'centros-formadores' => ['create', 'read', 'update', 'delete'],
@@ -38,6 +39,7 @@ class InitialSetupSeeder extends Seeder
                 'cupo-ofertas' => ['create', 'read', 'update', 'delete'],
                 'tipos-practica' => ['create', 'read', 'update', 'delete'],
                 'cupo-distribuciones' => ['create', 'read', 'update', 'delete'],
+                'grupos' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión de Usuarios' => [
                 'usuarios' => ['create', 'read', 'update', 'delete'],

@@ -19,8 +19,8 @@ class TipoCentroFormadorController extends Controller
     public function index()
     {
         $columnasDisponibles = ['idTipoCentroFormador', 'nombreTipo', 'fechaCreacion'];
-        $sortBy = request()->get('sort_by', 'idSede');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortBy = request()->get('sort_by', 'idTipoCentroFormador');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idTipoCentroFormador';
