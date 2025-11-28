@@ -155,7 +155,7 @@
                     {{-- ======================================================== --}}
                     {{-- SECCIÓN NUEVA: ASIGNATURA                                --}}
                     {{-- ======================================================== --}}
-                    <div class="mt-8">
+                    <div class="mt-8 border-t border-gray-200 pt-8">
                         <div class="w-fit bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
                             {{-- Borde decorativo izquierdo --}}
                             <div class="absolute top-0 left-0 w-1 h-full bg-sky-700"></div>
