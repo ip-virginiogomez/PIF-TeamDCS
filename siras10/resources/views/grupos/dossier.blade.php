@@ -69,14 +69,13 @@
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Centro Formador</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Centro Formador</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $centroFormador->nombreCentroFormador ?? 'No especificado' }}
                                 </div>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Carrera / Sede</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Carrera / Sede</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $sedeCarrera->nombreSedeCarrera ?? 'No especificado' }}
                                 </div>
@@ -85,7 +84,7 @@
                             
                             {{-- TARJETA DOCENTE --}}
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-sky-300 transition duration-200">
-                                <label class="block text-xs font-semibold text-gray-400 uppercase mb-3">Docente a Cargo</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase mb-3">Docente a Cargo</span>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
                                         <div class="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 mr-3 overflow-hidden border border-sky-200">
@@ -132,21 +131,20 @@
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Centro de Salud</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Centro de Salud</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $centroSalud->nombreCentro ?? 'No especificado' }}
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Unidad Clínica</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Unidad Clínica</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $unidad->nombreUnidad ?? 'No especificado' }}
                                 </div>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Tipo de Práctica</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Tipo de Práctica</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $tipoPractica->nombrePractica ?? 'General' }}
                                 </div>

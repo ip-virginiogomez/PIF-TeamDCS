@@ -1,48 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-
-    initDocenteModal();
-    initAddAlumnoModal();
-    initRemoveAlumno();
-    initAlumnoDocsModal();
-    initAsignaturaModal();
+    // Inicializamos módulos con manejo de errores
+    try { initDocenteModal(); } catch (e) { console.error('Error initDocenteModal:', e); }
+    try { initDocumentosModal(); } catch (e) { console.error('Error initDocumentosModal:', e); }
+    try { initAddAlumnoModal(); } catch (e) { console.error('Error initAddAlumnoModal:', e); }
+    try { initRemoveAlumno(); } catch (e) { console.error('Error initRemoveAlumno:', e); }
+    try { initAlumnoDocsModal(); } catch (e) { console.error('Error initAlumnoDocsModal:', e); }
+    try { initAsignaturaModal(); } catch (e) { console.error('Error initAsignaturaModal:', e); }
 });
 
-function initAsignaturaModal() {
-    const modal = document.getElementById('modalAsignatura');
-    if (!modal) return;
-
-    const btnOpen = document.getElementById('btn-open-asignatura');
-    const btnClose = document.getElementById('btn-close-asignatura');
-    const backdrop = document.getElementById('modal-asignatura-backdrop');
-    const iframe = document.getElementById('iframe-asignatura');
-    const title = document.getElementById('asignatura-modal-nombre');
-
-    if (btnOpen) {
-        btnOpen.addEventListener('click', (e) => {
-            e.preventDefault();
-            const url = btnOpen.dataset.url;
-            const nombre = btnOpen.dataset.nombre;
-
-            iframe.src = url;
-            title.textContent = nombre;
-            
-            modal.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-        });
-    }
-
-    const closeModal = () => {
-        modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-        iframe.src = ''; // Limpiar para detener carga
-    };
-
-    if (btnClose) btnClose.addEventListener('click', closeModal);
-    if (backdrop) backdrop.addEventListener('click', closeModal);
-}
-
 /**
- * 1. LÓGICA DEL MODAL FICHA DOCENTE (Foto y Datos)
+ * 1. FICHA DOCENTE
  */
 function initDocenteModal() {
     const modal = document.getElementById('modalDocente');
@@ -53,55 +20,52 @@ function initDocenteModal() {
     const btnCloseX = document.getElementById('btn-close-x');
     const btnCloseBottom = document.getElementById('btn-close-bottom');
 
-    const openModal = (e) => {
-        if(e) e.preventDefault();
-        modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+    const toggle = (show) => {
+        if (show) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        } else {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
     };
 
-    const closeModal = (e) => {
-        if(e) e.preventDefault();
-        modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    };
-
-    if (btnOpen) btnOpen.addEventListener('click', openModal);
-    if (backdrop) backdrop.addEventListener('click', closeModal);
-    if (btnCloseX) btnCloseX.addEventListener('click', closeModal);
-    if (btnCloseBottom) btnCloseBottom.addEventListener('click', closeModal);
+    if (btnOpen) btnOpen.addEventListener('click', (e) => { e.preventDefault(); toggle(true); });
+    if (backdrop) backdrop.addEventListener('click', () => toggle(false));
+    if (btnCloseX) btnCloseX.addEventListener('click', () => toggle(false));
+    if (btnCloseBottom) btnCloseBottom.addEventListener('click', () => toggle(false));
 }
 
 /**
- * 2. LÓGICA DEL MODAL DE DOCUMENTOS DOCENTE (Lista + Preview)
+ * 2. DOCUMENTOS DOCENTE (Igualado al de Alumnos)
  */
 function initDocumentosModal() {
     const modalDocs = document.getElementById('modalDocs');
     const modalFicha = document.getElementById('modalDocente');
     
-    if (!modalDocs) return;
+    if (!modalDocs) {
+        console.warn('⚠️ Modal de documentos docente (modalDocs) no encontrado en el HTML.');
+        return;
+    }
 
-    // Botones de Apertura
-    const btnOpen = document.getElementById('btn-open-docs'); 
-    const btnInternal = document.getElementById('btn-view-docs-internal'); 
+    const btnOpen = document.getElementById('btn-open-docs');
+    const btnInternal = document.getElementById('btn-view-docs-internal');
     
-    // Botones de Cierre/Navegación
     const btnClose = document.getElementById('btn-close-docs');
-    const btnBack = document.getElementById('btn-back-docs'); 
+    const btnBack = document.getElementById('btn-back-docs');
     const backdrop = document.getElementById('modal-docs-backdrop');
     
-    // Elementos de contenido
     const listaPanel = document.getElementById('lista-docs-panel');
     const iframe = document.getElementById('doc-iframe');
     const emptyState = document.getElementById('empty-state');
 
-    // --- Función para abrir ---
+    // Función Abrir
     const openDocs = (e) => {
         if(e) e.preventDefault();
-        
+        // Cerrar ficha si está abierta
         if(modalFicha && !modalFicha.classList.contains('hidden')) {
             modalFicha.classList.add('hidden');
         }
-
         modalDocs.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     };
@@ -109,11 +73,10 @@ function initDocumentosModal() {
     if (btnOpen) btnOpen.addEventListener('click', openDocs);
     if (btnInternal) btnInternal.addEventListener('click', openDocs);
 
-    // --- Función para cerrar ---
+    // Función Cerrar
     const closeModal = () => {
         modalDocs.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-        
         if(iframe) {
             iframe.src = '';
             iframe.classList.add('hidden');
@@ -123,47 +86,47 @@ function initDocumentosModal() {
 
     if (btnClose) btnClose.addEventListener('click', closeModal);
     if (backdrop) backdrop.addEventListener('click', closeModal);
-    if (btnBack) btnBack.addEventListener('click', closeModal); 
+    if (btnBack) btnBack.addEventListener('click', closeModal);
 
-    // --- Lógica de Previsualización (Igual que Alumnos) ---
+    // LÓGICA DE FILAS CLICKEABLES (Igual que alumnos)
     if (listaPanel) {
-        // Buscamos los contenedores de tu partial _documentos_lista
-        // Asumimos que cada fila tiene un botón con data-action="preview-doc"
-        // Vamos a hacer que TODA LA FILA sea clickeable para preview
+        // Buscamos las filas generadas por Blade (que suelen ser div.flex...)
+        // Vamos a asumir que tu partial _documentos_lista genera divs con botones dentro.
         
-        // 1. Ajuste visual inicial: quitamos estilos viejos si es necesario
+        // 1. Preparamos las filas: Ocultamos el botón "ojo" original y preparamos el click
         const filas = listaPanel.querySelectorAll('div.flex.items-center.justify-between');
+        
         filas.forEach(fila => {
-            fila.classList.add('cursor-pointer', 'hover:bg-sky-50', 'transition');
+            // Estilos para que parezca botón
+            fila.classList.add('cursor-pointer', 'hover:bg-sky-50', 'transition', 'p-2', 'rounded-lg');
             
-            // Encontrar botón de preview y obtener URL
+            // Buscar botón de previsualización (ojo) y ocultarlo (ya no se necesita, el clic es en la fila)
             const btnPreview = fila.querySelector('button[data-action="preview-doc"]');
-            if(btnPreview) {
-                const url = btnPreview.dataset.url;
-                fila.dataset.previewUrl = url; // Guardamos la URL en la fila padre
-                btnPreview.style.display = 'none'; // Ocultamos el botón de ojo original
+            if (btnPreview) {
+                fila.dataset.previewUrl = btnPreview.dataset.url; // Guardamos la URL en la fila
+                btnPreview.style.display = 'none'; // Ocultamos el ojo
+            }
+
+            // Buscar botón de descarga y evitar que el clic se propague a la fila
+            const linkDownload = fila.querySelector('a[download]');
+            if (linkDownload) {
+                linkDownload.addEventListener('click', (e) => e.stopPropagation());
             }
         });
 
-        // 2. Listener de clic en la fila
+        // 2. Evento Click en la lista (Delegación)
         listaPanel.addEventListener('click', (e) => {
+            // Buscamos la fila más cercana al clic
             const fila = e.target.closest('div[data-preview-url]');
             
-            // Si hicimos clic en el botón de descarga, no abrimos preview
-            if (e.target.closest('a[download]')) return;
-
             if (fila) {
                 const url = fila.dataset.previewUrl;
                 
-                // Resaltar visualmente
-                listaPanel.querySelectorAll('div[data-preview-url]').forEach(f => {
-                    f.classList.remove('bg-sky-50', 'border-sky-200');
-                    f.classList.add('border-gray-200');
-                });
-                fila.classList.remove('border-gray-200');
-                fila.classList.add('bg-sky-50', 'border-sky-200'); // Borde azul activo
+                // Resaltar activo
+                filas.forEach(f => f.classList.remove('bg-sky-100', 'border-sky-300', 'ring-1', 'ring-sky-300'));
+                fila.classList.add('bg-sky-100', 'border-sky-300', 'ring-1', 'ring-sky-300');
 
-                // Mostrar Iframe
+                // Cargar Iframe
                 if(iframe && emptyState) {
                     iframe.src = url;
                     iframe.classList.remove('hidden');
@@ -175,27 +138,25 @@ function initDocumentosModal() {
 }
 
 /**
- * 3. LÓGICA PARA AGREGAR ALUMNO
+ * 3. AGREGAR ALUMNO
  */
 function initAddAlumnoModal() {
     const modal = document.getElementById('modalAddAlumno');
-    if (!modal) return;
+    if (!modal) return; // Si el botón está deshabilitado (grupo lleno), el modal existe pero el btn no abre nada
 
     const btnOpen = document.getElementById('btn-open-add-alumno');
     const btnClose = document.getElementById('btn-close-add');
     const backdrop = document.getElementById('modal-add-backdrop');
-    
     const inputSearch = document.getElementById('search-alumno');
     const resultsContainer = document.getElementById('search-results');
     const noResults = document.getElementById('no-results');
-    const grupoIdInput = document.getElementById('grupo-id-actual'); 
+    const grupoIdInput = document.getElementById('grupo-id-actual');
 
     if(!grupoIdInput) return;
     const grupoId = grupoIdInput.value;
-
     let debounceTimer;
 
-    const toggleModal = (show) => {
+    const toggle = (show) => {
         if(show) {
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
@@ -204,22 +165,20 @@ function initAddAlumnoModal() {
             modal.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
             if(inputSearch) inputSearch.value = '';
-            if(resultsContainer) {
-                resultsContainer.innerHTML = '';
-                resultsContainer.classList.add('hidden');
-            }
+            if(resultsContainer) { resultsContainer.innerHTML = ''; resultsContainer.classList.add('hidden'); }
             if(noResults) noResults.classList.add('hidden');
         }
     };
 
-    if(btnOpen) btnOpen.addEventListener('click', () => toggleModal(true));
-    if(btnClose) btnClose.addEventListener('click', () => toggleModal(false));
-    if(backdrop) backdrop.addEventListener('click', () => toggleModal(false));
+    if(btnOpen) btnOpen.addEventListener('click', () => toggle(true));
+    if(btnClose) btnClose.addEventListener('click', () => toggle(false));
+    if(backdrop) backdrop.addEventListener('click', () => toggle(false));
 
     if(inputSearch) {
         inputSearch.addEventListener('input', (e) => {
             const term = e.target.value.trim();
             clearTimeout(debounceTimer);
+            
             if (term.length < 2) {
                 resultsContainer.classList.add('hidden');
                 noResults.classList.add('hidden');
@@ -242,9 +201,7 @@ function initAddAlumnoModal() {
                                         <p class="text-sm font-bold text-gray-800">${alumno.nombres} ${alumno.apellidoPaterno}</p>
                                         <p class="text-xs text-gray-500">${alumno.runAlumno}</p>
                                     </div>
-                                    <button class="text-green-600 hover:text-green-800">
-                                        <i class="fas fa-plus-circle text-xl"></i>
-                                    </button>
+                                    <button class="text-green-600 hover:text-green-800"><i class="fas fa-plus-circle text-xl"></i></button>
                                 `;
                                 item.addEventListener('click', () => agregarAlumno(alumno.runAlumno, grupoId));
                                 resultsContainer.appendChild(item);
@@ -254,7 +211,7 @@ function initAddAlumnoModal() {
                             noResults.classList.remove('hidden');
                         }
                     })
-                    .catch(err => console.error('Error:', err));
+                    .catch(console.error);
             }, 300);
         });
     }
@@ -264,18 +221,12 @@ function initAddAlumnoModal() {
             const token = document.querySelector('meta[name="csrf-token"]').content;
             const response = await fetch(`/dossier/${grupoId}/agregar-alumno`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({ runAlumno: runAlumno })
             });
             const res = await response.json();
-            if (res.success) {
-                window.location.reload();
-            } else {
-                alert('Error: ' + (res.message || 'No se pudo agregar'));
-            }
+            if (res.success) window.location.reload();
+            else alert('Error: ' + res.message);
         } catch (error) {
             console.error(error);
             alert('Error de conexión');
@@ -284,7 +235,7 @@ function initAddAlumnoModal() {
 }
 
 /**
- * 4. LÓGICA PARA ELIMINAR ALUMNO
+ * 4. ELIMINAR ALUMNO
  */
 function initRemoveAlumno() {
     const grupoIdInput = document.getElementById('grupo-id-actual');
@@ -292,71 +243,45 @@ function initRemoveAlumno() {
     const grupoId = grupoIdInput.value;
 
     document.addEventListener('click', async (e) => {
-        // Detectamos clic en el botón de eliminar (o su ícono SVG)
         const btn = e.target.closest('button[data-action="delete-alumno"]');
-        
         if (btn) {
-            // Evitar doble clic
             btn.disabled = true;
             const runAlumno = btn.dataset.run;
-
-            // 1. Mostrar Alerta de Confirmación
-            const result = await Swal.fire({
-                title: '¿Quitar estudiante?',
-                text: "El alumno será eliminado de la nómina de este grupo.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626', // Rojo intenso (Tailwind red-600)
-                cancelButtonColor: '#6b7280',  // Gris (Tailwind gray-500)
-                confirmButtonText: 'Sí, quitar',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true, // Pone el botón de cancelar a la izquierda (mejor UX)
-                focusCancel: true     // Enfoca cancelar por defecto para evitar accidentes
-            });
-
-            // Si el usuario cancela, reactivamos el botón y salimos
-            if (!result.isConfirmed) {
-                btn.disabled = false;
-                return;
+            
+            let confirmado = false;
+            if (typeof Swal !== 'undefined') {
+                const result = await Swal.fire({
+                    title: '¿Quitar estudiante?',
+                    text: "Se eliminará de este grupo.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, quitar'
+                });
+                confirmado = result.isConfirmed;
+            } else {
+                confirmado = confirm('¿Quitar estudiante?');
             }
 
-            // 2. Si confirmó, hacemos la petición DELETE
+            if (!confirmado) { btn.disabled = false; return; }
+
             try {
                 const token = document.querySelector('meta[name="csrf-token"]').content;
-                
-                // Mostrar "Cargando..." mientras elimina
-                Swal.showLoading();
-
                 const response = await fetch(`/dossier/${grupoId}/eliminar-alumno/${runAlumno}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token
-                    }
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token }
                 });
-
                 const data = await response.json();
-
                 if (data.success) {
-                    // 3. Éxito: Mostrar mensaje y recargar
-                    await Swal.fire({
-                        title: '¡Eliminado!',
-                        text: 'El estudiante ha sido quitado del grupo correctamente.',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    
+                    if (typeof Swal !== 'undefined') await Swal.fire('Eliminado', '', 'success');
                     window.location.reload();
                 } else {
-                    // Error de lógica (ej: alumno no encontrado)
-                    Swal.fire('Error', data.message || 'No se pudo eliminar', 'error');
+                    alert('Error: ' + data.message);
                     btn.disabled = false;
                 }
-
             } catch (error) {
                 console.error(error);
-                Swal.fire('Error', 'Ocurrió un problema de conexión con el servidor.', 'error');
                 btn.disabled = false;
             }
         }
@@ -364,7 +289,7 @@ function initRemoveAlumno() {
 }
 
 /**
- * 5. LÓGICA MODAL DOCUMENTOS ALUMNO (Dinámico)
+ * 5. DOCUMENTOS ALUMNO (Dinámico)
  */
 function initAlumnoDocsModal() {
     const modal = document.getElementById('modalDocsAlumno');
@@ -387,7 +312,7 @@ function initAlumnoDocsModal() {
         const docs = JSON.parse(btn.dataset.docs); 
 
         nombreLabel.textContent = nombre;
-        renderListaDocumentos(docs);
+        renderLista(docs);
 
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
@@ -407,7 +332,7 @@ function initAlumnoDocsModal() {
     if (btnBack) btnBack.addEventListener('click', closeModal);
     if (backdrop) backdrop.addEventListener('click', closeModal);
 
-    function renderListaDocumentos(docs) {
+    function renderLista(docs) {
         listaContainer.innerHTML = '';
         let hayDocs = false;
 
@@ -417,35 +342,23 @@ function initAlumnoDocsModal() {
                 const url = `/storage/${doc.file}`; 
                 
                 const item = document.createElement('div');
-                // Clases de estilo: Borde gris, fondo azul al pasar el mouse, cursor de mano
                 item.className = 'group flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-sky-50 transition cursor-pointer mb-2';
                 
-                // AQUÍ ESTÁ EL DISEÑO NUEVO:
                 item.innerHTML = `
                     <div class="flex items-center overflow-hidden">
-                        <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        
-                        <span class="text-sm font-medium text-gray-700 truncate group-hover:text-sky-700" title="${doc.nombre}">
-                            ${doc.nombre}
-                        </span>
+                        <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                        <span class="text-sm font-medium text-gray-700 truncate group-hover:text-sky-700" title="${doc.nombre}">${doc.nombre}</span>
                     </div>
-
-                    <a href="${url}" download onclick="event.stopPropagation()" class="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-full transition duration-200" title="Descargar archivo">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
+                    <a href="${url}" download onclick="event.stopPropagation()" class="p-2 text-gray-400 hover:text-green-600 transition" title="Descargar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                     </a>
                 `;
 
-                // Evento: Al hacer clic en la fila, PREVISUALIZAR en el iframe
                 item.addEventListener('click', () => {
                     iframe.src = url;
                     iframe.classList.remove('hidden');
                     emptyState.classList.add('hidden');
                     
-                    // Resaltar la fila seleccionada (Borde azul)
                     listaContainer.querySelectorAll('div.group').forEach(d => {
                         d.classList.remove('bg-sky-50', 'border-sky-300', 'ring-1', 'ring-sky-300');
                         d.classList.add('border-gray-200');
@@ -458,16 +371,41 @@ function initAlumnoDocsModal() {
             }
         });
 
-        // Estado vacío (si no hay documentos)
         if (!hayDocs) {
-            listaContainer.innerHTML = `
-                <div class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                    <svg class="w-12 h-12 mb-3 opacity-30 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
-                    </svg>
-                    <p class="text-sm font-medium">Este alumno no tiene documentos.</p>
-                </div>
-            `;
+            listaContainer.innerHTML = `<div class="text-center py-10 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg"><p class="text-sm font-medium">Sin documentos.</p></div>`;
         }
     }
+}
+
+/**
+ * 6. ASIGNATURA
+ */
+function initAsignaturaModal() {
+    const modal = document.getElementById('modalAsignatura');
+    if (!modal) return;
+
+    const btnOpen = document.getElementById('btn-open-asignatura');
+    const btnClose = document.getElementById('btn-close-asignatura');
+    const backdrop = document.getElementById('modal-asignatura-backdrop');
+    const iframe = document.getElementById('iframe-asignatura');
+    const title = document.getElementById('asignatura-modal-nombre');
+
+    if (btnOpen) {
+        btnOpen.addEventListener('click', (e) => {
+            e.preventDefault();
+            iframe.src = btnOpen.dataset.url;
+            title.textContent = btnOpen.dataset.nombre;
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        });
+    }
+
+    const close = () => {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        iframe.src = '';
+    };
+
+    if (btnClose) btnClose.addEventListener('click', close);
+    if (backdrop) backdrop.addEventListener('click', close);
 }
