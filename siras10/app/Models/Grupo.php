@@ -18,6 +18,7 @@ class Grupo extends Model
     protected $fillable = [
         'idCupoDistribucion',
         'idDocenteCarrera',
+        'idAsignatura',
         'fechaCreacion',
         'nombreGrupo',
     ];
@@ -38,5 +39,20 @@ class Grupo extends Model
     public function dossierGrupos()
     {
         return $this->hasMany(DossierGrupo::class, 'idGrupo', 'idGrupo');
+    }
+
+    public function asignatura()
+    {
+        return $this->belongsTo(Asignatura::class, 'idAsignatura', 'idAsignatura');
+    }
+
+    public function alumnos()
+    {
+        return $this->belongsToMany(
+            Alumno::class,
+            'dossier_grupo',
+            'idGrupo',
+            'runAlumno'
+        );
     }
 }

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('malla_sede_carrera', function (Blueprint $table) {
             $table->id('idMallaSedeCarrera');
             $table->date('fechaSubida')->nullable();
-            $table->binary('documento')->nullable();
-            $table->integer('anio')->nullable();
+            $table->string('documento')->nullable();
+            $table->string('nombre')->nullable();
             $table->unsignedBigInteger('idMallaCurricular')->nullable();
             $table->unsignedBigInteger('idSedeCarrera')->nullable();
             $table->timestamps();

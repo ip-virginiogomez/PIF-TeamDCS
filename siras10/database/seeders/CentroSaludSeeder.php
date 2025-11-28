@@ -9,12 +9,8 @@ use Illuminate\Database\Seeder;
 
 class CentroSaludSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Primero verificamos que existan ciudades y tipos de centro de salud
         $ciudades = Ciudad::all();
         $tiposCentro = TipoCentroSalud::all();
 
@@ -86,7 +82,5 @@ class CentroSaludSeeder extends Seeder
         foreach ($centrosSalud as $centro) {
             CentroSalud::create($centro);
         }
-
-        $this->command->info('CentroSalud seeders ejecutados exitosamente: '.count($centrosSalud).' centros creados.');
     }
 }

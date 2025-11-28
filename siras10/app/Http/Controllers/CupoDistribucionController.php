@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CupoDistribucion;
 use App\Models\CupoOferta;
-// ¡CAMBIO! Necesitamos el modelo SedeCarrera (o el que corresponda)
-use App\Models\SedeCarrera; // Asegúrate que este es el modelo correcto
+use App\Models\SedeCarrera;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,7 +12,10 @@ class CupoDistribucionController extends Controller
 {
     public function __construct()
     {
-        // ... (Los middleware can están bien) ...
+        $this->middleware('permission:cupo-distribuciones.read')->only('index');
+        $this->middleware('permission:cupo-distribuciones.create')->only('create', 'store');
+        $this->middleware('permission:cupo-distribuciones.update')->only('edit', 'update');
+        $this->middleware('permission:cupo-distribuciones.delete')->only('destroy');
     }
 
     public function index(Request $request)
@@ -26,27 +28,58 @@ class CupoDistribucionController extends Controller
         $oferta = CupoOferta::findOrFail($ofertaId);
         $oferta->load('periodo', 'unidadClinica.centroSalud', 'carrera', 'tipoPractica');
 
-        // ¡CAMBIO AQUÍ! Carga la relación correcta (asumiendo que existe en el modelo CupoDistribucion)
-        $distribuciones = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
-            ->with('sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera') // Ajusta según tus relaciones
-            ->orderBy('idCupoDistribucion', 'desc')
-            ->get();
+        // Capturar parámetros de ordenamiento
+        $sortBy = $request->query('sort_by', 'idCupoDistribucion');
+        $sortDirection = $request->query('sort_direction', 'desc');
+
+        // Aplicar ordenamiento
+        $query = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
+            ->with([
+                'sedeCarrera.sede.centroFormador',
+                'sedeCarrera.carrera',
+            ]);
+
+        // Ordenar según la columna seleccionada
+        switch ($sortBy) {
+            case 'sedeCarrera.sede.centroFormador.nombreCentroFormador':
+                $query->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
+                    ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
+                    ->orderBy('centro_formador.nombreCentroFormador', $sortDirection)
+                    ->select('cupo_distribucion.*');
+                break;
+            case 'sedeCarrera.carrera.nombreCarrera':
+                $query->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('carrera', 'sede_carrera.idCarrera', '=', 'carrera.idCarrera')
+                    ->orderBy('carrera.nombreCarrera', $sortDirection)
+                    ->select('cupo_distribucion.*');
+                break;
+            default:
+                $query->orderBy($sortBy, $sortDirection);
+                break;
+        }
+
+        $distribuciones = $query->get();
 
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
+        // Filtrar Sede/Carreras que coincidan con la Carrera Base de la Oferta
         $sedesCarreras = SedeCarrera::with('sede.centroFormador', 'carrera')
+            ->where('idCarrera', $oferta->idCarrera)
             ->orderBy('idSedeCarrera')
             ->get();
 
         if ($request->ajax()) {
-            return view('cupo-distribucion._tabla', compact('distribuciones', 'oferta'));
+            return view('cupo-distribucion._tabla', compact('distribuciones', 'oferta', 'sortBy', 'sortDirection'));
         }
 
         return view('cupo-distribucion.index', compact(
             'oferta',
             'distribuciones',
             'cuposRestantes',
-            'sedesCarreras'
+            'sedesCarreras',
+            'sortBy',
+            'sortDirection'
         ));
     }
 
@@ -55,19 +88,17 @@ class CupoDistribucionController extends Controller
         $oferta = CupoOferta::findOrFail($request->idCupoOferta);
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
-        // ¡CAMBIO AQUÍ! Validar 'idSedeCarrera'
         $datosValidados = $request->validate([
             'idCupoOferta' => 'required|exists:cupo_oferta,idCupoOferta',
-            'idSedeCarrera' => [ // ¡CAMBIO!
+            'idSedeCarrera' => [
                 'required',
-                'exists:sede_carrera,idSedeCarrera', // ¡CAMBIO! Tabla y columna
+                'exists:sede_carrera,idSedeCarrera',
                 Rule::unique('cupo_distribucion')->where(fn ($query) => $query->where('idCupoOferta', $request->idCupoOferta)),
             ],
             'cantCupos' => [
                 'required', 'integer', 'min:1', 'max:'.$cuposRestantes,
             ],
         ], [
-            // ¡CAMBIO! Mensaje de error
             'idSedeCarrera.unique' => 'Esta Sede/Carrera ya tiene cupos asignados.',
             'cantCupos.max' => 'La cantidad no puede superar los cupos restantes (:max).',
         ]);
@@ -78,10 +109,15 @@ class CupoDistribucionController extends Controller
         return response()->json(['message' => 'Distribución asignada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
     }
 
-    public function edit(CupoDistribucion $distribucion)
+    public function edit($id)
     {
-        // Esto debería funcionar si el modelo tiene 'idSedeCarrera'
-        return response()->json($distribucion);
+        try {
+            $distribucion = CupoDistribucion::findOrFail($id);
+
+            return response()->json($distribucion);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Registro no encontrado.'], 404);
+        }
     }
 
     public function update(Request $request, CupoDistribucion $distribucion)
@@ -90,18 +126,16 @@ class CupoDistribucionController extends Controller
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
         $cuposDisponiblesParaEditar = $cuposRestantes + $distribucion->cantCupos;
 
-        // ¡CAMBIO AQUÍ! Validar 'idSedeCarrera'
         $datosValidados = $request->validate([
-            'idSedeCarrera' => [ // ¡CAMBIO!
+            'idSedeCarrera' => [
                 'required',
-                'exists:sede_carrera,idSedeCarrera', // ¡CAMBIO!
+                'exists:sede_carrera,idSedeCarrera',
                 Rule::unique('cupo_distribucion')->where(fn ($query) => $query->where('idCupoOferta', $distribucion->idCupoOferta))->ignore($distribucion->idCupoDistribucion, 'idCupoDistribucion'),
             ],
             'cantCupos' => [
                 'required', 'integer', 'min:1', 'max:'.$cuposDisponiblesParaEditar,
             ],
         ], [
-            // ¡CAMBIO! Mensaje de error
             'idSedeCarrera.unique' => 'Esta Sede/Carrera ya tiene cupos asignados.',
             'cantCupos.max' => 'La cantidad no puede superar los cupos disponibles (:max).',
         ]);
@@ -112,14 +146,23 @@ class CupoDistribucionController extends Controller
         return response()->json(['message' => 'Distribución actualizada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
     }
 
-    // ... (destroy y _recalcularCupos están bien) ...
-    public function destroy(CupoDistribucion $distribucion)
+    public function destroy($id)
     {
-        $idOfertaPadre = $distribucion->idCupoOferta;
-        $distribucion->delete();
-        $nuevosRestantes = $this->_recalcularCupos($idOfertaPadre);
+        try {
+            $distribucion = CupoDistribucion::findOrFail($id);
+            $idOferta = $distribucion->idCupoOferta;
 
-        return response()->json(['message' => 'Distribución eliminada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
+            $distribucion->delete();
+
+            $cuposRestantes = $this->_recalcularCupos($idOferta);
+
+            return response()->json([
+                'message' => 'Registro eliminado con éxito.',
+                'cuposRestantes' => $cuposRestantes,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     private function _recalcularCupos(int $idCupoOferta): int

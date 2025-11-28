@@ -11,9 +11,14 @@ use Illuminate\Support\Facades\Validator;
 
 class ConvenioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('permission:convenios.read')->only('index', 'show');
+        $this->middleware('permission:convenios.create')->only('create', 'store');
+        $this->middleware('permission:convenios.update')->only('edit', 'update');
+        $this->middleware('permission:convenios.delete')->only('destroy');
+    }
+
     public function index(Request $request)
     {
         try {

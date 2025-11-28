@@ -9,12 +9,20 @@ use Illuminate\Support\Facades\Validator;
 
 class SedeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:sede.read')->only('index');
+        $this->middleware('permission:sede.create')->only('create', 'store');
+        $this->middleware('permission:sede.update')->only('edit', 'update');
+        $this->middleware('permission:sede.delete')->only('destroy');
+    }
+
     public function index(Request $request)
     {
         $columnasDisponibles = ['idSede', 'nombreSede', 'direccion', 'centroFormador.nombreCentroFormador', 'fechaCreacion', 'numContacto'];
 
         $sortBy = request()->get('sort_by', 'idSede');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idSede';

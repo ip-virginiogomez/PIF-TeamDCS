@@ -31,24 +31,36 @@
                         };
                     @endphp
                     
-                    <th class="py-2 px-4 text-left">{!! $link('idConvenio', 'ID') !!}</th>
-                    <th class="py-2 px-4 text-left">{!! $link('centro_formador.nombreCentroFormador', 'Centro Formador') !!}</th>
-                    <th class="py-2 px-4 text-left">{!! $link('fechaSubida', 'Fecha Subida') !!}</th>
-                    <th class="py-2 px-4 text-left">{!! $link('anioValidez', 'Año Validez') !!}</th>
-                    <th class="py-2 px-4 text-left">Documento</th>
-                    <th class="py-2 px-4 text-left">Estado</th>
-                    <th class="py-2 px-4 text-left">Acciones</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('idConvenio', 'ID') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('centro_formador.nombreCentroFormador', 'Centro Formador') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('fechaSubida', 'Fecha Subida') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $link('anioValidez', 'Año Validez') !!}</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">Documento</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">Estado</th>
+                    <th class="py-2 px-4 text-left whitespace-nowrap">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($convenios as $convenio)
-                    <tr class="border-t hover:bg-gray-50">
-                        <td class="py-2 px-4">#{{ $convenio->idConvenio }}</td>
-                        <td class="py-2 px-4">
-                            {{ $convenio->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                    <tr class="border-b" id="convenio-{{ $convenio->idConvenio }}">
+                        <td class="py-2 px-4 whitespace-nowrap">
+                            <span>{{ $convenio->idConvenio }}</span>
                         </td>
-                        <td class="py-2 px-4">{{ \Carbon\Carbon::parse($convenio->fechaSubida)->format('d/m/Y') }}</td>
-                        <td class="py-2 px-4">{{ $convenio->anioValidez }}</td>
+                        <td class="py-2 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $convenio->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ \Carbon\Carbon::parse($convenio->fechaSubida)->format('d/m/Y') }}
+                            </span>
+                        </td>
+                        <td class="py-2 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ $convenio->anioValidez }}
+                            </span>
+                        </td>
                         <td class="py-2 px-4">
                             @if($convenio->documento)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -78,23 +90,22 @@
                         <td class="py-2 px-4">
                             <div class="flex space-x-2">
                                 @if($convenio->documento)
-                                    <button onclick="verDocumento({{ $convenio->idConvenio }})" 
-                                            class="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                                            title="Ver documento">
-                                        Ver
+                                    <button onclick="verDocumento({{ $convenio->idConvenio }})" title="Ver Documento" class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-150">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
                                     </button>
                                 @endif
-                                
-                                <button onclick="editarConvenio({{ $convenio->idConvenio }})" 
-                                        class="text-yellow-600 hover:text-yellow-900 text-sm font-medium"
-                                        title="Editar convenio">
-                                    Editar
+                                <button onclick="editarConvenio({{ $convenio->idConvenio }})" title="Editar" class="inline-flex items-center justify-center w-8 h-8 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors duration-150">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
                                 </button>
-                                
-                                <button onclick="eliminarConvenio({{ $convenio->idConvenio }})" 
-                                        class="text-red-600 hover:text-red-900 text-sm font-medium"
-                                        title="Eliminar convenio">
-                                    Eliminar
+                                <button onclick="eliminarConvenio({{ $convenio->idConvenio }})" title="Eliminar" class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
                                 </button>
                             </div>
                         </td>

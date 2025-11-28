@@ -48,7 +48,7 @@
                 <select id="idUnidadClinica" name="idUnidadClinica" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
                     <option value="">Seleccione</option>
                     @foreach($unidadesClinicas as $unidad)
-                        <option value="{{ $unidad->idUnidadClinica }}">{{ $unidad->nombreUnidad }}</option>
+                        <option value="{{ $unidad->idUnidadClinica }}">{{ $unidad->nombreUnidad }} ({{ $unidad->centroSalud->nombreCentro ?? 'N/A' }})</option>
                     @endforeach
                 </select>
                 <div class="text-red-500 text-sm mt-1 hidden" id="error-idUnidadClinica"></div>

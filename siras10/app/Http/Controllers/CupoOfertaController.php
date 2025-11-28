@@ -14,15 +14,18 @@ class CupoOfertaController extends Controller
 {
     public function __construct()
     {
-        // Aplicaremos los permisos cuando los creemos en el seeder
-        // $this->middleware('can:cupo-ofertas.read')->only('index');
-        // ...
+        $this->middleware('permission:cupo-ofertas.read')->only('index');
+        $this->middleware('permission:cupo-ofertas.create')->only('create', 'store');
+        $this->middleware('permission:cupo-ofertas.update')->only('edit', 'update');
+        $this->middleware('permission:cupo-ofertas.delete')->only('destroy');
     }
 
     public function index(Request $request)
     {
         // Cargamos las relaciones para mostrar la información en la tabla
-        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica', 'tipoPractica', 'carrera'])->paginate(10);
+        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica', 'tipoPractica', 'carrera'])
+            ->orderBy('idCupoOferta', 'desc')
+            ->paginate(10);
 
         // Si es una petición AJAX, devolvemos solo la tabla
         if ($request->ajax()) {

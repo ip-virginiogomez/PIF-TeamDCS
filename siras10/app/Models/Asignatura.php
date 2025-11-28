@@ -41,4 +41,9 @@ class Asignatura extends Model
     {
         return $this->hasMany(Programa::class, 'idAsignatura', 'idAsignatura');
     }
+
+    public function grupos()
+    {
+        return $this->hasMany(Grupo::class, 'idAsignatura', 'idAsignatura');
+    }
 }

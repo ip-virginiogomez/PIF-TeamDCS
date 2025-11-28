@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
+use App\Models\SedeCarrera;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -18,18 +19,26 @@ class AlumnoController extends Controller
         $this->middleware('can:alumnos.delete')->only('destroy');
     }
 
+    public function create()
+    {
+        $sedesCarreras = SedeCarrera::all();
+
+        return view('alumnos.create', compact('sedesCarreras'));
+    }
+
     public function index()
     {
         $columnasDisponibles = ['runAlumno', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
 
-        $sortBy = request()->get('sort_by', 'runAlumno');
-        $sortDirection = request()->get('sort_direction', 'asc');
+        $sortBy = request()->get('sort_by', 'fechaCreacion');
+        $sortDirection = request()->get('sort_direction', 'desc');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
-            $sortBy = 'runAlumno';
+            $sortBy = 'fechaCreacion';
         }
 
         $query = Alumno::query();
+        $sedesCarreras = SedeCarrera::all();
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
@@ -51,6 +60,7 @@ class AlumnoController extends Controller
             'alumnos' => $alumnos,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
+            'sedesCarreras' => $sedesCarreras,
         ]);
     }
 
@@ -71,6 +81,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',
@@ -94,23 +105,27 @@ class AlumnoController extends Controller
         }
 
         try {
-            $data = $request->all();
+            $alumnoData = $request->except(['idSedeCarrera', '_token']);
+            $sedeCarreraId = $request->input('idSedeCarrera');
 
-            if (empty($data['fechaCreacion'])) {
-                $data['fechaCreacion'] = now()->format('Y-m-d');
+            if (empty($alumnoData['fechaCreacion'])) {
+                $alumnoData['fechaCreacion'] = now()->format('Y-m-d');
             }
 
             if ($request->hasFile('foto')) {
                 $rutafoto = $request->file('foto')->store('fotos', 'public');
-                $data['foto'] = $rutafoto;
+                $alumnoData['foto'] = $rutafoto;
             }
 
             if ($request->hasFile('acuerdo')) {
                 $rutaAcuerdo = $request->file('acuerdo')->store('acuerdos', 'public');
-                $data['acuerdo'] = $rutaAcuerdo;
+                $alumnoData['acuerdo'] = $rutaAcuerdo;
             }
 
-            $alumno = Alumno::create($data);
+            $alumno = Alumno::create($alumnoData);
+            if ($sedeCarreraId) {
+                $alumno->sedesCarreras()->attach($sedeCarreraId);
+            }
 
             return response()->json([
                 'success' => true,
@@ -128,8 +143,14 @@ class AlumnoController extends Controller
     public function edit(Alumno $alumno)
     {
         $alumno = Alumno::findorfail($alumno->runAlumno);
+        $sedesCarrerasDisponibles = SedeCarrera::all();
+        $sedeCarreraActual = $alumno->sedesCarreras()->first();
 
-        return response()->json($alumno);
+        return response()->json([
+            'alumno' => $alumno,
+            'sedesCarrerasDisponibles' => $sedesCarrerasDisponibles,
+            'sedeCarreraActual' => $sedeCarreraActual,
+        ]);
     }
 
     public function update(Request $request, Alumno $alumno)
@@ -149,6 +170,7 @@ class AlumnoController extends Controller
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
         ], [
             'runAlumno.required' => 'El campo RUN es obligatorio.',
             'runAlumno.unique' => 'El RUN ya está registrado.',
@@ -172,6 +194,9 @@ class AlumnoController extends Controller
         }
         try {
             $data = $validator->validated();
+            $sedeCarreraId = $request->input('idSedeCarrera');
+
+            unset($data['idSedeCarrera']);
 
             if ($request->hasFile('foto')) {
                 if ($alumno->foto) {
@@ -189,6 +214,10 @@ class AlumnoController extends Controller
 
             $alumno->update($data);
 
+            if ($sedeCarreraId) {
+                $alumno->sedesCarreras()->sync([$sedeCarreraId]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Alumno actualizado exitosamente.',
@@ -204,20 +233,30 @@ class AlumnoController extends Controller
 
     public function destroy(Alumno $alumno)
     {
-        if ($alumno->foto) {
-            Storage::disk('public')->delete($alumno->foto);
-        }
-        if ($alumno->acuerdo) {
-            Storage::disk('public')->delete($alumno->acuerdo);
-        }
+        try {
+            if ($alumno->foto) {
+                Storage::disk('public')->delete($alumno->foto);
+            }
+            if ($alumno->acuerdo) {
+                Storage::disk('public')->delete($alumno->acuerdo);
+            }
 
-        $alumno->delete();
+            $alumno->delete();
 
-        if (request()->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Estudiante eliminado exitosamente.',
-            ]);
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Estudiante eliminado exitosamente.',
+                ]);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'message' => 'No se puede eliminar este estudiante porque tiene registros asociados (carreras, vacunas, etc.).',
+                ], 409);
+            }
+
+            return redirect()->route('alumnos.index')->with('error', 'No se puede eliminar este estudiante porque tiene registros asociados.');
         }
 
         return redirect()->route('alumnos.index')
