@@ -33,6 +33,9 @@ class DatabaseSeeder extends Seeder
             TipoVacunaSeeder::class,
             CupoOfertaSeeder::class,
             DocenteCarreraSeeder::class,
+            AsignaturaSeeder::class,
+            CupoDistribucionSeeder::class,
+            GrupoSeeder::class,
         ]);
     }
 }
