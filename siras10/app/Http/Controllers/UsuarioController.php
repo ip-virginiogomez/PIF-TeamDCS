@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
@@ -68,8 +69,11 @@ class UsuarioController extends Controller
 
         $usuario->syncRoles($validated['roles']);
 
-        if ($request->ajax()) {
-            return response()->json(['message' => 'Usuario creado exitosamente.']);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Usuario creado exitosamente.',
+                'usuario' => $usuario->load('roles'),
+            ], 201);
         }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado exitosamente.');
@@ -120,17 +124,20 @@ class UsuarioController extends Controller
         $usuario->update($data);
         $usuario->syncRoles($validated['roles']);
 
-        if ($request->ajax()) {
-            return response()->json(['message' => 'Usuario actualizado exitosamente.']);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Usuario actualizado exitosamente.',
+                'usuario' => $usuario->fresh()->load('roles'),
+            ]);
         }
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
-    public function destroy($runUsuario)
+    public function destroy(Request $request, $runUsuario)
     {
         if (Auth::user()->runUsuario == $runUsuario) {
-            if (request()->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['message' => 'No puedes eliminar tu propio usuario.'], 403);
             }
 
@@ -140,7 +147,7 @@ class UsuarioController extends Controller
         $usuario = Usuario::findOrFail($runUsuario);
         $usuario->delete();
 
-        if (request()->ajax()) {
+        if ($request->ajax() || $request->wantsJson()) {
             return response()->json(['message' => 'Usuario eliminado exitosamente.']);
         }
 
