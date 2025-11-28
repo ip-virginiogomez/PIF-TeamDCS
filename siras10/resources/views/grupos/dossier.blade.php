@@ -65,7 +65,6 @@
                         {{-- SECCIÓN 1: ACADÉMICA --}}
                         <div class="space-y-5">
                             <div class="flex items-center space-x-2 border-b pb-2 mb-2">
-                                <i class="fas fa-university text-gray-400"></i>
                                 <h4 class="text-gray-500 text-xs font-bold uppercase tracking-widest">Institución Académica</h4>
                             </div>
                             
@@ -129,7 +128,6 @@
                         {{-- SECCIÓN 2: CLÍNICA --}}
                         <div class="space-y-5">
                             <div class="flex items-center space-x-2 border-b pb-2 mb-2">
-                                <i class="fas fa-clinic-medical text-gray-400"></i>
                                 <h4 class="text-gray-500 text-xs font-bold uppercase tracking-widest">Campo Clínico</h4>
                             </div>
                             
@@ -218,12 +216,25 @@
                                     <p class="text-gray-500 text-sm">Listado oficial de alumnos inscritos</p>
                                 </div>
                             </div>
-                            
-                            <button id="btn-open-add-alumno" type="button" class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition-colors duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg> Agregar Alumno
-                            </button>
+                            @php
+                                $inscritos = $grupo->alumnos->count();
+                                $totalCupos = $grupo->cupoDistribucion->cantCupos ?? 0;
+                                $estaLleno = $inscritos >= $totalCupos;
+                            @endphp
+                            @if($estaLleno)
+                                <span class="inline-flex items-center px-4 py-2 bg-red-50 text-red-600 text-sm font-bold rounded-md border border-red-200 cursor-not-allowed shadow-sm select-none" title="No quedan cupos disponibles">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Grupo Completo ({{ $inscritos }}/{{ $totalCupos }})
+                                </span>
+                            @else                 
+                                <button id="btn-open-add-alumno" type="button" class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition-colors duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg> Agregar Alumno
+                                </button>
+                            @endif
                         </div>
 
                         {{-- TABLA DE ALUMNOS --}}
@@ -258,7 +269,7 @@
                                                     {{-- BOTÓN 1: VER DOCUMENTOS --}}
                                                     <button type="button" 
                                                             data-action="view-alumno-docs"
-                                                            data-nombre="{{ $alumno->nombresAlumno }} {{ $alumno->apellidoPaterno }}"
+                                                            data-nombre="{{ $alumno->nombres }} {{ $alumno->apellidoPaterno }}"
                                                             data-docs='@json($documentosAlumno)' 
                                                             class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
                                                             title="Ver Documentos">
@@ -396,7 +407,7 @@
                         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h3 class="text-lg font-bold text-gray-800 flex items-center">
                                 <svg class="w-6 h-6 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                Documentos de {{ $docente->nombresDocente }}
+                                Documentos de {{ $docente->nombresDocente }} {{ $docente->apellidoPaterno }}
                             </h3>
                             <button id="btn-close-docs" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
                                 <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -438,7 +449,7 @@
                     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                         <h3 class="text-lg font-bold text-gray-800 flex items-center">
                             <svg class="w-6 h-6 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                            Documentos de: <span id="alumno-docs-nombre" class="ml-2 text-sky-700"></span>
+                            Documentos de<span id="alumno-docs-nombre" class="ml-2"></span>
                         </h3>
                         <button id="btn-close-docs-alumno" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
                             <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -499,5 +510,5 @@
         </div>
     </div>
 
-    @vite(['resources/js/app.js', 'resources/js/GrupoDossier.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

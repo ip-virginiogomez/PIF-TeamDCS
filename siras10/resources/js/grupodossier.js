@@ -294,19 +294,41 @@ function initRemoveAlumno() {
     const grupoId = grupoIdInput.value;
 
     document.addEventListener('click', async (e) => {
+        // Detectamos clic en el botón de eliminar (o su ícono SVG)
         const btn = e.target.closest('button[data-action="delete-alumno"]');
+        
         if (btn) {
+            // Evitar doble clic
             btn.disabled = true;
             const runAlumno = btn.dataset.run;
-            let confirmado = confirm('¿Quitar estudiante del grupo?');
-            
-            if (!confirmado) {
+
+            // 1. Mostrar Alerta de Confirmación
+            const result = await Swal.fire({
+                title: '¿Quitar estudiante?',
+                text: "El alumno será eliminado de la nómina de este grupo.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626', // Rojo intenso (Tailwind red-600)
+                cancelButtonColor: '#6b7280',  // Gris (Tailwind gray-500)
+                confirmButtonText: 'Sí, quitar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true, // Pone el botón de cancelar a la izquierda (mejor UX)
+                focusCancel: true     // Enfoca cancelar por defecto para evitar accidentes
+            });
+
+            // Si el usuario cancela, reactivamos el botón y salimos
+            if (!result.isConfirmed) {
                 btn.disabled = false;
                 return;
             }
 
+            // 2. Si confirmó, hacemos la petición DELETE
             try {
                 const token = document.querySelector('meta[name="csrf-token"]').content;
+                
+                // Mostrar "Cargando..." mientras elimina
+                Swal.showLoading();
+
                 const response = await fetch(`/dossier/${grupoId}/eliminar-alumno/${runAlumno}`, {
                     method: 'DELETE',
                     headers: {
@@ -314,16 +336,29 @@ function initRemoveAlumno() {
                         'X-CSRF-TOKEN': token
                     }
                 });
+
                 const data = await response.json();
+
                 if (data.success) {
+                    // 3. Éxito: Mostrar mensaje y recargar
+                    await Swal.fire({
+                        title: '¡Eliminado!',
+                        text: 'El estudiante ha sido quitado del grupo correctamente.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Error al eliminar');
+                    // Error de lógica (ej: alumno no encontrado)
+                    Swal.fire('Error', data.message || 'No se pudo eliminar', 'error');
                     btn.disabled = false;
                 }
+
             } catch (error) {
                 console.error(error);
-                alert('Error de conexión');
+                Swal.fire('Error', 'Ocurrió un problema de conexión con el servidor.', 'error');
                 btn.disabled = false;
             }
         }
