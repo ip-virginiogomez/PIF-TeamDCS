@@ -8,6 +8,7 @@ use App\Models\DocenteCarrera;
 use App\Models\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class GrupoController extends Controller
 {
@@ -54,19 +55,41 @@ class GrupoController extends Controller
 
     public function store(Request $request)
     {
+        // 1. VALIDACIÓN
         $validator = Validator::make($request->all(), [
             'nombreGrupo' => 'required|string|max:45',
             'idAsignatura' => 'required|exists:asignatura,idAsignatura',
             'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
+            'idCupoDistribucion' => 'required|exists:cupo_distribucion,idCupoDistribucion',
+            'fechaInicio' => 'nullable|date',
+            'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
+            // max:2048 KB = 2MB
+            'archivo_dossier' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $grupo = Grupo::create($request->all());
+        try {
+            // 2. PREPARAR DATOS
+            $input = $request->except('archivo_dossier'); // Sacamos el archivo del array inicial
 
-        return response()->json(['success' => true, 'message' => 'Grupo creado exitosamente.', 'data' => $grupo]);
+            // 3. SUBIDA DE ARCHIVO
+            if ($request->hasFile('archivo_dossier')) {
+                // Guarda en storage/app/public/dossiers
+                $path = $request->file('archivo_dossier')->store('dossiers', 'public');
+                $input['archivo_dossier'] = $path;
+            }
+
+            // 4. CREAR EN BD
+            $grupo = Grupo::create($input);
+
+            return response()->json(['success' => true, 'message' => 'Grupo creado exitosamente.', 'data' => $grupo]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar: ' . $e->getMessage()], 500);
+        }
     }
 
     public function edit(Grupo $grupo)
@@ -76,23 +99,57 @@ class GrupoController extends Controller
 
     public function update(Request $request, Grupo $grupo)
     {
+        // 1. VALIDACIÓN
         $validator = Validator::make($request->all(), [
             'nombreGrupo' => 'required|string|max:45',
             'idAsignatura' => 'required|exists:asignatura,idAsignatura',
             'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
+            'fechaInicio' => 'nullable|date',
+            'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
+            // max:2048 KB = 2MB
+            'archivo_dossier' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $grupo->update($request->all());
+        try {
+            // 2. PREPARAR DATOS
+            // Nota: Si usas FormData en JS, los campos vacíos pueden llegar como 'null' string, Laravel lo maneja,
+            // pero nos aseguramos de no procesar el archivo si no viene.
+            $input = $request->except(['archivo_dossier', '_method']);
 
-        return response()->json(['success' => true, 'message' => 'Grupo actualizado exitosamente.', 'data' => $grupo]);
+            // 3. MANEJO DE ARCHIVO (Reemplazo)
+            if ($request->hasFile('archivo_dossier')) {
+                
+                // A) Si ya existía un archivo antes, lo borramos para ahorrar espacio
+                if ($grupo->archivo_dossier && Storage::disk('public')->exists($grupo->archivo_dossier)) {
+                    Storage::disk('public')->delete($grupo->archivo_dossier);
+                }
+
+                // B) Subimos el nuevo
+                $path = $request->file('archivo_dossier')->store('dossiers', 'public');
+                $input['archivo_dossier'] = $path;
+            }
+
+            // 4. ACTUALIZAR EN BD
+            $grupo->update($input);
+
+            return response()->json(['success' => true, 'message' => 'Grupo actualizado exitosamente.', 'data' => $grupo]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar: ' . $e->getMessage()], 500);
+        }
     }
 
     public function destroy(Grupo $grupo)
     {
+        // Opcional: Borrar el archivo físico si se borra el grupo
+        if ($grupo->archivo_dossier && Storage::disk('public')->exists($grupo->archivo_dossier)) {
+            Storage::disk('public')->delete($grupo->archivo_dossier);
+        }
+
         $grupo->delete();
 
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);

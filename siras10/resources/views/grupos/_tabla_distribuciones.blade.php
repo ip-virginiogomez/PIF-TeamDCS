@@ -2,6 +2,7 @@
     <table class="w-full text-sm text-left text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
+                <th scope="col" class="px-6 py-3">Centro Formador</th>
                 <th scope="col" class="px-6 py-3">Sede / Carrera</th>
                 <th scope="col" class="px-6 py-3">Centro de Salud</th>
                 <th scope="col" class="px-6 py-3">Unidad Clínica</th>
@@ -16,6 +17,12 @@
                 @php $oferta = $dist->cupoOferta; @endphp
                 
                 <tr class="bg-white border-b hover:bg-gray-50 transition row-distribucion" data-id="{{ $dist->idCupoDistribucion }}">
+
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">
+                            {{ $dist->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                        </div>
+                    </td>
                     
                     {{-- Sede y Carrera --}}
                     <td class="px-6 py-4">

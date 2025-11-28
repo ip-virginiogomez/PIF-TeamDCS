@@ -43,10 +43,7 @@ function initDocumentosModal() {
     const modalDocs = document.getElementById('modalDocs');
     const modalFicha = document.getElementById('modalDocente');
     
-    if (!modalDocs) {
-        console.warn('⚠️ Modal de documentos docente (modalDocs) no encontrado en el HTML.');
-        return;
-    }
+    if (!modalDocs) return;
 
     const btnOpen = document.getElementById('btn-open-docs');
     const btnInternal = document.getElementById('btn-view-docs-internal');

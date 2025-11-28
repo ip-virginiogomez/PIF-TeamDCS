@@ -190,7 +190,7 @@
                                         </svg>
                                     </button>
                                 @else
-                                    <span class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
+                                    <span class="inline-flex items-center ml-4 px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                         Sin Programa
                                     </span>

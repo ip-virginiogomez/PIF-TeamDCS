@@ -9,13 +9,76 @@ class GrupoManager extends BaseModalManager {
             entityGender: 'm',
             baseUrl: '/grupos',
             primaryKey: 'idGrupo',
-            fields: ['nombreGrupo', 'idCupoDistribucion', 'idAsignatura', 'idDocenteCarrera']
+            // 1. ACTUALIZACIÓN: Agregamos fechaInicio y fechaFin a la lista
+            fields: [
+                'nombreGrupo', 
+                'idCupoDistribucion', 
+                'idAsignatura', 
+                'idDocenteCarrera',
+                'fechaInicio',
+                'fechaFin'    
+            ]
         });
 
         this.currentEditId = null;
 
         this.initDistribucionSelector();
         this.initTablaGruposEvents();
+        this.initPreviewEvents();
+    }
+    initPreviewEvents() {
+        // Escuchar clics en el contenedor de la tabla
+        const container = document.getElementById('tabla-grupos-container');
+        if (!container) return;
+
+        // Elementos del modal
+        const modal = document.getElementById('modalPreviewDossier');
+        const iframe = document.getElementById('iframe-preview');
+        const title = document.getElementById('preview-title');
+        const errorDiv = document.getElementById('preview-error');
+        const fallbackLink = document.getElementById('btn-fallback-download');
+        
+        const btnClose = document.getElementById('btn-close-preview');
+        const backdrop = document.getElementById('backdropPreview');
+
+        // Función para cerrar
+        const closePreview = () => {
+            if (modal) modal.classList.add('hidden');
+            if (iframe) iframe.src = ''; // Limpiar memoria
+            document.body.classList.remove('overflow-hidden');
+        };
+
+        if (btnClose) btnClose.addEventListener('click', closePreview);
+        if (backdrop) backdrop.addEventListener('click', closePreview);
+
+        // Delegación de eventos para el botón "Ojo"
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action="preview-file"]');
+            if (!btn) return;
+
+            const url = btn.dataset.url;
+            const name = btn.dataset.title;
+            const extension = btn.dataset.type.toLowerCase();
+
+            if (modal && iframe && title) {
+                title.textContent = name;
+                
+                // Verificar si es visualizable en iframe (PDF o Imagen)
+                if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+                    iframe.src = url;
+                    iframe.classList.remove('hidden');
+                    errorDiv.classList.add('hidden');
+                } else {
+                    // Si es Word/Excel, mostramos mensaje de error y botón de descarga
+                    iframe.classList.add('hidden');
+                    errorDiv.classList.remove('hidden');
+                    if(fallbackLink) fallbackLink.href = url;
+                }
+
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        });
     }
 
     async handleFormSubmit(e) {
@@ -26,9 +89,11 @@ class GrupoManager extends BaseModalManager {
             ? `${this.config.baseUrl}/${this.currentEditId}` 
             : this.config.baseUrl;
 
+        // FormData captura automáticamente el archivo_dossier si el usuario seleccionó uno
         const formData = new FormData(this.form);
 
         if (isEdit) {
+            // Laravel necesita esto para procesar archivos en edición (PUT simulado)
             formData.set('_method', 'PUT');
         } else {
             formData.delete('_method');
@@ -37,8 +102,9 @@ class GrupoManager extends BaseModalManager {
         try {
             this.limpiarErroresVisuales();
 
+            // Usamos POST siempre (incluso para editar) para que FormData funcione con archivos
             const response = await fetch(submitUrl, {
-                method: 'POST',
+                method: 'POST', 
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -71,6 +137,7 @@ class GrupoManager extends BaseModalManager {
             this.refreshTable();
 
         } catch (error) {
+            console.error(error); // Agregué console.error para ver detalles si falla
             alert('Ocurrió un error inesperado al guardar.');
         }
     }
@@ -179,8 +246,15 @@ class GrupoManager extends BaseModalManager {
 
             this.config.fields.forEach(field => {
                 const input = document.getElementById(field);
-                if (input && data[field] !== undefined) {
-                    input.value = data[field];
+                if (input && data[field] !== undefined && data[field] !== null) {
+                    
+                    // 2. ACTUALIZACIÓN: Manejo especial para fechas
+                    if (input.type === 'date') {
+                        // Laravel envía "YYYY-MM-DDTHH:MM:SS...", cortamos para tomar solo YYYY-MM-DD
+                        input.value = data[field].toString().substring(0, 10);
+                    } else {
+                        input.value = data[field];
+                    }
                 }
             });
 
@@ -190,6 +264,7 @@ class GrupoManager extends BaseModalManager {
             this.mostrarModal();
 
         } catch (error) {
+            console.error(error);
             alert('Error al cargar la información del grupo.');
         }
     }
@@ -234,6 +309,8 @@ class GrupoManager extends BaseModalManager {
 
         if (this.form) {
             this.form.reset();
+            // Esto limpia el input file también automáticamente
+            
             const methodInputs = this.form.querySelectorAll('input[name="_method"]');
             methodInputs.forEach(input => input.remove());
         }
