@@ -14,6 +14,7 @@
                     };
                 @endphp
                 <th class="py-2 px-4 text-left"> {!! $link('runUsuario', 'RUN') !!}</th>
+                <th class="py-2 px-4 text-left"> {!! $link('foto', 'Foto') !!}</th>
                 <th class="py-2 px-4 text-left"> {!! $link('nombreUsuario', 'Nombre') !!}</th>
                 <th class="py-2 px-4 text-left"> {!! $link('correo', 'Correo') !!}</th>
                 <th class="py-2 px-4 text-left">Teléfono</th>
@@ -28,6 +29,15 @@
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {{ $usuario->runUsuario }}
                     </span>
+                </td>
+                <td class="py-2 px-4">
+                    @if($usuario->foto)
+                        <img class="w-12 h-12 rounded-full object-cover" src="{{ asset('storage/' . $usuario->foto) }}" alt="Foto de {{ $usuario->nombreUsuario }}">
+                    @else
+                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                            <span class="text-xs">{{ substr($usuario->nombreUsuario, 0, 1) }}{{ substr($usuario->apellidoPaterno, 0, 1) }}</span>
+                        </div>
+                    @endif
                 </td>
                 <td class="py-2 px-4">
                     <span>{{ $usuario->nombreUsuario }} {{ $usuario->apellidoPaterno }}</span>
@@ -66,7 +76,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="py-4 px-4 text-center text-gray-500">
+                <td colspan="7" class="py-4 px-4 text-center text-gray-500">
                     <div class="flex flex-col items-center">
                         <i class="fas fa-users text-4xl text-gray-300 mb-2"></i>
                         <span>No hay usuarios registrados.</span>

@@ -102,6 +102,18 @@
             <div class="text-red-500 text-sm mt-1 hidden" id="error-contrasenia_confirmation"></div>
         </div>
 
+        {{-- Foto --}}
+        <div class="mb-4">
+            <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
+            <input type="file" 
+                id="foto" 
+                name="foto" 
+                accept="image/*"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: JPG, PNG (máx. 2MB)</div>
+            <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
+        </div>
+
         {{-- Roles --}}
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Roles *</label>

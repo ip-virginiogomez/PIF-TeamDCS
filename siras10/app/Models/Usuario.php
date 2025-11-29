@@ -30,6 +30,7 @@ class Usuario extends Authenticatable
         'apellidoMaterno',
         'correo',
         'telefono',
+        'foto',
         'contrasenia',
         'fechaCreacion',
         'idTipoPersonalSalud',

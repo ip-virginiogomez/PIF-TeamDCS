@@ -2,6 +2,7 @@
 import { validarRun, validarTelefono } from './validators.js'; 
 import BaseModalManager from './base-modal-manager.js';
 
+
 /**
  * Usuario Manager
  * Extiende BaseModalManager
@@ -47,27 +48,29 @@ class UsuarioManager extends BaseModalManager {
         }
     }
 
-    async showEditModal(id) {
+    async editarRegistro(id) {
+        this.editando = true;
+        this.clearValidationErrors();
+
         try {
-            const response = await fetch(`${this.baseUrl}/${id}/edit`);
+            const response = await fetch(`${this.config.baseUrl}/${id}/edit`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             if (!response.ok) throw new Error('Error al cargar el usuario');
 
             const data = await response.json();
-            this.isEditing = true;
-            this.currentId = id;
             
-            this.modal.querySelector('.modal-title').textContent = `Editar ${this.entityName}`;
-            this.modal.querySelector('.modal-submit-btn').textContent = 'Actualizar';
-            
-            this.clearValidationErrors();
-            
-            // Poblar campos de texto
-            this.form.querySelector('[name="runUsuario"]').value = data.usuario.runUsuario || '';
-            this.form.querySelector('[name="nombreUsuario"]').value = data.usuario.nombreUsuario || '';
-            this.form.querySelector('[name="apellidoPaterno"]').value = data.usuario.apellidoPaterno || '';
-            this.form.querySelector('[name="apellidoMaterno"]').value = data.usuario.apellidoMaterno || '';
-            this.form.querySelector('[name="correo"]').value = data.usuario.correo || '';
-            this.form.querySelector('[name="telefono"]').value = data.usuario.telefono || '';
+            // Poblar campos desde data.usuario
+            const usuario = data.usuario;
+            this.config.fields.forEach(field => {
+                const element = this.form.querySelector(`[name="${field}"]`);
+                if (element && usuario[field] !== undefined && field !== 'contrasenia' && field !== 'contrasenia_confirmation' && field !== 'roles') {
+                    element.value = usuario[field] || '';
+                }
+            });
             
             // En modo editar, el RUN es readonly
             const runInput = this.form.querySelector('[name="runUsuario"]');
@@ -92,12 +95,26 @@ class UsuarioManager extends BaseModalManager {
             // Poblar roles (checkboxes)
             const rolesCheckboxes = this.form.querySelectorAll('input[name="roles[]"]');
             rolesCheckboxes.forEach(checkbox => {
-                checkbox.checked = data.usuario_roles.includes(parseInt(checkbox.value));
+                checkbox.checked = data.usuario_roles.includes(checkbox.value);
             });
             
-            this.modal.classList.remove('hidden');
+            // Agregar hidden input con el ID
+            let pkInput = this.form.querySelector(`[name="${this.config.primaryKey}"]`);
+            if (!pkInput) {
+                pkInput = document.createElement('input');
+                pkInput.type = 'hidden';
+                pkInput.name = this.config.primaryKey;
+                this.form.appendChild(pkInput);
+            }
+            pkInput.value = id;
+
+            this.setModalTitle(`Editar ${this.config.entityName}`);
+            this.setButtonText(`Actualizar ${this.config.entityName}`);
+            this.mostrarModal();
+
+            return data;
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error al cargar el usuario:', error);
             alert('Error al cargar el usuario');
         }
     }
