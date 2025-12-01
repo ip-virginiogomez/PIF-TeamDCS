@@ -46,6 +46,10 @@ class CentroFormadorScope implements Scope
                 $builder->whereHas('sede', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroFormador', $centroIds);
                 });
+            } elseif ($tableName === 'docente_carrera') {
+                $builder->whereHas('sedeCarrera.sede', function ($query) use ($centroIds) {
+                    $query->whereIn('idCentroFormador', $centroIds);
+                });
             }
         }
     }

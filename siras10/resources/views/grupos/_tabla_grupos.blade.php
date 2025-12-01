@@ -9,7 +9,7 @@
                 {{-- NUEVA COLUMNA: FECHAS --}}
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center">Período</th>
                 {{-- NUEVA COLUMNA: ARCHIVO --}}
-                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center">Archivo</th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center">Dossier Grupo</th>
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center w-40">Acciones</th>
             </tr>
         </thead>

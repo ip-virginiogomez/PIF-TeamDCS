@@ -23,25 +23,49 @@ class GrupoController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $periodo = $request->input('periodo');
+
+        $periodosDisponibles = \App\Models\CupoOferta::selectRaw('YEAR(fechaEntrada) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
 
         $query = CupoDistribucion::with([
-            'sedeCarrera.sede',
+            'sedeCarrera.sede.centroFormador',
             'cupoOferta.unidadClinica.centroSalud',
         ]);
 
         if ($search) {
-            $query->whereHas('sedeCarrera', function ($q) use ($search) {
-                $q->where('nombreSedeCarrera', 'like', "%{$search}%");
-            })
-                ->orWhereHas('unidadClinica', function ($q) use ($search) {
-                    $q->where('nombreUnidad', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                // A. Buscar por Centro Formador
+                $q->whereHas('sedeCarrera.sede.centroFormador', function ($sub) use ($search) {
+                    $sub->where('nombreCentroFormador', 'like', "%{$search}%");
                 })
-                ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($q) use ($search) {
-                    $q->where('nombreCentroSalud', 'like', "%{$search}%");
+                // B. Buscar por Sede / Carrera
+                ->orWhereHas('sedeCarrera', function ($sub) use ($search) {
+                    $sub->where('nombreSedeCarrera', 'like', "%{$search}%");
+                })
+                // C. Buscar por Centro de Salud
+                ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($sub) use ($search) {
+                    $sub->where('nombreCentro', 'like', "%{$search}%"); // Ojo: verifica si es 'nombreCentro' o 'nombreCentroSalud' en tu BD
+                })
+                // D. Buscar por Unidad Clínica
+                ->orWhereHas('cupoOferta.unidadClinica', function ($sub) use ($search) {
+                    $sub->where('nombreUnidad', 'like', "%{$search}%");
                 });
+            });
+        }
+
+        if ($periodo) {
+            $query->whereHas('cupoOferta', function ($q) use ($periodo) {
+                $q->whereYear('fechaEntrada', $periodo);
+            });
         }
 
         $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
+
+        $distribuciones->appends(['search' => $search, 'periodo' => $periodo]);
+
         $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
 
         $listaAsignaturas = Asignatura::orderBy('nombreAsignatura')->get();
@@ -50,7 +74,7 @@ class GrupoController extends Controller
             return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
         }
 
-        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas'));
+        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas', 'periodosDisponibles'));
     }
 
     public function store(Request $request)
