@@ -27,7 +27,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             
             {{-- TARJETA PRINCIPAL --}}
             <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg border border-gray-200">
@@ -46,7 +46,7 @@
                 <div class="p-8">
                     
                     {{-- BARRA DE CUPOS --}}
-                    <div class="bg-sky-50 border border-sky-100 rounded-lg p-5 mb-8 flex items-center justify-between shadow-sm">
+                    <div class="bg-sky-50 border w-fit border-sky-100 rounded-lg p-5 mb-8 flex items-center justify-between shadow-sm">
                         <div class="flex items-center">
                             <div>
                                 <h4 class="text-sky-900 font-bold text-lg">Cupos Distribuidos</h4>
@@ -54,7 +54,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="block text-4xl font-extrabold text-sky-700">
+                            <span class="block text-4xl ml-4 font-extrabold text-sky-700">
                                 {{ $dist->cantCupos ?? 0 }}
                             </span>
                         </div>
@@ -69,14 +69,13 @@
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Centro Formador</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Centro Formador</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $centroFormador->nombreCentroFormador ?? 'No especificado' }}
                                 </div>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Carrera / Sede</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Carrera / Sede</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $sedeCarrera->nombreSedeCarrera ?? 'No especificado' }}
                                 </div>
@@ -85,7 +84,7 @@
                             
                             {{-- TARJETA DOCENTE --}}
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-sky-300 transition duration-200">
-                                <label class="block text-xs font-semibold text-gray-400 uppercase mb-3">Docente a Cargo</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase mb-3">Docente a Cargo</span>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
                                         <div class="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 mr-3 overflow-hidden border border-sky-200">
@@ -132,21 +131,20 @@
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Centro de Salud</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Centro de Salud</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $centroSalud->nombreCentro ?? 'No especificado' }}
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Unidad Clínica</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Unidad Clínica</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $unidad->nombreUnidad ?? 'No especificado' }}
                                 </div>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Tipo de Práctica</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Tipo de Práctica</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $tipoPractica->nombrePractica ?? 'General' }}
                                 </div>
@@ -157,8 +155,8 @@
                     {{-- ======================================================== --}}
                     {{-- SECCIÓN NUEVA: ASIGNATURA                                --}}
                     {{-- ======================================================== --}}
-                    <div class="mt-8">
-                        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
+                    <div class="mt-8 border-t border-gray-200 pt-8">
+                        <div class="w-fit bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
                             {{-- Borde decorativo izquierdo --}}
                             <div class="absolute top-0 left-0 w-1 h-full bg-sky-700"></div>
                             
@@ -184,7 +182,7 @@
                                             type="button"
                                             data-url="{{ $urlPrograma }}"
                                             data-nombre="{{ $grupo->asignatura->nombreAsignatura }}"
-                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
+                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 ml-4 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
                                             title="Ver Programa de la Asignatura">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -192,7 +190,7 @@
                                         </svg>
                                     </button>
                                 @else
-                                    <span class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
+                                    <span class="inline-flex items-center ml-4 px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                         Sin Programa
                                     </span>
