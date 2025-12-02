@@ -18,7 +18,6 @@ return new class extends Migration
             $table->unsignedBigInteger('idAsignatura')->nullable();
             $table->date('fechaCreacion')->nullable();
             $table->string('nombreGrupo', 45)->nullable();
-            $table->string('archivo_dossier')->nullable();
             $table->date('fechaInicio')->nullable();
             $table->date('fechaFin')->nullable();
             $table->timestamps();

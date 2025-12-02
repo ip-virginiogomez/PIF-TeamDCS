@@ -142,41 +142,6 @@
                 @endif
             </select>
         </div>
-
-        <div class="mb-4 border-t pt-4 border-gray-100">
-            <label for="archivo_dossier" class="block text-sm font-medium text-gray-700">Archivo Dossier (Opcional)</label>
-            <input type="file" id="archivo_dossier" name="archivo_dossier" accept=".pdf,.doc,.docx,.jpg,.png" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-            <p class="mt-1 text-xs text-gray-500">Formatos: PDF, Word o Imagen. Dejar vacío para mantener el actual.</p>
-        </div>
     </x-crud-modal>
-
-    {{-- MODAL PREVIEW DOSSIER --}}
-    <div id="modalPreviewDossier" class="relative z-[150] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div id="backdropPreview" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40 cursor-pointer backdrop-blur-sm"></div>
-        <div class="fixed inset-0 z-50 w-screen overflow-y-auto pointer-events-none">
-            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 pointer-events-auto">
-                <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-gray-200 h-[85vh] flex flex-col">
-                    <div class="bg-gray-800 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-white flex items-center">
-                            <svg class="w-6 h-6 mr-2 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            Vista Previa: <span id="preview-title" class="ml-2 font-normal text-gray-300"></span>
-                        </h3>
-                        <button id="btn-close-preview" class="text-gray-400 hover:text-white transition">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
-                    <div class="flex-1 bg-gray-100 p-0 relative w-full h-full">
-                        <iframe id="iframe-preview" src="" class="w-full h-full border-none"></iframe>
-                        <div id="preview-error" class="hidden absolute inset-0 flex-col items-center justify-center bg-gray-100 z-0">
-                            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                            <p class="text-gray-500 font-medium">Este formato de archivo no se puede previsualizar.</p>
-                            <a id="btn-fallback-download" href="#" class="mt-4 text-indigo-600 hover:underline">Descargar archivo</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     @vite(['resources/js/app.js']) 
 </x-app-layout>

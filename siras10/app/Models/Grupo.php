@@ -21,7 +21,6 @@ class Grupo extends Model
         'idAsignatura',
         'fechaCreacion',
         'nombreGrupo',
-        'archivo_dossier',
         'fechaInicio',
         'fechaFin',
     ];

@@ -87,8 +87,6 @@ class GrupoController extends Controller
             'idCupoDistribucion' => 'required|exists:cupo_distribucion,idCupoDistribucion',
             'fechaInicio' => 'nullable|date',
             'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
-            // max:2048 KB = 2MB
-            'archivo_dossier' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -96,16 +94,6 @@ class GrupoController extends Controller
         }
 
         try {
-            // 2. PREPARAR DATOS
-            $input = $request->except('archivo_dossier'); // Sacamos el archivo del array inicial
-
-            // 3. SUBIDA DE ARCHIVO
-            if ($request->hasFile('archivo_dossier')) {
-                // Guarda en storage/app/public/dossiers
-                $path = $request->file('archivo_dossier')->store('dossiers', 'public');
-                $input['archivo_dossier'] = $path;
-            }
-
             // 4. CREAR EN BD
             $grupo = Grupo::create($input);
 
@@ -130,8 +118,6 @@ class GrupoController extends Controller
             'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
             'fechaInicio' => 'nullable|date',
             'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
-            // max:2048 KB = 2MB
-            'archivo_dossier' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -139,24 +125,6 @@ class GrupoController extends Controller
         }
 
         try {
-            // 2. PREPARAR DATOS
-            // Nota: Si usas FormData en JS, los campos vacíos pueden llegar como 'null' string, Laravel lo maneja,
-            // pero nos aseguramos de no procesar el archivo si no viene.
-            $input = $request->except(['archivo_dossier', '_method']);
-
-            // 3. MANEJO DE ARCHIVO (Reemplazo)
-            if ($request->hasFile('archivo_dossier')) {
-                
-                // A) Si ya existía un archivo antes, lo borramos para ahorrar espacio
-                if ($grupo->archivo_dossier && Storage::disk('public')->exists($grupo->archivo_dossier)) {
-                    Storage::disk('public')->delete($grupo->archivo_dossier);
-                }
-
-                // B) Subimos el nuevo
-                $path = $request->file('archivo_dossier')->store('dossiers', 'public');
-                $input['archivo_dossier'] = $path;
-            }
-
             // 4. ACTUALIZAR EN BD
             $grupo->update($input);
 
@@ -167,13 +135,7 @@ class GrupoController extends Controller
         }
     }
 
-    public function destroy(Grupo $grupo)
-    {
-        // Opcional: Borrar el archivo físico si se borra el grupo
-        if ($grupo->archivo_dossier && Storage::disk('public')->exists($grupo->archivo_dossier)) {
-            Storage::disk('public')->delete($grupo->archivo_dossier);
-        }
-
+    public function destroy(Grupo $grupo){
         $grupo->delete();
 
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);
