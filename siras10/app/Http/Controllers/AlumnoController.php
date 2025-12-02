@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\SedeCarrera;
+use App\Models\VacunaAlumno;
+use App\Models\TipoVacuna;
+use App\Models\EstadoVacuna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -19,13 +22,6 @@ class AlumnoController extends Controller
         $this->middleware('can:alumnos.delete')->only('destroy');
     }
 
-    public function create()
-    {
-        $sedesCarreras = SedeCarrera::all();
-
-        return view('alumnos.create', compact('sedesCarreras'));
-    }
-
     public function index()
     {
         $columnasDisponibles = ['runAlumno', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'fechaNacto', 'fechaCreacion'];
@@ -38,7 +34,11 @@ class AlumnoController extends Controller
         }
 
         $query = Alumno::query();
+        $query->withCount('vacunas');
+
         $sedesCarreras = SedeCarrera::all();
+        $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
+        $estadosVacuna = EstadoVacuna::all();
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
@@ -61,6 +61,8 @@ class AlumnoController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'sedesCarreras' => $sedesCarreras,
+            'tiposVacuna' => $tiposVacuna,
+            'estadosVacuna' => $estadosVacuna,
         ]);
     }
 
@@ -72,40 +74,22 @@ class AlumnoController extends Controller
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
             'correo' => [
-                'required',
-                'email',
-                'max:50',
-                'unique:Alumno,correo',
+                'required', 'email', 'max:50', 'unique:Alumno,correo',
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'nullable|date',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
-        ], [
-            'runAlumno.required' => 'El campo RUN es obligatorio.',
-            'runAlumno.unique' => 'El RUN ya está registrado.',
-            'nombres.required' => 'El campo Nombres es obligatorio.',
-            'apellidoPaterno.required' => 'El campo Apellido Paterno es obligatorio.',
-            'correo.required' => 'El campo Correo es obligatorio.',
-            'correo.email' => 'El campo Correo debe ser una dirección de correo válida.',
-            'correo.unique' => 'El correo ya está registrado.',
-            'foto.image' => 'El archivo debe ser una imagen (jpeg, png, jpg).',
-            'foto.max' => 'La imagen no debe superar los 2MB.',
-            'acuerdo.file' => 'El acuerdo debe ser un archivo válido.',
-            'acuerdo.mimes' => 'El acuerdo debe ser un archivo de tipo: pdf, doc, docx.',
-            'acuerdo.max' => 'El acuerdo no debe superar los 2MB.',
+            // 'archivo_vacuna' => ... ELIMINADO
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
         try {
-            $alumnoData = $request->except(['idSedeCarrera', '_token']);
+            $alumnoData = $request->except(['idSedeCarrera', '_token', 'archivo_vacuna']);
             $sedeCarreraId = $request->input('idSedeCarrera');
 
             if (empty($alumnoData['fechaCreacion'])) {
@@ -113,16 +97,15 @@ class AlumnoController extends Controller
             }
 
             if ($request->hasFile('foto')) {
-                $rutafoto = $request->file('foto')->store('fotos', 'public');
-                $alumnoData['foto'] = $rutafoto;
+                $alumnoData['foto'] = $request->file('foto')->store('fotos', 'public');
             }
 
             if ($request->hasFile('acuerdo')) {
-                $rutaAcuerdo = $request->file('acuerdo')->store('acuerdos', 'public');
-                $alumnoData['acuerdo'] = $rutaAcuerdo;
+                $alumnoData['acuerdo'] = $request->file('acuerdo')->store('acuerdos', 'public');
             }
 
             $alumno = Alumno::create($alumnoData);
+            
             if ($sedeCarreraId) {
                 $alumno->sedesCarreras()->attach($sedeCarreraId);
             }
@@ -133,10 +116,7 @@ class AlumnoController extends Controller
                 'alumno' => $alumno,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al crear el alumno: '.$e->getMessage(),
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error: '.$e->getMessage()], 500);
         }
     }
 
@@ -161,9 +141,7 @@ class AlumnoController extends Controller
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
             'correo' => [
-                'required',
-                'email',
-                'max:50',
+                'required', 'email', 'max:50',
                 Rule::unique('Alumno', 'correo')->ignore($alumno->runAlumno, 'runAlumno'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
@@ -171,44 +149,25 @@ class AlumnoController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'acuerdo' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
-        ], [
-            'runAlumno.required' => 'El campo RUN es obligatorio.',
-            'runAlumno.unique' => 'El RUN ya está registrado.',
-            'nombres.required' => 'El campo Nombres es obligatorio.',
-            'apellidoPaterno.required' => 'El campo Apellido Paterno es obligatorio.',
-            'correo.required' => 'El campo Correo es obligatorio.',
-            'correo.email' => 'El campo Correo debe ser una dirección de correo válida.',
-            'correo.unique' => 'El correo ya está registrado.',
-            'foto.image' => 'El archivo debe ser una imagen (jpeg, png, jpg).',
-            'foto.max' => 'La imagen no debe superar los 2MB.',
-            'acuerdo.file' => 'El acuerdo debe ser un archivo válido.',
-            'acuerdo.mimes' => 'El acuerdo debe ser un archivo de tipo: pdf, doc, docx.',
-            'acuerdo.max' => 'El acuerdo no debe superar los 2MB.',
+            // 'archivo_vacuna' => ... ELIMINADO
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
+
         try {
             $data = $validator->validated();
             $sedeCarreraId = $request->input('idSedeCarrera');
-
             unset($data['idSedeCarrera']);
 
             if ($request->hasFile('foto')) {
-                if ($alumno->foto) {
-                    Storage::disk('public')->delete($alumno->foto);
-                }
+                if ($alumno->foto) Storage::disk('public')->delete($alumno->foto);
                 $data['foto'] = $request->file('foto')->store('fotos', 'public');
             }
 
             if ($request->hasFile('acuerdo')) {
-                if ($alumno->acuerdo) {
-                    Storage::disk('public')->delete($alumno->acuerdo);
-                }
+                if ($alumno->acuerdo) Storage::disk('public')->delete($alumno->acuerdo);
                 $data['acuerdo'] = $request->file('acuerdo')->store('acuerdos', 'public');
             }
 
@@ -224,42 +183,92 @@ class AlumnoController extends Controller
                 'alumno' => $alumno,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar el alumno: '.$e->getMessage(),
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error: '.$e->getMessage()], 500);
         }
     }
 
     public function destroy(Alumno $alumno)
     {
         try {
-            if ($alumno->foto) {
-                Storage::disk('public')->delete($alumno->foto);
-            }
-            if ($alumno->acuerdo) {
-                Storage::disk('public')->delete($alumno->acuerdo);
+            if ($alumno->foto) Storage::disk('public')->delete($alumno->foto);
+            if ($alumno->acuerdo) Storage::disk('public')->delete($alumno->acuerdo);
+            
+            foreach($alumno->vacunas as $vacuna) {
+                if(Storage::disk('public')->exists($vacuna->archivo)) {
+                    Storage::disk('public')->delete($vacuna->archivo);
+                }
             }
 
             $alumno->delete();
 
             if (request()->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Estudiante eliminado exitosamente.',
-                ]);
+                return response()->json(['success' => true, 'message' => 'Estudiante eliminado.']);
             }
         } catch (\Illuminate\Database\QueryException $e) {
             if (request()->expectsJson()) {
-                return response()->json([
-                    'message' => 'No se puede eliminar este estudiante porque tiene registros asociados (carreras, vacunas, etc.).',
-                ], 409);
+                return response()->json(['message' => 'No se puede eliminar, tiene registros asociados.'], 409);
             }
-
-            return redirect()->route('alumnos.index')->with('error', 'No se puede eliminar este estudiante porque tiene registros asociados.');
+            return redirect()->route('alumnos.index')->with('error', 'No se puede eliminar.');
         }
 
-        return redirect()->route('alumnos.index')
-            ->with('success', 'Estudiante eliminado exitosamente.');
+        return redirect()->route('alumnos.index')->with('success', 'Estudiante eliminado.');
+    }
+
+    public function getVacunas($runAlumno)
+    {
+        try {
+            // 1. Verificamos si podemos consultar el modelo
+            // Quitamos el orderBy temporalmente para aislar el error
+            $vacunas = VacunaAlumno::where('runAlumno', $runAlumno)->get();
+
+            // 2. Intentamos renderizar la vista
+            return view('alumnos._lista_vacunas', compact('vacunas'))->render();
+
+        } catch (\Exception $e) {
+            // ESTO NOS DIRÁ EL ERROR EXACTO
+            return response()->json(['error' => $e->getMessage(), 'line' => $e->getLine(), 'file' => $e->getFile()], 500);
+        }
+    }
+
+    public function storeVacuna(Request $request, $runAlumno)
+    {
+        $request->validate([
+            'idTipoVacuna' => 'required|integer', 
+            'idEstadoVacuna' => 'required|integer',
+            'archivo'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
+        ],[
+            'archivo.max' => 'El archivo es muy pesado. El límite es de 2MB.',
+            'archivo.mimes' => 'Formato no válido. Solo se permite PDF, JPG o PNG.',
+            'archivo.required' => 'Debes seleccionar un archivo.',
+        ]);
+
+        try {
+            $path = $request->file('archivo')->store('vacunas_alumnos', 'public');
+
+            VacunaAlumno::create([
+                'runAlumno'      => $runAlumno,
+                'idTipoVacuna'   => $request->idTipoVacuna,
+                'idEstadoVacuna' => $request->idEstadoVacuna,
+                'documento'      => $path,                 
+                'fechaSubida'    => now(),                      
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Vacuna agregada correctamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error BD: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function destroyVacuna($idVacunaAlumno)
+    {
+        $vacuna = VacunaAlumno::findOrFail($idVacunaAlumno);
+        
+        if (Storage::disk('public')->exists($vacuna->documento)) {
+            Storage::disk('public')->delete($vacuna->documento);
+        }
+        
+        $vacuna->delete();
+
+        return response()->json(['success' => true, 'message' => 'Vacuna eliminada']);
     }
 }

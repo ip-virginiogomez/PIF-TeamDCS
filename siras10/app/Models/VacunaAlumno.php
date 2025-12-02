@@ -9,9 +9,9 @@ class VacunaAlumno extends Model
 {
     use HasFactory;
 
-    protected $table = 'vacuna_alumno';
+    protected $table = 'alumno_vacuna';
 
-    protected $primaryKey = 'idVacunaAlumno';
+    protected $primaryKey = 'idAlumnoVacuna';
 
     public $timestamps = false;
 

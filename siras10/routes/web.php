@@ -74,6 +74,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('carreras', CarreraController::class);
     Route::resource('alumnos', AlumnoController::class);
     Route::resource('periodos', PeriodoController::class);
+
+    // Gestión de Vacunas de Alumnos
+    Route::get('/alumnos/{run}/vacunas', [App\Http\Controllers\AlumnoController::class, 'getVacunas'])->name('alumnos.vacunas.index');
+    Route::post('/alumnos/{run}/vacunas', [App\Http\Controllers\AlumnoController::class, 'storeVacuna'])->name('alumnos.vacunas.store');
+    Route::delete('/vacunas/{id}', [App\Http\Controllers\AlumnoController::class, 'destroyVacuna'])->name('alumnos.vacunas.destroy');
+
     // --- GESTIÓN DE DOCENTES ---
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
         Route::get('/', [DocentesController::class, 'index'])->name('index');
