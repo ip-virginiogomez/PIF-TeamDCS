@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
+use App\Models\CentroFormador;
 use App\Models\EstadoVacuna;
 use App\Models\SedeCarrera;
 use App\Models\TipoVacuna;
@@ -28,6 +29,9 @@ class AlumnoController extends Controller
 
         $sortBy = request()->get('sort_by', 'fechaCreacion');
         $sortDirection = request()->get('sort_direction', 'desc');
+        $search = request()->input('search');
+        $filtroCentro = request()->input('centro_id');
+        $filtroSedeCarrera = request()->input('sede_carrera_id');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'fechaCreacion';
@@ -36,9 +40,27 @@ class AlumnoController extends Controller
         $query = Alumno::query();
         $query->withCount('vacunas');
 
-        $sedesCarreras = SedeCarrera::all();
-        $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
-        $estadosVacuna = EstadoVacuna::all();
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('runAlumno', 'like', "%{$search}%")
+                    ->orWhere('nombres', 'like', "%{$search}%")
+                    ->orWhere('apellidoPaterno', 'like', "%{$search}%")
+                    ->orWhere('apellidoMaterno', 'like', "%{$search}%")
+                    ->orWhere('correo', 'like', "%{$search}%");
+            });
+        }
+
+        if ($filtroSedeCarrera) {
+            $query->whereHas('sedesCarreras', function ($q) use ($filtroSedeCarrera) {
+                $q->where('alumno_sede_carrera.idSedeCarrera', $filtroSedeCarrera);
+            });
+        }
+
+        if ($filtroCentro) {
+            $query->whereHas('sedesCarreras.sede.centroFormador', function ($q) use ($filtroCentro) {
+                $q->where('idCentroFormador', $filtroCentro);
+            });
+        }
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
@@ -47,6 +69,19 @@ class AlumnoController extends Controller
         }
 
         $alumnos = $query->paginate(10);
+
+        $alumnos->appends([
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+            'centro_id' => $filtroCentro,
+            'sede_carrera_id' => $filtroSedeCarrera,
+        ]);
+
+        $sedesCarreras = SedeCarrera::with('sede')->get();
+        $centrosFormadores = CentroFormador::all();
+        $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
+        $estadosVacuna = EstadoVacuna::all();
 
         if (request()->ajax()) {
             return view('alumnos._tabla', [
@@ -61,6 +96,7 @@ class AlumnoController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'sedesCarreras' => $sedesCarreras,
+            'centrosFormadores' => $centrosFormadores,
             'tiposVacuna' => $tiposVacuna,
             'estadosVacuna' => $estadosVacuna,
         ]);
@@ -297,8 +333,25 @@ class AlumnoController extends Controller
     public function getDocumentos($runAlumno)
     {
         $alumno = Alumno::with(['vacunas.tipoVacuna', 'vacunas.estadoVacuna'])
-            ->findOrFail($runAlumno);
+                        ->findOrFail($runAlumno);
 
         return view('alumnos._lista_documentos_completa', compact('alumno'))->render();
+    }
+
+    public function getSedesCarrerasByCentro(Request $request)
+    {
+        $centroId = $request->input('centro_id');
+
+        $query = SedeCarrera::with('sede');
+
+        if ($centroId) {
+            $query->whereHas('sede', function ($q) use ($centroId) {
+                $q->where('idCentroFormador', $centroId);
+            });
+        }
+
+        $sedesCarreras = $query->get();
+
+        return response()->json($sedesCarreras);
     }
 }

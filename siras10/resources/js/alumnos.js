@@ -33,6 +33,180 @@ class AlumnoManager extends BaseModalManager {
 
         this.initFotoPreview();
         this.initDocumentosViewer();
+        this.initSearch();
+    }
+
+    initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('btn-clear-search');
+        const tablaContainer = document.getElementById('tabla-container');
+
+        const filterCentro = document.getElementById('filter-centro');
+        const filterSedeCarrera = document.getElementById('filter-sede-carrera');
+
+        if (!searchInput || !tablaContainer) return;
+
+        // Mostrar X si ya hay texto
+        if (clearBtn && searchInput.value.trim().length > 0) {
+            clearBtn.classList.remove('hidden');
+            clearBtn.classList.add('flex');
+        }
+
+        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
+        const executeSearch = (page = 1) => {
+            const params = new URLSearchParams();
+
+            if (searchInput.value.trim()) {
+                params.append('search', searchInput.value.trim());
+            }
+
+            if (filterCentro && filterCentro.value) {
+                params.append('centro_id', filterCentro.value);
+            }
+
+            if (filterSedeCarrera && filterSedeCarrera.value) {
+                params.append('sede_carrera_id', filterSedeCarrera.value);
+            }
+
+            if (page > 1) {
+                params.append('page', page);
+            }
+
+            // Mantener ordenamiento si existe en URL actual
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            if (currentUrlParams.has('sort_by')) params.append('sort_by', currentUrlParams.get('sort_by'));
+            if (currentUrlParams.has('sort_direction')) params.append('sort_direction', currentUrlParams.get('sort_direction'));
+
+            const newUrl = `${this.config.baseUrl}?${params.toString()}`;
+
+            // Actualizar URL del navegador sin recargar
+            window.history.pushState({}, '', newUrl);
+
+            fetchTabla(newUrl);
+        };
+
+        const fetchTabla = async (url) => {
+            tablaContainer.style.opacity = '0.5';
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (!response.ok) throw new Error('Error al cargar tabla');
+                const html = await response.text();
+                tablaContainer.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                // Opcional: Mostrar mensaje de error en tabla
+            } finally {
+                tablaContainer.style.opacity = '1';
+            }
+        };
+
+        // --- LISTENERS ---
+
+        // 1. TEXTO (Debounce)
+        let timeoutId;
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+
+            // Toggle X button
+            if (val.trim().length > 0) {
+                if (clearBtn) {
+                    clearBtn.classList.remove('hidden');
+                    clearBtn.classList.add('flex');
+                }
+            } else {
+                if (clearBtn) {
+                    clearBtn.classList.add('hidden');
+                    clearBtn.classList.remove('flex');
+                }
+            }
+
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                executeSearch();
+            }, 500);
+        });
+
+        // 2. FILTRO CENTRO FORMADOR (LÓGICA CASCADA)
+        if (filterCentro && filterSedeCarrera) {
+            filterCentro.addEventListener('change', async () => {
+                const centroId = filterCentro.value;
+
+                // Resetear Sede/Carrera
+                filterSedeCarrera.innerHTML = '<option value="">Cargando...</option>';
+                filterSedeCarrera.disabled = true;
+
+                try {
+                    // Si hay centro seleccionado, filtrar. Si no, traer todas (o vaciar, según prefieras)
+                    // Aquí reutilizamos la lógica: si no hay centro, quizás quieras mostrar todas o ninguna.
+                    // Asumiremos que si borra centro, reseteamos a "Todas".
+
+                    let url = `${this.config.baseUrl}/sedes-carreras-by-centro`;
+                    if (centroId) {
+                        url += `?centro_id=${centroId}`;
+                    }
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    filterSedeCarrera.innerHTML = '<option value="">Todas las Carreras</option>';
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.idSedeCarrera;
+                        const nombreSede = item.sede ? item.sede.nombreSede : '';
+                        option.textContent = `${item.nombreSedeCarrera} (${nombreSede})`;
+                        filterSedeCarrera.appendChild(option);
+                    });
+
+                } catch (error) {
+                    console.error('Error cargando sedes/carreras', error);
+                    filterSedeCarrera.innerHTML = '<option value="">Error al cargar</option>';
+                } finally {
+                    filterSedeCarrera.disabled = false;
+                    // Ejecutar búsqueda principal al cambiar filtro
+                    executeSearch();
+                }
+            });
+        } else if (filterCentro) {
+            // Si solo existe filtro centro (raro pero posible)
+            filterCentro.addEventListener('change', () => executeSearch());
+        }
+
+        // 3. FILTRO SEDE/CARRERA (Simple)
+        if (filterSedeCarrera) {
+            filterSedeCarrera.addEventListener('change', () => {
+                executeSearch();
+            });
+        }
+
+        // 4. LIMPIAR
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+                executeSearch();
+            });
+        }
+
+        // 5. PAGINACIÓN
+        tablaContainer.addEventListener('click', (e) => {
+            const link = e.target.closest('a.page-link'); // Clase de Laravel Pagination
+            if (link) {
+                e.preventDefault();
+                const url = link.href;
+                // Actualizar URL navegador
+                window.history.pushState({}, '', url);
+                fetchTabla(url);
+            }
+        });
+
+        // Prevenir submit
+        const searchForm = document.getElementById('search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => e.preventDefault());
+        }
     }
 
     initDocumentosViewer() {

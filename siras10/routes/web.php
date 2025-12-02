@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- GESTIÓN ACADÉMICA ---
     Route::resource('carreras', CarreraController::class);
+    Route::get('/alumnos/sedes-carreras-by-centro', [AlumnoController::class, 'getSedesCarrerasByCentro'])->name('alumnos.sedes-carreras');
     Route::resource('alumnos', AlumnoController::class);
     Route::get('/alumnos/{run}/documentos', [App\Http\Controllers\AlumnoController::class, 'getDocumentos'])->name('alumnos.documentos');
     Route::resource('periodos', PeriodoController::class);
