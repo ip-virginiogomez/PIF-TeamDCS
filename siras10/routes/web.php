@@ -84,15 +84,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/vacunas/{id}/estado', [App\Http\Controllers\AlumnoController::class, 'updateVacunaStatus'])->name('alumnos.vacunas.updateStatus');
 
     // --- GESTIÓN DE DOCENTES ---
+    Route::get('/docentes/sedes-carreras-by-centro', [DocentesController::class, 'getSedesCarrerasByCentro'])->name('docentes.sedes-carreras');
+
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
         Route::get('/', [DocentesController::class, 'index'])->name('index');
         Route::post('/', [DocentesController::class, 'store'])->name('store')->middleware('can:docentes.create');
+        
+        // Vacunas
+        Route::get('/{run}/vacunas', [DocentesController::class, 'getVacunas'])->name('vacunas.index');
+        Route::post('/{run}/vacunas', [DocentesController::class, 'storeVacuna'])->name('vacunas.store');
+
         Route::get('{docente}/edit', [DocentesController::class, 'edit'])->name('edit')->middleware('can:docentes.update');
         Route::put('{docente}', [DocentesController::class, 'update'])->name('update')->middleware('can:docentes.update');
         Route::delete('{docente}', [DocentesController::class, 'destroy'])->name('destroy')->middleware('can:docentes.delete');
-        Route::get('{docente}/documentos', [DocentesController::class, 'showDocumentos'])->name('documentos');
+        
+        // Documentos
+        Route::get('{docente}/documentos', [DocentesController::class, 'getDocumentos'])->name('documentos');
         Route::post('{docente}/upload-document', [DocentesController::class, 'uploadDocument'])->name('uploadDocument')->middleware('can:docentes.update');
     });
+
+    // Rutas extra para vacunas docentes
+    Route::delete('/docentes/vacunas/{id}', [DocentesController::class, 'destroyVacuna'])->name('docentes.vacunas.destroy');
+    Route::patch('/docentes/vacunas/{id}/status', [DocentesController::class, 'updateVacunaStatus'])->name('docentes.vacunas.updateStatus');
 
     // --- GESTIÓN DE CENTROS DE SALUD Y UNIDADES ---
     Route::resource('centro-salud', CentroSaludController::class);
