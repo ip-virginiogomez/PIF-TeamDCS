@@ -73,12 +73,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- GESTIÓN ACADÉMICA ---
     Route::resource('carreras', CarreraController::class);
     Route::resource('alumnos', AlumnoController::class);
+    Route::get('/alumnos/{run}/documentos', [App\Http\Controllers\AlumnoController::class, 'getDocumentos'])->name('alumnos.documentos');
     Route::resource('periodos', PeriodoController::class);
 
     // Gestión de Vacunas de Alumnos
     Route::get('/alumnos/{run}/vacunas', [App\Http\Controllers\AlumnoController::class, 'getVacunas'])->name('alumnos.vacunas.index');
     Route::post('/alumnos/{run}/vacunas', [App\Http\Controllers\AlumnoController::class, 'storeVacuna'])->name('alumnos.vacunas.store');
     Route::delete('/vacunas/{id}', [App\Http\Controllers\AlumnoController::class, 'destroyVacuna'])->name('alumnos.vacunas.destroy');
+    Route::patch('/vacunas/{id}/estado', [App\Http\Controllers\AlumnoController::class, 'updateVacunaStatus'])->name('alumnos.vacunas.updateStatus');
 
     // --- GESTIÓN DE DOCENTES ---
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
@@ -150,7 +152,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/asignaciones/campo-clinico/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroCampoClinico'])
         ->name('asignaciones.quitarCC');
 
-    // --- RUTAS AJAX PARA RAD (ESTAS YA ESTÁN BIEN) ---
+    // --- RUTAS AJAX PARA RAD ---
     Route::get('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'getCentrosRad'])
         ->name('asignaciones.getCentrosRAD');
     Route::post('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'asignarCentroRad'])

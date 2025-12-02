@@ -59,6 +59,7 @@
                 <td class="py-2 px-4 text-center">
                     <button data-action="view-documents" 
                             data-id="{{ $alumno->runAlumno }}"
+                            data-nombre="{{ $alumno->nombres }} {{ $alumno->apellidoPaterno }}"
                             title="Ver documentos"
                             class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-150">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -251,7 +251,7 @@
                                     @forelse($grupo->alumnos as $index => $alumno)
                                         @php
                                             $documentosAlumno = [
-                                                ['nombre' => 'Documento de Acuerdo', 'file' => $alumno->acuerdo ?? null],
+                                                ['nombre' => 'Acuerdo de Confidencialidad', 'file' => $alumno->acuerdo ?? null],
                                             ];
                                         @endphp
                                         <tr class="hover:bg-gray-50 transition">

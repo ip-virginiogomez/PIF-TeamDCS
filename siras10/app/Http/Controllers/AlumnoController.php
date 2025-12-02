@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
-use App\Models\SedeCarrera;
-use App\Models\VacunaAlumno;
-use App\Models\TipoVacuna;
 use App\Models\EstadoVacuna;
+use App\Models\SedeCarrera;
+use App\Models\TipoVacuna;
+use App\Models\VacunaAlumno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -105,7 +105,7 @@ class AlumnoController extends Controller
             }
 
             $alumno = Alumno::create($alumnoData);
-            
+
             if ($sedeCarreraId) {
                 $alumno->sedesCarreras()->attach($sedeCarreraId);
             }
@@ -162,12 +162,16 @@ class AlumnoController extends Controller
             unset($data['idSedeCarrera']);
 
             if ($request->hasFile('foto')) {
-                if ($alumno->foto) Storage::disk('public')->delete($alumno->foto);
+                if ($alumno->foto) {
+                    Storage::disk('public')->delete($alumno->foto);
+                }
                 $data['foto'] = $request->file('foto')->store('fotos', 'public');
             }
 
             if ($request->hasFile('acuerdo')) {
-                if ($alumno->acuerdo) Storage::disk('public')->delete($alumno->acuerdo);
+                if ($alumno->acuerdo) {
+                    Storage::disk('public')->delete($alumno->acuerdo);
+                }
                 $data['acuerdo'] = $request->file('acuerdo')->store('acuerdos', 'public');
             }
 
@@ -190,11 +194,15 @@ class AlumnoController extends Controller
     public function destroy(Alumno $alumno)
     {
         try {
-            if ($alumno->foto) Storage::disk('public')->delete($alumno->foto);
-            if ($alumno->acuerdo) Storage::disk('public')->delete($alumno->acuerdo);
-            
-            foreach($alumno->vacunas as $vacuna) {
-                if(Storage::disk('public')->exists($vacuna->archivo)) {
+            if ($alumno->foto) {
+                Storage::disk('public')->delete($alumno->foto);
+            }
+            if ($alumno->acuerdo) {
+                Storage::disk('public')->delete($alumno->acuerdo);
+            }
+
+            foreach ($alumno->vacunas as $vacuna) {
+                if (Storage::disk('public')->exists($vacuna->archivo)) {
                     Storage::disk('public')->delete($vacuna->archivo);
                 }
             }
@@ -208,6 +216,7 @@ class AlumnoController extends Controller
             if (request()->expectsJson()) {
                 return response()->json(['message' => 'No se puede eliminar, tiene registros asociados.'], 409);
             }
+
             return redirect()->route('alumnos.index')->with('error', 'No se puede eliminar.');
         }
 
@@ -233,10 +242,10 @@ class AlumnoController extends Controller
     public function storeVacuna(Request $request, $runAlumno)
     {
         $request->validate([
-            'idTipoVacuna' => 'required|integer', 
+            'idTipoVacuna' => 'required|integer',
             'idEstadoVacuna' => 'required|integer',
-            'archivo'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
-        ],[
+            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
             'archivo.max' => 'El archivo es muy pesado. El límite es de 2MB.',
             'archivo.mimes' => 'Formato no válido. Solo se permite PDF, JPG o PNG.',
             'archivo.required' => 'Debes seleccionar un archivo.',
@@ -246,29 +255,50 @@ class AlumnoController extends Controller
             $path = $request->file('archivo')->store('vacunas_alumnos', 'public');
 
             VacunaAlumno::create([
-                'runAlumno'      => $runAlumno,
-                'idTipoVacuna'   => $request->idTipoVacuna,
+                'runAlumno' => $runAlumno,
+                'idTipoVacuna' => $request->idTipoVacuna,
                 'idEstadoVacuna' => $request->idEstadoVacuna,
-                'documento'      => $path,                 
-                'fechaSubida'    => now(),                      
+                'documento' => $path,
+                'fechaSubida' => now(),
             ]);
 
             return response()->json(['success' => true, 'message' => 'Vacuna agregada correctamente']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error BD: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Error BD: '.$e->getMessage()], 500);
         }
     }
 
     public function destroyVacuna($idVacunaAlumno)
     {
         $vacuna = VacunaAlumno::findOrFail($idVacunaAlumno);
-        
+
         if (Storage::disk('public')->exists($vacuna->documento)) {
             Storage::disk('public')->delete($vacuna->documento);
         }
-        
+
         $vacuna->delete();
 
         return response()->json(['success' => true, 'message' => 'Vacuna eliminada']);
+    }
+
+    public function updateVacunaStatus(Request $request, $idVacunaAlumno)
+    {
+        $request->validate([
+            'idEstadoVacuna' => 'required|integer|exists:estado_vacuna,idEstadoVacuna',
+        ]);
+
+        $vacuna = VacunaAlumno::findOrFail($idVacunaAlumno);
+        $vacuna->idEstadoVacuna = $request->idEstadoVacuna;
+        $vacuna->save();
+
+        return response()->json(['success' => true, 'message' => 'Estado actualizado']);
+    }
+
+    public function getDocumentos($runAlumno)
+    {
+        $alumno = Alumno::with(['vacunas.tipoVacuna', 'vacunas.estadoVacuna'])
+            ->findOrFail($runAlumno);
+
+        return view('alumnos._lista_documentos_completa', compact('alumno'))->render();
     }
 }
