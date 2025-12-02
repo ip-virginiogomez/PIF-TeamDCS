@@ -27,7 +27,7 @@ class Grupo extends Model
 
     protected $casts = [
         'fechaInicio' => 'date',
-        'fechaFin'    => 'date',
+        'fechaFin' => 'date',
         'fechaCreacion' => 'datetime',
     ];
 

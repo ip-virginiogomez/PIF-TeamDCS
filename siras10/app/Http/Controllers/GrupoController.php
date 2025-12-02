@@ -8,7 +8,6 @@ use App\Models\DocenteCarrera;
 use App\Models\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 
 class GrupoController extends Controller
 {
@@ -36,23 +35,23 @@ class GrupoController extends Controller
         ]);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 // A. Buscar por Centro Formador
                 $q->whereHas('sedeCarrera.sede.centroFormador', function ($sub) use ($search) {
                     $sub->where('nombreCentroFormador', 'like', "%{$search}%");
                 })
                 // B. Buscar por Sede / Carrera
-                ->orWhereHas('sedeCarrera', function ($sub) use ($search) {
-                    $sub->where('nombreSedeCarrera', 'like', "%{$search}%");
-                })
+                    ->orWhereHas('sedeCarrera', function ($sub) use ($search) {
+                        $sub->where('nombreSedeCarrera', 'like', "%{$search}%");
+                    })
                 // C. Buscar por Centro de Salud
-                ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($sub) use ($search) {
-                    $sub->where('nombreCentro', 'like', "%{$search}%"); // Ojo: verifica si es 'nombreCentro' o 'nombreCentroSalud' en tu BD
-                })
+                    ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($sub) use ($search) {
+                        $sub->where('nombreCentro', 'like', "%{$search}%"); // Ojo: verifica si es 'nombreCentro' o 'nombreCentroSalud' en tu BD
+                    })
                 // D. Buscar por Unidad Clínica
-                ->orWhereHas('cupoOferta.unidadClinica', function ($sub) use ($search) {
-                    $sub->where('nombreUnidad', 'like', "%{$search}%");
-                });
+                    ->orWhereHas('cupoOferta.unidadClinica', function ($sub) use ($search) {
+                        $sub->where('nombreUnidad', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -100,7 +99,7 @@ class GrupoController extends Controller
             return response()->json(['success' => true, 'message' => 'Grupo creado exitosamente.', 'data' => $grupo]);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al guardar: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Error al guardar: '.$e->getMessage()], 500);
         }
     }
 
@@ -131,11 +130,12 @@ class GrupoController extends Controller
             return response()->json(['success' => true, 'message' => 'Grupo actualizado exitosamente.', 'data' => $grupo]);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al actualizar: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Error al actualizar: '.$e->getMessage()], 500);
         }
     }
 
-    public function destroy(Grupo $grupo){
+    public function destroy(Grupo $grupo)
+    {
         $grupo->delete();
 
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);
