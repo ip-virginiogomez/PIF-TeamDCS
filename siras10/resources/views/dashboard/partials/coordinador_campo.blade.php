@@ -90,8 +90,27 @@
         </div>
     </div>
 
-    <div class="bg-white shadow rounded-lg p-6 mt-4">
-        <h4 class="text-sm font-medium text-gray-700 mb-3">Cupos por carrera</h4>
-        <canvas id="cuposPorCarreraChart" height="80"></canvas>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Widget: Estado de Inmunización Global (Alumnos) -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h4 class="text-lg font-semibold text-gray-700 mb-4">Estado de Inmunización Alumnos</h4>
+            <div class="relative h-64">
+                <canvas id="inmunizacionChart"></canvas>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-sm text-gray-500">Haga clic en la sección "Vencidas" para ver detalles.</p>
+            </div>
+        </div>
+
+        <!-- Widget: Estado de Inmunización Docentes -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h4 class="text-lg font-semibold text-gray-700 mb-4">Estado de Inmunización Docentes</h4>
+            <div class="relative h-64">
+                <canvas id="inmunizacionDocenteChart"></canvas>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-sm text-gray-500">Haga clic en la sección "Vencidas" para ver detalles.</p>
+            </div>
+        </div>
     </div>
 </div>

@@ -1,7 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
+    initCuposChart();
+    initInmunizacionChart('inmunizacionChart', window.inmunizacionData, '/alumnos');
+    initInmunizacionChart('inmunizacionDocenteChart', window.docenteInmunizacionData, '/docentes');
+});
+
+function initCuposChart() {
     const chartElement = document.getElementById('cuposPorCarreraChart');
-    if (!chartElement) return; // Solo ejecutar si el canvas existe
-    
+    if (!chartElement) return;
+
     const ctx = chartElement.getContext('2d');
     const mainColor = window.dashboardMainColor || '#0369a1';
     const data = {
@@ -9,8 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
         datasets: [{
             label: 'Cupos ofertados',
             data: window.cuposPorCarreraData || [],
-            backgroundColor: mainColor + '40', // 25% opacity
-            borderColor: '#0369a1', // Color de borde fijo
+            backgroundColor: mainColor + '40',
+            borderColor: '#0369a1',
             borderWidth: 2,
             borderRadius: 8,
             maxBarThickness: 40
@@ -38,4 +44,66 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
-});
+}
+
+function initInmunizacionChart(canvasId, dataValues, baseUrl) {
+    const chartElement = document.getElementById(canvasId);
+    if (!chartElement) return;
+
+    const ctx = chartElement.getContext('2d');
+    const values = dataValues || { vigentes: 0, vencidas: 0, sin_vacunas: 0 };
+
+    // Datos: [Vigentes, Vencidas, Sin Vacunas]
+    const data = {
+        labels: ['Vigentes', 'Vencidas', 'Sin Vacunas'],
+        datasets: [{
+            data: [values.vigentes, values.vencidas, values.sin_vacunas],
+            backgroundColor: [
+                '#10b981', // Green-500 (Vigentes)
+                '#ef4444', // Red-500 (Vencidas)
+                '#9ca3af'  // Gray-400 (Sin Vacunas)
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            let value = context.raw;
+                            let total = context.chart._metasets[context.datasetIndex].total;
+                            let percentage = Math.round((value / total) * 100) + '%';
+                            return label + value + ' (' + percentage + ')';
+                        }
+                    }
+                }
+            },
+            onClick: (event, elements, chart) => {
+                if (elements.length > 0) {
+                    const index = elements[0].index;
+                    const label = chart.data.labels[index];
+                    if (label === 'Vencidas' || label === 'Sin Vacunas') {
+                        // Redirigir a la lista filtrada
+                        let filterValue = label.toLowerCase().replace(' ', '_');
+                        window.location.href = baseUrl + '?estado_vacuna=' + filterValue;
+                    }
+                }
+            }
+        }
+    });
+}
+

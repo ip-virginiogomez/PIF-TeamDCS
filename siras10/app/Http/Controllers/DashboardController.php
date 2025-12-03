@@ -121,10 +121,66 @@ class DashboardController extends Controller
 
                 $dashboardData['alumnosPendientes'] = $dashboardData['alumnosTotalesCF'] - $alumnosConActividad;
                 if ($dashboardData['alumnosPendientes'] < 0) $dashboardData['alumnosPendientes'] = 0;
-             }
-        }
 
-        return view('dashboard', array_merge([
+                // 6. Estado de Inmunización Global (Por Alumno)
+                // Definir estados
+                $estadosVigentes = ['Activo', 'Vigente'];
+                $estadosVencidos = ['Expirado', 'Vencida', 'Vencido'];
+                // Base query para alumnos del CF
+                $baseAlumnoQuery = Alumno::whereHas('alumnoCarreras.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                    $q->where('idCentroFormador', $idCentroFormador);
+                });
+
+                // 1. Vigentes: Alumnos con al menos una vacuna vigente
+                $vigentes = (clone $baseAlumnoQuery)->whereHas('vacunas.estadoVacuna', function ($q) use ($estadosVigentes) {
+                    $q->whereIn('nombreEstado', $estadosVigentes);
+                })->count();
+
+                // 2. Vencidas: Alumnos SIN vacunas vigentes Y con al menos una vencida
+                $vencidas = (clone $baseAlumnoQuery)->whereDoesntHave('vacunas.estadoVacuna', function ($q) use ($estadosVigentes) {
+                    $q->whereIn('nombreEstado', $estadosVigentes);
+                })->whereHas('vacunas.estadoVacuna', function ($q) use ($estadosVencidos) {
+                    $q->whereIn('nombreEstado', $estadosVencidos);
+                })->count();
+
+                // 4. Sin Vacunas: Alumnos sin ningún registro de vacunas
+                $sinVacunas = (clone $baseAlumnoQuery)->doesntHave('vacunas')->count();
+                
+                $dashboardData['inmunizacionData'] = [
+                    'vigentes' => $vigentes,
+                    'vencidas' => $vencidas,
+                    'sin_vacunas' => $sinVacunas,
+                    'total' => $vigentes + $vencidas + $sinVacunas
+                ];
+
+                // 7. Estado de Inmunización Docentes (Misma lógica)
+                $baseDocenteQuery = \App\Models\Docente::whereHas('docenteCarreras.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                    $q->where('idCentroFormador', $idCentroFormador);
+                });
+
+                // 1. Vigentes
+                $docentesVigentes = (clone $baseDocenteQuery)->whereHas('docenteVacunas.estadoVacuna', function ($q) use ($estadosVigentes) {
+                    $q->whereIn('nombreEstado', $estadosVigentes);
+                })->count();
+
+                // 2. Vencidas
+                $docentesVencidas = (clone $baseDocenteQuery)->whereDoesntHave('docenteVacunas.estadoVacuna', function ($q) use ($estadosVigentes) {
+                    $q->whereIn('nombreEstado', $estadosVigentes);
+                })->whereHas('docenteVacunas.estadoVacuna', function ($q) use ($estadosVencidos) {
+                    $q->whereIn('nombreEstado', $estadosVencidos);
+                })->count();
+
+                // 3. Sin Vacunas
+                $docentesSinVacunas = (clone $baseDocenteQuery)->doesntHave('docenteVacunas')->count();
+
+                $dashboardData['docenteInmunizacionData'] = [
+                    'vigentes' => $docentesVigentes,
+                    'vencidas' => $docentesVencidas,
+                    'sin_vacunas' => $docentesSinVacunas,
+                    'total' => $docentesVigentes + $docentesVencidas + $docentesSinVacunas
+                ];
+             }
+        }        return view('dashboard', array_merge([
             'totalAlumnos' => $totalAlumnos,
             'totalDocentes' => $totalDocentes,
             'totalCupos' => $totalCupos,
