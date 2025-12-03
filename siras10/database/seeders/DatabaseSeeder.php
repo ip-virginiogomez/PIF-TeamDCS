@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             CarreraSeeder::class,
             TipoCentroFormadorSeeder::class,
             CentroFormadorSeeder::class,
+            CoordinadorCampoClinicoSeeder::class,
             SedeSeeder::class,
             SedeCarreraSeeder::class,
             CentroSaludSeeder::class,
