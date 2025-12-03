@@ -26,11 +26,7 @@ class CentroFormadorManager extends BaseModalManager {
         const closeBtnX = document.getElementById('closeCoordinatorModalX');
         const closeBtnBottom = document.getElementById('closeCoordinatorModalBtn');
         const backdrop = document.getElementById('coordinatorModalBackdrop');
-
-        // Elements to populate
-        const photoContainer = document.getElementById('coordinatorPhotoContainer');
-        const nameElement = document.getElementById('coordinatorName');
-        const detailsContainer = document.getElementById('coordinatorDetails');
+        const listContainer = document.getElementById('coordinatorListContainer');
 
         if (!tableContainer || !modal) return;
 
@@ -39,7 +35,7 @@ class CentroFormadorManager extends BaseModalManager {
             const btn = e.target.closest('button[data-action="view-coordinator"]');
             if (btn) {
                 const data = JSON.parse(btn.dataset.coordinator);
-                this.showCoordinatorInfo(data, { photoContainer, nameElement, detailsContainer });
+                this.showCoordinatorsList(data, listContainer);
                 modal.classList.remove('hidden');
             }
         });
@@ -51,37 +47,49 @@ class CentroFormadorManager extends BaseModalManager {
         if (backdrop) backdrop.addEventListener('click', closeModal);
     }
 
-    showCoordinatorInfo(data, elements) {
-        if (!data) return;
+    showCoordinatorsList(coordinators, container) {
+        if (!coordinators || coordinators.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">No hay coordinadores asignados.</p>';
+            return;
+        }
 
-        const { photoContainer, nameElement, detailsContainer } = elements;
-        const fullName = `${data.nombres || data.nombreUsuario || ''} ${data.apellidoPaterno || ''} ${data.apellidoMaterno || ''}`.trim();
+        // Ensure it's an array (handle single object case if legacy data exists)
+        const list = Array.isArray(coordinators) ? coordinators : [coordinators];
 
-        // 1. Photo
-        const photoUrl = data.foto
-            ? `/storage/${data.foto}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=bae6fd&color=0369a1&size=128`;
+        const html = list.map(data => {
+            const fullName = `${data.nombres || data.nombreUsuario || ''} ${data.apellidoPaterno || ''} ${data.apellidoMaterno || ''}`.trim();
+            const photoUrl = data.foto
+                ? `/storage/${data.foto}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=bae6fd&color=0369a1&size=64`;
 
-        photoContainer.innerHTML = `<img src="${photoUrl}" class="h-full w-full object-cover">`;
+            return `
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4 flex items-start space-x-4 hover:shadow-md transition-shadow">
+                    <div class="flex-shrink-0 mr-2">
+                        <img class="h-16 w-16 rounded-full object-cover border border-gray-200" src="${photoUrl}" alt="${fullName}">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-lg font-bold text-gray-900 truncate">
+                            ${fullName}
+                        </p>
+                        <p class="text-sm text-sky-600 font-medium mb-2">
+                            ${data.runUsuario || 'N/A'}
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-500">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
+                                <span class="truncate">${data.correo || 'Sin correo'}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                <span class="truncate">${data.telefono || 'Sin teléfono'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-        // 2. Name
-        nameElement.textContent = fullName;
-
-        // 3. Details
-        detailsContainer.innerHTML = `
-            <div class="flex justify-between border-b border-gray-200 pb-2">
-                <span class="text-gray-500 font-medium">RUN</span>
-                <span class="text-gray-900 font-semibold">${data.runUsuario || 'N/A'}</span>
-            </div>
-            <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-                <span class="text-gray-500 font-medium">Correo</span>
-                <a class="text-sky-600 font-semibold truncate ml-4 block text-right">${data.correo || 'N/A'}</a>
-            </div>
-            <div class="flex justify-between items-center pt-2">
-                <span class="text-gray-500 font-medium">Teléfono</span>
-                <span class="text-gray-900 font-semibold text-right">${data.telefono || 'N/A'}</span>
-            </div>
-        `;
+        container.innerHTML = html;
     }
 }
 
