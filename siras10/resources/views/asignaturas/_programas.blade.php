@@ -37,3 +37,9 @@
         </tbody>
     </table>
 </div>
+
+@if($programas->hasPages())
+<div class="mt-4">
+    {{ $programas->links() }}
+</div>
+@endif

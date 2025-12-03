@@ -12,7 +12,10 @@
                     Sede {{ $sedeCarrera->sede->nombreSede }} · Carrera {{ $sedeCarrera->carrera->nombreCarrera }} · Código {{ $sedeCarrera->codigoCarrera }}
                 </p>
             </div>
-            <a href="{{ route('sede-carrera.index') }}"
+            <a href="{{ route('sede-carrera.index', [
+                'centro' => $sedeCarrera->sede->centroFormador->idCentroFormador,
+                'sede' => $sedeCarrera->sede->idSede
+            ]) }}"
             class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
                 <i class="fas fa-arrow-left mr-2"></i>Volver
             </a>
@@ -73,7 +76,7 @@
                                             <div class="flex space-x-2">
                                                 <button type="button"
                                                         data-action="preview-malla" 
-                                                        data-url="{{ Storage::url($malla->documento) }}"
+                                                        data-url="{{ asset('storage/' . $malla->documento) }}"
                                                         data-title="{{ $malla->nombre }}"
                                                         data-info="Año {{ $malla->mallaCurricular->anio }} · {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
                                                         title="Ver documento"
@@ -135,6 +138,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if($mallas->hasPages())
+                    <div class="mt-4">
+                        {{ $mallas->appends(['asignaturas_page' => request('asignaturas_page')])->links() }}
+                    </div>
+                    @endif
                 </div>
             </section>
 
@@ -187,40 +196,28 @@
                                         <td class="py-2 px-4 text-sm">
                                             {{ $asignatura->tipoPractica->nombrePractica ?? 'N/A' }}
                                         </td>
-                                        <td class="py-2 px-4">
+                                        <td class="py-2 px-4 text-center">
                                             @if ($programa)
-                                                <div>
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Programa cargado
-                                                    </span>
-                                                    <span class="block text-xs text-gray-500 mt-1">
-                                                        {{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
-                                                    </span>
-                                                </div>
+                                                <button
+                                                    type="button"
+                                                    data-action="preview-programa"
+                                                    data-url="{{ asset('storage/' . $programa->documento) }}"
+                                                    data-title="Programa de {{ $asignatura->nombreAsignatura }}"
+                                                    data-asignatura="{{ $asignatura->nombreAsignatura }}"
+                                                    data-fecha="{{ $programa->fechaSubida ? $programa->fechaSubida->format('d/m/Y') : 'N/A' }}"
+                                                    title="Ver programa vigente"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </button>
                                             @else
                                                 <span class="text-sm text-gray-400">Sin programa</span>
                                             @endif
                                         </td>
                                         <td>
                                             <div class="flex space-x-2">
-                                                {{-- Botón Ver Programa (si existe) --}}
-                                                @if ($programa)
-                                                    <button
-                                                        type="button"
-                                                        data-action="preview-programa"
-                                                        data-url="{{ Storage::url($programa->documento) }}"
-                                                        data-title="Programa de {{ $asignatura->nombreAsignatura }}"
-                                                        data-asignatura="{{ $asignatura->nombreAsignatura }}"
-                                                        data-fecha="{{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
-                                                        title="Ver programa"
-                                                        class="inline-flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-150">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
                                                 {{-- Botón Ver todos los programas --}}
                                                 <button
                                                     type="button"
@@ -233,8 +230,8 @@
                                                     </svg>
                                                 </button>
                                             {{-- Modal para historial de programas --}}
-                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 items-center justify-center hidden">
-                                                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh]">
+                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                                                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh] m-4">
                                                     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                                                         <h3 class="text-lg font-semibold text-gray-900">Historial de Programas</h3>
                                                         <button data-action="close-programas-modal" class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
@@ -314,16 +311,21 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if($asignaturas->hasPages())
+                    <div class="mt-4">
+                        {{ $asignaturas->appends(['mallas_page' => request('mallas_page')])->links() }}
+                    </div>
+                    @endif
                 </div>
             </section>
         </div>
     </div>
 
     {{-- MODAL MALLA CURRICULAR --}}
-    <div id="mallaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="mallaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 id="mallaModalTitle" class="text-lg font-semibold text-gray-900">Gestionar Malla Curricular</h3>
                     <button
                         type="button"
@@ -408,15 +410,13 @@
                         </div>
                     </form>
                 </div>
-            </div>
         </div>
     </div>
 
     {{-- MODAL ASIGNATURA --}}
-    <div id="asignaturaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="asignaturaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 id="asignaturaModalTitle" class="text-lg font-semibold text-gray-900">Crear Asignatura</h3>
                     <button
                         type="button"
@@ -510,15 +510,13 @@
                         </div>
                     </form>
                 </div>
-            </div>
         </div>
     </div>
 
     {{-- MODAL PROGRAMA --}}
-    <div id="programaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="programaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div>
                         <h3 id="programaModalTitle" class="text-lg font-semibold text-gray-900">Subir Programa</h3>
                         <p id="programaAsignaturaName" class="text-sm text-gray-500 mt-1"></p>
@@ -575,15 +573,13 @@
                         </div>
                     </form>
                 </div>
-            </div>
         </div>
     </div>
 
     {{-- MODAL VISTA PREVIA PDF --}}
-    <div id="pdfPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl" style="max-height: 90vh;">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="pdfPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex-1">
                         <h3 id="pdfModalTitle" class="text-lg font-semibold text-gray-900">Vista Previa de Documento</h3>
                         <p id="pdfModalInfo" class="text-sm text-gray-500 mt-1"></p>
@@ -610,7 +606,7 @@
                 </div>
 
                 <div class="p-6">
-                    <div class="bg-gray-100 rounded-lg overflow-hidden" style="height: calc(90vh - 200px); min-height: 500px;">
+                    <div class="bg-gray-100 rounded-lg overflow-hidden h-[calc(90vh-200px)] min-h-[500px]">
                         <iframe 
                             id="pdfViewer"
                             src="" 
@@ -626,7 +622,6 @@
                         </iframe>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
     @push('scripts')
