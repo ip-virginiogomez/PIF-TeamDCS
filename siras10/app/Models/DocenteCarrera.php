@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -41,5 +42,10 @@ class DocenteCarrera extends Model
     public function grupos()
     {
         return $this->hasMany(Grupo::class, 'idDocenteCarrera', 'idDocenteCarrera');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new CentroFormadorScope);
     }
 }

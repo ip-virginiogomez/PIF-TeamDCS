@@ -27,7 +27,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             
             {{-- TARJETA PRINCIPAL --}}
             <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg border border-gray-200">
@@ -46,7 +46,7 @@
                 <div class="p-8">
                     
                     {{-- BARRA DE CUPOS --}}
-                    <div class="bg-sky-50 border border-sky-100 rounded-lg p-5 mb-8 flex items-center justify-between shadow-sm">
+                    <div class="bg-sky-50 border w-fit border-sky-100 rounded-lg p-5 mb-8 flex items-center justify-between shadow-sm">
                         <div class="flex items-center">
                             <div>
                                 <h4 class="text-sky-900 font-bold text-lg">Cupos Distribuidos</h4>
@@ -54,7 +54,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="block text-4xl font-extrabold text-sky-700">
+                            <span class="block text-4xl ml-4 font-extrabold text-sky-700">
                                 {{ $dist->cantCupos ?? 0 }}
                             </span>
                         </div>
@@ -65,19 +65,17 @@
                         {{-- SECCIÓN 1: ACADÉMICA --}}
                         <div class="space-y-5">
                             <div class="flex items-center space-x-2 border-b pb-2 mb-2">
-                                <i class="fas fa-university text-gray-400"></i>
                                 <h4 class="text-gray-500 text-xs font-bold uppercase tracking-widest">Institución Académica</h4>
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Centro Formador</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Centro Formador</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $centroFormador->nombreCentroFormador ?? 'No especificado' }}
                                 </div>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Carrera / Sede</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Carrera / Sede</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $sedeCarrera->nombreSedeCarrera ?? 'No especificado' }}
                                 </div>
@@ -86,7 +84,7 @@
                             
                             {{-- TARJETA DOCENTE --}}
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-sky-300 transition duration-200">
-                                <label class="block text-xs font-semibold text-gray-400 uppercase mb-3">Docente a Cargo</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase mb-3">Docente a Cargo</span>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
                                         <div class="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 mr-3 overflow-hidden border border-sky-200">
@@ -129,26 +127,24 @@
                         {{-- SECCIÓN 2: CLÍNICA --}}
                         <div class="space-y-5">
                             <div class="flex items-center space-x-2 border-b pb-2 mb-2">
-                                <i class="fas fa-clinic-medical text-gray-400"></i>
                                 <h4 class="text-gray-500 text-xs font-bold uppercase tracking-widest">Campo Clínico</h4>
                             </div>
                             
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Centro de Salud</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Centro de Salud</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $centroSalud->nombreCentro ?? 'No especificado' }}
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Unidad Clínica</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Unidad Clínica</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $unidad->nombreUnidad ?? 'No especificado' }}
                                 </div>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-semibold text-gray-400 uppercase">Tipo de Práctica</label>
+                                <span class="block text-xs font-semibold text-gray-400 uppercase">Tipo de Práctica</span>
                                 <div class="font-medium text-gray-800">
                                     {{ $tipoPractica->nombrePractica ?? 'General' }}
                                 </div>
@@ -159,8 +155,8 @@
                     {{-- ======================================================== --}}
                     {{-- SECCIÓN NUEVA: ASIGNATURA                                --}}
                     {{-- ======================================================== --}}
-                    <div class="mt-8">
-                        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
+                    <div class="mt-8 border-t border-gray-200 pt-8">
+                        <div class="w-fit bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between relative overflow-hidden">
                             {{-- Borde decorativo izquierdo --}}
                             <div class="absolute top-0 left-0 w-1 h-full bg-sky-700"></div>
                             
@@ -186,7 +182,7 @@
                                             type="button"
                                             data-url="{{ $urlPrograma }}"
                                             data-nombre="{{ $grupo->asignatura->nombreAsignatura }}"
-                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
+                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 ml-4 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
                                             title="Ver Programa de la Asignatura">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -194,7 +190,7 @@
                                         </svg>
                                     </button>
                                 @else
-                                    <span class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
+                                    <span class="inline-flex items-center ml-4 px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                         Sin Programa
                                     </span>
@@ -218,12 +214,25 @@
                                     <p class="text-gray-500 text-sm">Listado oficial de alumnos inscritos</p>
                                 </div>
                             </div>
-                            
-                            <button id="btn-open-add-alumno" type="button" class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition-colors duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg> Agregar Alumno
-                            </button>
+                            @php
+                                $inscritos = $grupo->alumnos->count();
+                                $totalCupos = $grupo->cupoDistribucion->cantCupos ?? 0;
+                                $estaLleno = $inscritos >= $totalCupos;
+                            @endphp
+                            @if($estaLleno)
+                                <span class="inline-flex items-center px-4 py-2 bg-red-50 text-red-600 text-sm font-bold rounded-md border border-red-200 cursor-not-allowed shadow-sm select-none" title="No quedan cupos disponibles">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Grupo Completo ({{ $inscritos }}/{{ $totalCupos }})
+                                </span>
+                            @else                 
+                                <button id="btn-open-add-alumno" type="button" class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded shadow-sm transition-colors duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg> Agregar Alumno
+                                </button>
+                            @endif
                         </div>
 
                         {{-- TABLA DE ALUMNOS --}}
@@ -258,7 +267,7 @@
                                                     {{-- BOTÓN 1: VER DOCUMENTOS --}}
                                                     <button type="button" 
                                                             data-action="view-alumno-docs"
-                                                            data-nombre="{{ $alumno->nombresAlumno }} {{ $alumno->apellidoPaterno }}"
+                                                            data-nombre="{{ $alumno->nombres }} {{ $alumno->apellidoPaterno }}"
                                                             data-docs='@json($documentosAlumno)' 
                                                             class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
                                                             title="Ver Documentos">
@@ -396,7 +405,7 @@
                         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h3 class="text-lg font-bold text-gray-800 flex items-center">
                                 <svg class="w-6 h-6 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                Documentos de {{ $docente->nombresDocente }}
+                                Documentos de {{ $docente->nombresDocente }} {{ $docente->apellidoPaterno }}
                             </h3>
                             <button id="btn-close-docs" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
                                 <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -438,7 +447,7 @@
                     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                         <h3 class="text-lg font-bold text-gray-800 flex items-center">
                             <svg class="w-6 h-6 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                            Documentos de: <span id="alumno-docs-nombre" class="ml-2 text-sky-700"></span>
+                            Documentos de<span id="alumno-docs-nombre" class="ml-2"></span>
                         </h3>
                         <button id="btn-close-docs-alumno" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
                             <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -499,5 +508,5 @@
         </div>
     </div>
 
-    @vite(['resources/js/app.js', 'resources/js/GrupoDossier.js'])
+    @vite(['resources/js/app.js'])
 </x-app-layout>

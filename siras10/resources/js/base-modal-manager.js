@@ -27,7 +27,7 @@ export default class BaseModalManager {
      * Inicializa TODOS los event listeners necesarios: formulario y página.
      */
     initEventListeners() {
-
+        // Listener para cerrar modales informativos globales (si existen)
         document.body.addEventListener('click', (e) => {
             const closeModalButton = e.target.closest('[data-action="close-info-modal"]');
             if (closeModalButton) {
@@ -40,25 +40,46 @@ export default class BaseModalManager {
             }
         });
 
+        // Submit del formulario
         if (this.form) {
             this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         }
 
+        // --- CORRECCIÓN AQUÍ ---
         if (this.modal) {
+            let mouseDownOnBackdrop = false;
+
+            // 1. Detectar dónde se presionó el botón del mouse (MouseDown)
+            this.modal.addEventListener('mousedown', (e) => {
+                // Si el ID del target es igual al ID del modal, es el fondo oscuro.
+                // Si es un hijo, no es el fondo.
+                mouseDownOnBackdrop = e.target.id === this.config.modalId;
+            });
+
+            // 2. Detectar dónde se soltó el botón (Click)
             this.modal.addEventListener('click', (e) => {
                 const esClicEnFondo = e.target.id === this.config.modalId;
                 const esClicEnBotonCerrar = e.target.closest('[data-action="close-modal"]');
 
-                if (esClicEnFondo || esClicEnBotonCerrar) {
+                // Lógica mejorada:
+                // Solo cerramos si es el botón de cerrar O 
+                // si es clic en fondo Y el mouse empezó a presionarse en el fondo.
+                if (esClicEnBotonCerrar || (esClicEnFondo && mouseDownOnBackdrop)) {
                     this.cerrarModal();
                 }
+                
+                // Reseteamos la bandera por seguridad
+                mouseDownOnBackdrop = false;
             });
         }
-        
+        // -----------------------
+
+        // Abrir modal (limpiar formulario)
         document.querySelector(`[data-modal-target="${this.config.modalId}"]`)?.addEventListener('click', () => {
             this.limpiarFormulario();
         });
 
+        // Listeners de la tabla (Editar, Eliminar, Paginación)
         const tableContainer = document.getElementById(this.config.tableContainerId);
         if (tableContainer) {
             tableContainer.addEventListener('click', (e) => {

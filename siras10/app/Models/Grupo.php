@@ -21,6 +21,14 @@ class Grupo extends Model
         'idAsignatura',
         'fechaCreacion',
         'nombreGrupo',
+        'fechaInicio',
+        'fechaFin',
+    ];
+
+    protected $casts = [
+        'fechaInicio' => 'date',
+        'fechaFin' => 'date',
+        'fechaCreacion' => 'datetime',
     ];
 
     // Relación inversa con CupoDistribucion
