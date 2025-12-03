@@ -13,7 +13,7 @@ class AsignaturaSeeder extends Seeder
             [
                 'nombreAsignatura' => 'Práctico Integrado',
                 'idTipoPractica' => 1,
-                'idSedeCarrera' => 2,
+                'idSedeCarrera' => 1,
                 'fechaCreacion' => now(),
                 'codAsignatura' => 'PI101',
                 'Semestre' => 3,
