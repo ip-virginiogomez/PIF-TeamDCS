@@ -236,7 +236,7 @@ class DocenteManager extends BaseModalManager {
                             data.forEach(item => {
                                 const option = document.createElement('option');
                                 option.value = item.idSedeCarrera;
-                                option.textContent = `${item.nombreSedeCarrera} (${item.sede.nombreSede})`;
+                                option.textContent = `${item.nombreSedeCarrera} - ${item.sede.nombreSede}`;
                                 sedeSelect.appendChild(option);
                             });
                         });
@@ -294,7 +294,7 @@ class DocenteManager extends BaseModalManager {
     // Sobrescribir método para editar registro
     async editarRegistro(id) {
         const data = await super.editarRegistro(id);
-        
+
         if (data && data.docente) {
             // Llenar campos del formulario manualmente ya que data.docente está anidado
             this.config.fields.forEach(field => {

@@ -89,7 +89,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
         Route::get('/', [DocentesController::class, 'index'])->name('index');
         Route::post('/', [DocentesController::class, 'store'])->name('store')->middleware('can:docentes.create');
-        
+
         // Vacunas
         Route::get('/{run}/vacunas', [DocentesController::class, 'getVacunas'])->name('vacunas.index');
         Route::post('/{run}/vacunas', [DocentesController::class, 'storeVacuna'])->name('vacunas.store');
@@ -97,7 +97,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{docente}/edit', [DocentesController::class, 'edit'])->name('edit')->middleware('can:docentes.update');
         Route::put('{docente}', [DocentesController::class, 'update'])->name('update')->middleware('can:docentes.update');
         Route::delete('{docente}', [DocentesController::class, 'destroy'])->name('destroy')->middleware('can:docentes.delete');
-        
+
         // Documentos
         Route::get('{docente}/documentos', [DocentesController::class, 'getDocumentos'])->name('documentos');
         Route::post('{docente}/upload-document', [DocentesController::class, 'uploadDocument'])->name('uploadDocument')->middleware('can:docentes.update');

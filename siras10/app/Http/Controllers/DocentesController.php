@@ -76,7 +76,7 @@ class DocentesController extends Controller
             'sede_carrera_id' => $filtroSedeCarrera,
         ]);
 
-        $sedesCarreras = SedeCarrera::with('sede')->get();
+        $sedesCarreras = SedeCarrera::with(['sede', 'carrera'])->get();
         $centrosFormadores = CentroFormador::all();
         $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
         $estadosVacuna = EstadoVacuna::all();
@@ -214,7 +214,7 @@ class DocentesController extends Controller
 
     public function edit(Docente $docente)
     {
-        $sedesCarrerasDisponibles = SedeCarrera::with('sede')->get();
+        $sedesCarrerasDisponibles = SedeCarrera::with(['sede', 'carrera'])->get();
         $sedeCarreraActual = $docente->sedesCarreras()->first();
 
         return response()->json([
@@ -485,6 +485,7 @@ class DocentesController extends Controller
     {
         try {
             $vacunas = DocenteVacuna::where('runDocente', $runDocente)->get();
+
             return view('docentes._lista_vacunas', compact('vacunas'))->render();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

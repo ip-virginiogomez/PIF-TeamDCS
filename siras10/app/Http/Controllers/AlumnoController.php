@@ -78,7 +78,7 @@ class AlumnoController extends Controller
             'sede_carrera_id' => $filtroSedeCarrera,
         ]);
 
-        $sedesCarreras = SedeCarrera::with('sede')->get();
+        $sedesCarreras = SedeCarrera::with(['sede', 'carrera'])->get();
         $centrosFormadores = CentroFormador::all();
         $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
         $estadosVacuna = EstadoVacuna::all();
@@ -159,7 +159,7 @@ class AlumnoController extends Controller
     public function edit(Alumno $alumno)
     {
         $alumno = Alumno::findorfail($alumno->runAlumno);
-        $sedesCarrerasDisponibles = SedeCarrera::all();
+        $sedesCarrerasDisponibles = SedeCarrera::with(['sede', 'carrera'])->get();
         $sedeCarreraActual = $alumno->sedesCarreras()->first();
 
         return response()->json([
@@ -333,7 +333,7 @@ class AlumnoController extends Controller
     public function getDocumentos($runAlumno)
     {
         $alumno = Alumno::with(['vacunas.tipoVacuna', 'vacunas.estadoVacuna'])
-                        ->findOrFail($runAlumno);
+            ->findOrFail($runAlumno);
 
         return view('alumnos._lista_documentos_completa', compact('alumno'))->render();
     }

@@ -155,7 +155,7 @@ class AlumnoManager extends BaseModalManager {
                         const option = document.createElement('option');
                         option.value = item.idSedeCarrera;
                         const nombreSede = item.sede ? item.sede.nombreSede : '';
-                        option.textContent = `${item.nombreSedeCarrera} (${nombreSede})`;
+                        option.textContent = `${item.nombreSedeCarrera} - ${nombreSede}`;
                         filterSedeCarrera.appendChild(option);
                     });
 
@@ -424,11 +424,10 @@ class AlumnoManager extends BaseModalManager {
             const option = document.createElement('option');
             option.value = sede.idSedeCarrera;
 
-            const nombreCentro = sede.sede?.centro_formador?.nombreCentroFormador || 'Centro';
             const nombreSede = sede.sede?.nombreSede || 'Sede';
             const nombreCarrera = sede.nombreSedeCarrera || sede.carrera?.nombreCarrera || 'Carrera';
 
-            option.textContent = `${nombreCentro} (${nombreSede}) - ${nombreCarrera}`;
+            option.textContent = `${nombreCarrera} - ${nombreSede}`;
 
             if (data.sedeCarreraActual && sede.idSedeCarrera == data.sedeCarreraActual.idSedeCarrera) {
                 option.selected = true;

@@ -72,7 +72,7 @@
                                             <option value="">Todas las Carreras</option>
                                             @foreach($sedesCarreras as $sc)
                                                 <option value="{{ $sc->idSedeCarrera }}" {{ request('sede_carrera_id') == $sc->idSedeCarrera ? 'selected' : '' }}>
-                                                    {{ $sc->nombreSedeCarrera }} ({{ $sc->sede->nombreSede ?? '' }})
+                                                    {{ $sc->nombreSedeCarrera }} - {{ $sc->sede->nombreSede ?? '' }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -112,7 +112,7 @@
                 @if(isset($sedesCarreras))
                     @foreach($sedesCarreras as $sede)
                         <option value="{{ $sede->idSedeCarrera }}">
-                            {{ $sede->nombreSedeCarrera }} ({{ $sede->sede->nombreSede ?? 'Sin Sede' }})
+                            {{ $sede->nombreSedeCarrera }} - {{ $sede->sede->nombreSede ?? 'Sin Sede' }}
                         </option>
                     @endforeach
                 @endif
@@ -203,82 +203,69 @@
                 id="foto" 
                 name="foto" 
                 accept="image/*"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
             <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
         <div class="mb-4">
             <label for="curriculum" class="block text-sm font-medium text-gray-700">Curriculum Vitae</label>
             <div id="curriculum-actual" class="mb-2 text-sm text-blue-600 hidden">
-                <span>📄 Archivo actual: </span>
-                <a id="curriculum-link" href="#" target="_blank" class="underline">Ver curriculum</a>
             </div>
             <input type="file" 
                 id="curriculum" 
                 name="curriculum" 
                 accept=".pdf,.doc,.docx"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div id="error-curriculum" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
         <div class="mb-4">
             <label for="certSuperInt" class="block text-sm font-medium text-gray-700">Certificado Superintendencia</label>
-            <div id="certSuperInt-actual" class="mb-2 text-sm text-blue-600 hidden">
-                <span>📄 Archivo actual: </span>
-                <a id="certSuperInt-link" href="#" target="_blank" class="underline">Ver certificado</a>
-            </div>
+            <div id="certSuperInt-actual" class="mb-2 text-sm text-blue-600 hidden"></div>
             <input type="file" 
                 id="certSuperInt" 
                 name="certSuperInt" 
                 accept=".pdf,.doc,.docx"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div id="error-certSuperInt" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
         <div class="mb-4">
             <label for="certRCP" class="block text-sm font-medium text-gray-700">Certificado RCP</label>
-            <div id="certRCP-actual" class="mb-2 text-sm text-blue-600 hidden">
-                <span>📄 Archivo actual: </span>
-                <a id="certRCP-link" href="#" target="_blank" class="underline">Ver certificado</a>
-            </div>
+            <div id="certRCP-actual" class="mb-2 text-sm text-blue-600 hidden"></div>
             <input type="file" 
                 id="certRCP" 
                 name="certRCP" 
                 accept=".pdf,.doc,.docx"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div id="error-certRCP" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
         <div class="mb-4">
             <label for="certIAAS" class="block text-sm font-medium text-gray-700">Certificado IAAS</label>
-            <div id="certIAAS-actual" class="mb-2 text-sm text-blue-600 hidden">
-                <span>📄 Archivo actual: </span>
-                <a id="certIAAS-link" href="#" target="_blank" class="underline">Ver certificado</a>
-            </div>
+            <div id="certIAAS-actual" class="mb-2 text-sm text-blue-600 hidden"></div>
             <input type="file" 
                 id="certIAAS" 
                 name="certIAAS" 
                 accept=".pdf,.doc,.docx"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div id="error-certIAAS" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
         <div class="mb-4">
             <label for="acuerdo" class="block text-sm font-medium text-gray-700">Documento de Acuerdo</label>
             <div id="acuerdo-actual" class="mb-2 text-sm text-blue-600 hidden">
-                <span>📄 Archivo actual: </span>
-                <a id="acuerdo-link" href="#" target="_blank" class="underline">Ver documento</a>
             </div>
             <input type="file" 
                 id="acuerdo" 
                 name="acuerdo" 
                 accept=".pdf,.doc,.docx"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 5MB)</div>
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div id="error-acuerdo" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
     </div>

@@ -19,7 +19,7 @@
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoPaterno', 'Primer Apellido') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('apellidoMaterno', 'Segundo Apellido') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('fechaNacto', 'Fecha Nacimiento') !!}</th>
-                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('correo', 'Correo') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('correo', 'Correo Electrónico') !!}</th>
                 <th class="py-2 px-4 text-center whitespace-nowrap">Documentos</th>
                 <th class="py-2 px-4 text-center whitespace-nowrap">Acciones</th>
             </tr>
