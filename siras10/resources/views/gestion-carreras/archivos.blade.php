@@ -577,7 +577,7 @@
     </div>
 
     {{-- MODAL VISTA PREVIA PDF --}}
-    <div id="pdfPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+    <div id="pdfModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl m-4 max-h-[90vh] overflow-auto">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex-1">
