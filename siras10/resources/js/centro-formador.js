@@ -26,7 +26,7 @@ class CentroFormadorManager extends BaseModalManager {
         const closeBtnX = document.getElementById('closeCoordinatorModalX');
         const closeBtnBottom = document.getElementById('closeCoordinatorModalBtn');
         const backdrop = document.getElementById('coordinatorModalBackdrop');
-        
+
         // Elements to populate
         const photoContainer = document.getElementById('coordinatorPhotoContainer');
         const nameElement = document.getElementById('coordinatorName');
@@ -53,15 +53,15 @@ class CentroFormadorManager extends BaseModalManager {
 
     showCoordinatorInfo(data, elements) {
         if (!data) return;
-        
+
         const { photoContainer, nameElement, detailsContainer } = elements;
         const fullName = `${data.nombres || data.nombreUsuario || ''} ${data.apellidoPaterno || ''} ${data.apellidoMaterno || ''}`.trim();
 
         // 1. Photo
-        const photoUrl = data.foto 
-            ? `/storage/${data.foto}` 
+        const photoUrl = data.foto
+            ? `/storage/${data.foto}`
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=bae6fd&color=0369a1&size=128`;
-            
+
         photoContainer.innerHTML = `<img src="${photoUrl}" class="h-full w-full object-cover">`;
 
         // 2. Name
