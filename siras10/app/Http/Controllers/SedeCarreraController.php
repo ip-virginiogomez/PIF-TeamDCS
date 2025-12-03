@@ -432,16 +432,8 @@ class SedeCarreraController extends Controller
             \DB::beginTransaction();
 
             try {
-                // Si ya existe un programa, eliminar el archivo anterior
-                if ($asignatura->programa) {
-                    $programaAnterior = $asignatura->programa;
-                    // Intentar eliminar archivo usando el campo doc
-                    if ($programaAnterior->documento && Storage::disk('public')->exists($programaAnterior->doc)) {
-                        Storage::disk('public')->delete($programaAnterior->doc);
-                    }
-                    $programaAnterior->delete();
-                }
-
+                // No eliminar el programa anterior para mantener historial
+                
                 // Procesar el archivo
                 $file = $request->file('documento');
 
@@ -871,5 +863,40 @@ class SedeCarreraController extends Controller
         $nombre = 'Programa_'.($programa->asignatura->nombreAsignatura ?? 'asignatura').'_'.($programa->fechaSubida ?? '').'.pdf';
 
         return \Storage::disk('public')->download($programa->documento, $nombre);
+    }
+
+    /**
+     * Eliminar un programa específico
+     */
+    public function destroyPrograma(\App\Models\Programa $programa)
+    {
+        try {
+            \DB::beginTransaction();
+
+            // Eliminar el archivo del almacenamiento
+            if ($programa->documento && \Storage::disk('public')->exists($programa->documento)) {
+                \Storage::disk('public')->delete($programa->documento);
+            }
+
+            // Eliminar el registro de la base de datos
+            $programa->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Programa eliminado correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error al eliminar programa: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el programa',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }

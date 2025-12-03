@@ -1942,8 +1942,25 @@ function initArchivosPage() {
 
             pdfModal.classList.remove('hidden');
         });
+    }
 
-        // Cerrar modal
+
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('selection-container')) {
+        window.sedeCarreraManager = new SedeCarreraManager();
+    }
+
+    initArchivosPage();
+
+    // Event listeners globales para cerrar el modal de PDF
+    const pdfModal = document.getElementById('pdfModal');
+    if (pdfModal) {
+        const pdfViewer = document.getElementById('pdfViewer');
+
+        // Cerrar con botón X
         const closeBtn = pdfModal.querySelector('[data-action="close-pdf-modal"]');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -1968,17 +1985,6 @@ function initArchivosPage() {
             }
         });
     }
-
-
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('selection-container')) {
-        window.sedeCarreraManager = new SedeCarreraManager();
-    }
-
-    initArchivosPage();
 });
 
 // Manejar paginación en el modal de programas
@@ -2010,6 +2016,122 @@ document.addEventListener('click', async (e) => {
     } catch (error) {
         console.error('Error en paginación:', error);
         programasModalContent.innerHTML = '<div class="p-8 text-center text-red-400">Error al cargar la página</div>';
+    }
+});
+
+// Manejar clic en botones de previsualización dentro del historial de programas
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="preview-programa-modal"]');
+    if (!btn) return;
+
+    e.preventDefault();
+    const pdfModal = document.getElementById('pdfModal');
+    if (!pdfModal) return;
+
+    const url = btn.dataset.url;
+    const title = btn.dataset.title || 'Programa de Asignatura';
+    const asignatura = btn.dataset.asignatura || '';
+    const fecha = btn.dataset.fecha || '';
+    const info = `${asignatura} · Subida el ${fecha}`;
+
+    const pdfViewer = document.getElementById('pdfViewer');
+    const pdfModalTitle = document.getElementById('pdfModalTitle');
+    const pdfModalInfo = document.getElementById('pdfModalInfo');
+    const pdfDownloadBtn = document.getElementById('pdfDownloadBtn');
+    const pdfFallbackLink = document.getElementById('pdfFallbackLink');
+
+    if (pdfViewer) pdfViewer.src = url;
+    if (pdfModalTitle) pdfModalTitle.textContent = title;
+    if (pdfModalInfo) pdfModalInfo.textContent = info;
+    if (pdfDownloadBtn) pdfDownloadBtn.href = url;
+    if (pdfFallbackLink) pdfFallbackLink.href = url;
+
+    pdfModal.classList.remove('hidden');
+});
+
+// Manejar eliminación de programas del historial
+document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action="delete-programa"]');
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const url = btn.dataset.url;
+    const asignatura = btn.dataset.asignatura;
+    const reloadUrl = btn.dataset.reloadUrl;
+
+    const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Se eliminará el programa de ${asignatura}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Eliminado!',
+                text: data.message || 'Programa eliminado correctamente',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Recargar el contenido del modal
+            const asignaturaId = btn.closest('[data-asignatura-id]')?.dataset.asignaturaId;
+            if (asignaturaId) {
+                const programasUrl = reloadUrl || `/gestion-carreras/asignaturas/${asignaturaId}/programas`;
+                const programasModalContent = document.getElementById('programasModalContent');
+
+                if (programasModalContent) {
+                    try {
+                        const reloadResponse = await fetch(programasUrl, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html'
+                            }
+                        });
+
+                        if (reloadResponse.ok) {
+                            const html = await reloadResponse.text();
+                            programasModalContent.innerHTML = html;
+                        } else {
+                            throw new Error('No se pudo recargar el historial');
+                        }
+                    } catch (err) {
+                        console.error('Error recargando programas:', err);
+                        programasModalContent.innerHTML = '<div class="p-8 text-center text-red-400">Error al actualizar el historial</div>';
+                    }
+                }
+            }
+        } else {
+            throw new Error(data.message || 'Error al eliminar el programa');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Error al eliminar el programa',
+            confirmButtonColor: '#3085d6'
+        });
     }
 });
 

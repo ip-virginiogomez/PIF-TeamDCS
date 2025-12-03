@@ -150,6 +150,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('asignaturas/{asignatura}/programas', [SedeCarreraController::class, 'showProgramas'])->name('asignaturas.programas.list');
         // Descargar un programa específico por id
         Route::get('programas/{programa}/descargar', [SedeCarreraController::class, 'descargarProgramaEspecifico'])->name('programas.download');
+        // Eliminar un programa específico
+        Route::delete('programas/{programa}', [SedeCarreraController::class, 'destroyPrograma'])->name('programas.destroy');
     });
 
     // --- GESTIÓN DE ASIGNACIONES ---
