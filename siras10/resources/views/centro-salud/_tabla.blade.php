@@ -19,6 +19,7 @@
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('direccion', 'Dirección') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('ciudad.nombreCiudad', 'Ciudad') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $link('tipo_centro_salud.acronimo', 'Tipo') !!}</th>
+                <th class="py-2 px-4 text-center whitespace-nowrap">Personal Asignado</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap">Acciones</th>
             </tr>
         </thead>
@@ -52,6 +53,29 @@
                             {{ $centro->tipoCentroSalud->acronimo ?? 'N/A' }}
                         </span>
                         <div class="text-xs text-gray-500">{{ $centro->tipoCentroSalud->nombreTipo ?? 'N/A' }}</div>
+                    </td>
+                    <td class="py-2 px-4 text-center">
+                        @if($centro->personal->isNotEmpty())
+                            @php
+                                $usuarios = $centro->personal->map(function($p) {
+                                    return $p->usuario;
+                                })->filter();
+                            @endphp
+                            @if($usuarios->isNotEmpty())
+                                <button type="button" 
+                                        data-action="view-personal"
+                                        data-personal='@json($usuarios)'
+                                        class="text-sky-600 hover:text-sky-900 font-medium flex items-center justify-center w-full transition-colors">
+                                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </button>
+                            @else
+                                <span class="text-gray-400 text-xs italic">Sin datos de usuario</span>
+                            @endif
+                        @else
+                            <span class="text-gray-400 text-xs italic">Sin asignar</span>
+                        @endif
                     </td>
                     <td class="py-2 px-4">
                         <div class="flex space-x-2">

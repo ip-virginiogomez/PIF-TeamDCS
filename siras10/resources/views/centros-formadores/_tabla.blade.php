@@ -16,6 +16,7 @@
                 <th class="py-2 px-4 text-left"> {!! $link('idCentroFormador', 'ID') !!}</th>
                 <th class="py-2 px-4 text-left"> {!! $link('nombreCentroFormador', 'Centro Formador') !!}</th>
                 <th class="py-2 px-4 text-left"> {!! $link('fechaCreacion', 'Fecha Creación') !!}</th>
+                <th class="py-2 px-4 text-center">Coordinador</th>
                 <th class="py-2 px-4 text-left">Acciones</th>
             </tr>
         </thead>
@@ -32,6 +33,24 @@
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                         {{ $centroFormador->fechaCreacion ? \Carbon\Carbon::parse($centroFormador->fechaCreacion)->format('d/m/Y') : 'N/A' }}
                     </span>
+                </td>
+                <td class="py-2 px-4 text-center">
+                    @php
+                        $coordinador = $centroFormador->coordinadorCampoClinicos->first()?->usuario;
+                    @endphp
+                    @if($coordinador)
+                        <button type="button" 
+                            data-action="view-coordinator" 
+                            data-coordinator='@json($coordinador)'
+                            class="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                            title="Ver datos del coordinador">
+                            <svg class="w-6 h-6 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+                    @else
+                        <span class="text-gray-400 text-xs italic">Sin asignar</span>
+                    @endif
                 </td>
                 <td class="py-2 px-4">
                     <div class="flex space-x-2">

@@ -50,7 +50,7 @@ class CentroSaludController extends Controller
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $centrosSalud = $query->with(['ciudad', 'tipoCentroSalud'])->paginate(10);
+        $centrosSalud = $query->with(['ciudad', 'tipoCentroSalud', 'personal.usuario'])->paginate(10);
 
         if ($request->ajax()) {
             return view('centro-salud._tabla', [
