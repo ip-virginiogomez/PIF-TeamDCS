@@ -1,6 +1,8 @@
 import BaseModalManager from './base-modal-manager.js';
 import { validarCorreo } from './validators.js';
 import { validarRun } from './validators.js';
+import DocenteVacunaManager from './docentevacuna.js';
+
 /**
  * Docente Manager
  * Extiende BaseModalManager para funcionalidad específica de docentes
@@ -25,202 +27,103 @@ class DocenteManager extends BaseModalManager {
                 'profesion'
             ]
         });
+
+        this.docsElements = {
+            modal: document.getElementById('modalDocumentosDocente'),
+            container: document.getElementById('contenido-docs-docente'),
+            titulo: document.getElementById('titulo-modal-docs'),
+            backdrop: 'backdrop-docs-docente'
+        };
+
         this.initFotoPreview();
-        this.addDocenteListeners();
+        this.initDocumentosViewer();
         this.initSearch();
+
+        // Inicializar gestor de vacunas
+        this.vacunaManager = new DocenteVacunaManager();
     }
 
-    setModalMaxWidth(panel, sizeClass) {
-        if (!panel) return;
-
-        panel.classList.remove(
-            'max-w-sm', 'sm:max-w-sm',
-            'max-w-md', 'sm:max-w-md',
-            'max-w-lg', 'sm:max-w-lg',
-            'max-w-xl', 'sm:max-w-xl',
-            'max-w-2xl', 'sm:max-w-2xl',
-            'max-w-3xl', 'sm:max-w-3xl',
-            'max-w-4xl', 'sm:max-w-4xl',
-            'max-w-5xl', 'sm:max-w-5xl',
-            'max-w-6xl', 'sm:max-w-6xl',
-            'max-w-7xl', 'sm:max-w-7xl',
-            'w-full'
-        );
-
-        panel.classList.add(sizeClass, 'w-full');
-    }
-
-    addDocenteListeners() {
-        if (document.body.dataset.docenteListenersActive === 'true') {
-            return;
+    initDocumentosViewer() {
+        // Mover el modal al body para evitar problemas de apilamiento (z-index)
+        const modal = document.getElementById('modalDocumentosDocente');
+        if (modal && modal.parentNode !== document.body) {
+            document.body.appendChild(modal);
         }
 
-        document.body.dataset.docenteListenersActive = 'true';
+        // Usar el contenedor de la tabla para delegación de eventos
+        const tablaContainer = document.getElementById('tabla-container');
 
+        if (tablaContainer) {
+            tablaContainer.addEventListener('click', (e) => {
+                const btnDocs = e.target.closest('button[data-action="view-docs"]');
+                if (btnDocs) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.abrirModalDocumentos(btnDocs.dataset.run, btnDocs.dataset.nombre);
+                }
+            });
+        }
+
+        // Listener para cerrar el modal
         document.body.addEventListener('click', (e) => {
-
-            const btnEdit = e.target.closest('[data-action="edit"]');
-            const documentosModal = document.getElementById('documentosModal');
-            const btnChangeDoc = e.target.closest('[data-action="change-doc"]');
-
-            if (btnEdit && documentosModal && documentosModal.contains(btnEdit)) {
-                e.preventDefault();
-                const id = btnEdit.dataset.id;
+            if (e.target.closest('[data-action="close-modal-docs"]') || e.target.id === this.docsElements.backdrop) {
                 this.cerrarModalDocumentos();
-                this.editarRegistro(id);
-                return;
-            }
-
-            const btnPreview = e.target.closest('[data-action="preview-doc"]');
-            if (btnPreview) {
-                e.preventDefault();
-                const url = btnPreview.dataset.url;
-                const title = btnPreview.dataset.title;
-                this.mostrarPreviewDocumento(url, title);
-                return;
-            }
-
-            if (btnChangeDoc) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                const docKey = btnChangeDoc.dataset.docKey;
-                const docenteId = btnChangeDoc.dataset.docenteId;
-                const fileInput = document.querySelector(`#form-change-${docKey}-${docenteId} input[type="file"]`);
-                if (fileInput) {
-                    fileInput.click();
-                }
-                return;
-            }
-
-            const btnBack = e.target.closest('#btn-cerrar-preview');
-            if (btnBack) {
-                e.preventDefault();
-                this.cerrarPreviewDocumento();
-                return;
-            }
-
-            if (documentosModal && !documentosModal.classList.contains('hidden')) {
-                if (e.target === documentosModal || e.target.closest('[data-dismiss="modal"]')) {
-                    this.cerrarModalDocumentos();
-                }
             }
         });
     }
 
-    mostrarPreviewDocumento(url, title) {
-        const listaContainer = document.getElementById('lista-documentos-container');
-        const previewContainer = document.getElementById('preview-documento-container');
-        const iframe = document.getElementById('doc-viewer-iframe');
-        const titleSpan = document.getElementById('preview-titulo');
-        const modalTitle = document.getElementById('documentosModal-title');
-        const modalPanel = document.getElementById('documentosModal-panel');
+    async abrirModalDocumentos(run, nombre) {
+        const modal = document.getElementById('modalDocumentosDocente');
+        if (!modal) return;
 
-        if (listaContainer && previewContainer && iframe) {
-            listaContainer.classList.add('hidden');
-            previewContainer.classList.remove('hidden');
+        // Actualizar referencia
+        this.docsElements.modal = modal;
+        this.docsElements.container = document.getElementById('contenido-docs-docente');
+        this.docsElements.titulo = document.getElementById('titulo-modal-docs');
 
-            const extension = url.split('.').pop().toLowerCase();
-            const officeExtensions = ['doc', 'docx'];
+        this.docsElements.titulo.textContent = `Documentos: ${nombre}`;
+        this.docsElements.modal.classList.remove('hidden');
+        this.docsElements.modal.style.display = 'block';
 
-            if(officeExtensions.includes(extension)) {
-                iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
-            }else{
-                iframe.src = url;
-            }
+        // Mostrar loading
+        this.docsElements.container.innerHTML = `
+            <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-10 h-10 animate-spin text-gray-300" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+        `;
 
-            if (titleSpan) titleSpan.textContent = title;
-            if (modalTitle) modalTitle.textContent = 'Visualizando Documento';
+        try {
+            const response = await fetch(`${this.config.baseUrl}/${run}/documentos`);
+            if (!response.ok) throw new Error('Error al cargar documentos');
 
-            this.setModalMaxWidth(modalPanel, 'sm:max-w-7xl');
-        }
-    }
+            const html = await response.text();
+            this.docsElements.container.innerHTML = html;
 
-    cerrarPreviewDocumento() {
-        const listaContainer = document.getElementById('lista-documentos-container');
-        const previewContainer = document.getElementById('preview-documento-container');
-        const iframe = document.getElementById('doc-viewer-iframe');
-        const modalTitle = document.getElementById('documentosModal-title');
-
-        const modal = document.getElementById('documentosModal');
-        const modalPanel = modal.querySelector('div[class*="bg-white"]') || modal.querySelector('div[class*="max-w-"]');
-
-        if (listaContainer && previewContainer && iframe) {
-            iframe.src = '';
-
-            previewContainer.classList.add('hidden');
-            listaContainer.classList.remove('hidden');
-
-            if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
-
-            this.setModalMaxWidth(modalPanel, 'sm:max-w-3xl');
+        } catch (error) {
+            this.docsElements.container.innerHTML = `
+                <div class="w-full h-full flex items-center justify-center text-red-500">
+                    <p>Error al cargar los documentos.</p>
+                </div>
+            `;
         }
     }
 
     cerrarModalDocumentos() {
-        const modal = document.getElementById('documentosModal');
+        const modal = document.getElementById('modalDocumentosDocente');
         if (modal) {
             modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-    }
-
-    showValidationErrors(errors) {
-        this.clearValidationErrors();
-        for (const field in errors) {
-            const input = this.form.querySelector(`[name="${field}"]`);
-            const errorDiv = document.getElementById(`error-${field}`);
-            const errorMessage = errors[field][0];
-
-            if (input) {
-                input.classList.add('border-red-500');
-            }
-
-            if (errorDiv) {
-                errorDiv.textContent = errorMessage;
-                errorDiv.classList.remove('hidden');
+            modal.style.display = 'none'; // Asegurar ocultamiento
+            if (this.docsElements.container) {
+                this.docsElements.container.innerHTML = '';
             }
         }
-    }
-
-    clearValidationErrors() {
-        if (!this.form) return;
-        
-        this.form.querySelectorAll('.border-red-500').forEach(el => {
-            el.classList.remove('border-red-500');
-        });
-
-        this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-        });
-    }
-
-    initFotoPreview() {
-        if (!this.form) return;
-        const fotoInput = this.form.querySelector('#foto');
-        const fotoPreview = document.getElementById('foto-preview');
-
-        if (!fotoInput || !fotoPreview) return;
-
-        fotoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                fotoPreview.src = event.target.result;
-            };
-
-            reader.readAsDataURL(file);
-        });
     }
 
     initSearch() {
         const searchInput = document.getElementById('search-input');
         const clearBtn = document.getElementById('btn-clear-search');
         const tablaContainer = document.getElementById('tabla-container');
-        
+
         const filterCentro = document.getElementById('filter-centro');
         const filterSedeCarrera = document.getElementById('filter-sede-carrera');
 
@@ -229,349 +132,241 @@ class DocenteManager extends BaseModalManager {
         // Mostrar X si ya hay texto
         if (clearBtn && searchInput.value.trim().length > 0) {
             clearBtn.classList.remove('hidden');
+            clearBtn.classList.add('flex');
         }
 
         // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
         const executeSearch = (page = 1) => {
-            const currentUrl = new URL(window.location.href);
-            
-            const query = searchInput.value;
-            const centroId = filterCentro ? filterCentro.value : '';
-            const sedeCarreraId = filterSedeCarrera ? filterSedeCarrera.value : '';
+            const params = new URLSearchParams();
 
-            if (query) currentUrl.searchParams.set('search', query);
-            else currentUrl.searchParams.delete('search');
+            if (searchInput.value.trim()) {
+                params.append('search', searchInput.value.trim());
+            }
 
-            if (centroId) currentUrl.searchParams.set('centro_id', centroId);
-            else currentUrl.searchParams.delete('centro_id');
+            if (filterCentro && filterCentro.value) {
+                params.append('centro_id', filterCentro.value);
+            }
 
-            if (sedeCarreraId) currentUrl.searchParams.set('sede_carrera_id', sedeCarreraId);
-            else currentUrl.searchParams.delete('sede_carrera_id');
+            if (filterSedeCarrera && filterSedeCarrera.value) {
+                params.append('sede_carrera_id', filterSedeCarrera.value);
+            }
 
-            currentUrl.searchParams.set('page', page);
+            if (page > 1) {
+                params.append('page', page);
+            }
 
-            fetchTabla(currentUrl.toString());
+            // Mantener ordenamiento si existe en URL actual
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            if (currentUrlParams.has('sort_by')) params.append('sort_by', currentUrlParams.get('sort_by'));
+            if (currentUrlParams.has('sort_direction')) params.append('sort_direction', currentUrlParams.get('sort_direction'));
+
+            const newUrl = `${this.config.baseUrl}?${params.toString()}`;
+
+            // Actualizar URL del navegador sin recargar
+            window.history.pushState({}, '', newUrl);
+
+            fetchTabla(newUrl);
         };
 
         const fetchTabla = async (url) => {
             tablaContainer.style.opacity = '0.5';
             try {
-                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                if (!response.ok) throw new Error('Error');
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (!response.ok) throw new Error('Error al cargar tabla');
                 const html = await response.text();
                 tablaContainer.innerHTML = html;
-                window.history.pushState(null, '', url);
-            } catch (error) { console.error(error); } 
-            finally { tablaContainer.style.opacity = '1'; }
+            } catch (error) {
+                // Opcional: Mostrar mensaje de error en tabla
+            } finally {
+                tablaContainer.style.opacity = '1';
+            }
         };
 
-        // --- LISTENERS ---
+        // --- EVENT LISTENERS ---
 
-        // 1. TEXTO (Debounce)
+        // 1. Input de búsqueda (Debounce)
         let timeoutId;
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value;
-            if (clearBtn) {
-                query.length > 0 ? clearBtn.classList.remove('hidden') : clearBtn.classList.add('hidden');
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value.trim().length > 0) {
+                clearBtn.classList.remove('hidden');
+                clearBtn.classList.add('flex');
+            } else {
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
             }
+
             clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => executeSearch(1), 400);
+            timeoutId = setTimeout(() => {
+                executeSearch(1);
+            }, 300);
         });
 
-        // 2. FILTRO CENTRO FORMADOR (LÓGICA CASCADA EXCLUSIVA)
-        if (filterCentro && filterSedeCarrera) {
-            filterCentro.addEventListener('change', async () => {
-                // A. Limpiamos inmediatamente el valor de la carrera para evitar incongruencias
-                filterSedeCarrera.value = ''; 
-                
-                // B. Bloqueo visual mientras carga
-                filterSedeCarrera.disabled = true;
-                const originalText = filterSedeCarrera.options[0].text;
-                filterSedeCarrera.options[0].text = 'Cargando...';
-
-                try {
-                    const centroId = filterCentro.value;
-                    const url = `/api/sedes-carreras?centro_id=${centroId}`;
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Error API');
-                    const data = await response.json();
-
-                    // C. Reconstruimos opciones
-                    filterSedeCarrera.innerHTML = '<option value="">Todas las Carreras</option>';
-                    data.forEach(item => {
-                        const nombreSede = item.sede ? item.sede.nombreSede : '';
-                        const option = document.createElement('option');
-                        option.value = item.idSedeCarrera;
-                        option.textContent = `${item.nombreSedeCarrera} (${nombreSede})`;
-                        filterSedeCarrera.appendChild(option);
-                    });
-
-                } catch (error) {
-                    console.error(error);
-                    filterSedeCarrera.innerHTML = '<option value="">Error al cargar</option>';
-                } finally {
-                    filterSedeCarrera.disabled = false;
-                    // D. SOLO AHORA ejecutamos la búsqueda (1 sola vez)
-                    executeSearch(1); 
-                }
-            });
-        } else if (filterCentro) {
-            // Fallback por si no existe el segundo select
-            filterCentro.addEventListener('change', () => executeSearch(1));
-        }
-
-        // 3. FILTRO SEDE/CARRERA (Simple)
-        if (filterSedeCarrera) {
-            filterSedeCarrera.addEventListener('change', () => executeSearch(1));
-        }
-
-        // 4. LIMPIAR
+        // 2. Botón Limpiar
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 searchInput.value = '';
-                searchInput.focus();
                 clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+
+                // Resetear filtros también si se desea, o solo búsqueda
+                // filterCentro.value = '';
+                // filterSedeCarrera.value = '';
+
                 executeSearch(1);
             });
         }
 
-        // 5. PAGINACIÓN
+        // 3. Filtros Select
+        if (filterCentro) {
+            filterCentro.addEventListener('change', () => {
+                // Lógica de cascada para Sede/Carrera
+                const centroId = filterCentro.value;
+                const sedeSelect = filterSedeCarrera;
+
+                // Limpiar select de sedes
+                sedeSelect.innerHTML = '<option value="">Todas las Carreras</option>';
+
+                if (centroId) {
+                    // Cargar sedes del centro seleccionado
+                    fetch(`/docentes/sedes-carreras-by-centro?centro_id=${centroId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(item => {
+                                const option = document.createElement('option');
+                                option.value = item.idSedeCarrera;
+                                option.textContent = `${item.nombreSedeCarrera} - ${item.sede.nombreSede}`;
+                                sedeSelect.appendChild(option);
+                            });
+                        });
+                } else {
+                    // Si no hay centro, cargar todas (o dejar vacío según lógica de negocio)
+                    // Aquí podrías volver a cargar todas si tienes un endpoint para ello
+                    // O simplemente dejar que el filtro de backend maneje "todos"
+                }
+
+                executeSearch(1);
+            });
+        }
+
+        if (filterSedeCarrera) {
+            filterSedeCarrera.addEventListener('change', () => {
+                executeSearch(1);
+            });
+        }
+
+        // 4. Paginación (Delegación de eventos)
         tablaContainer.addEventListener('click', (e) => {
-            const pageLink = e.target.closest('a[href*="page="]');
-            if (pageLink) {
+            const link = e.target.closest('.pagination a');
+            if (link) {
                 e.preventDefault();
-                const url = new URL(pageLink.href);
-                const page = url.searchParams.get('page');
+                const url = link.getAttribute('href');
+                // Extraer página de la URL
+                const urlObj = new URL(url);
+                const page = urlObj.searchParams.get('page');
+
                 executeSearch(page);
             }
-        });
 
-        // Prevenir submit
-        const searchForm = document.getElementById('search-form');
-        if(searchForm) searchForm.addEventListener('submit', (e) => e.preventDefault());
+            // Ordenamiento
+            const sortLink = e.target.closest('a[data-sort]');
+            if (sortLink) {
+                e.preventDefault();
+                // La lógica de ordenamiento ya debería estar en los links generados por el backend
+                // Pero si queremos usar AJAX, debemos interceptar y usar fetchTabla
+                const url = sortLink.getAttribute('href');
+                window.history.pushState({}, '', url);
+                fetchTabla(url);
+            }
+        });
     }
 
-    validate() {
-        this.clearValidationErrors();
-        let esValido = true;
+    initFotoPreview() {
+        const fotoInput = document.getElementById('foto');
+        if (fotoInput) {
+            fotoInput.addEventListener('change', function (e) {
+                // Implementar preview si es necesario
+            });
+        }
+    }
 
-        const runInput = this.form.querySelector('[name="runDocente"]');
-        const correoInput = this.form.querySelector('[name="correo"]');
+    // Sobrescribir método para editar registro
+    async editarRegistro(id) {
+        const data = await super.editarRegistro(id);
 
-        if (runInput && !validarRun(runInput.value)) {
-            esValido = false;
-            runInput.classList.add('border-red-500');
-            const errorDiv = document.getElementById('error-runDocente');
-            if (errorDiv) {
-                errorDiv.textContent = 'El RUN no cumple con el formato requerido.';
-                errorDiv.classList.remove('hidden');
+        if (data && data.docente) {
+            // Llenar campos del formulario manualmente ya que data.docente está anidado
+            this.config.fields.forEach(field => {
+                const element = this.form.querySelector(`[name="${field}"]`);
+                if (element && data.docente[field] !== undefined) {
+                    if (element.type === 'date' && data.docente[field]) {
+                        element.value = data.docente[field].substring(0, 10);
+                    } else {
+                        element.value = data.docente[field];
+                    }
+                }
+            });
+
+            // Llenar select de SedeCarrera
+            const selectSede = document.getElementById('idSedeCarrera');
+            if (selectSede && data.sedesCarrerasDisponibles) {
+                selectSede.value = data.idSedeCarreraActual || '';
+            }
+
+            // Mostrar enlaces a documentos existentes
+            this.mostrarEnlaceDocumento('curriculum', data.docente.curriculum);
+            this.mostrarEnlaceDocumento('certSuperInt', data.docente.certSuperInt);
+            this.mostrarEnlaceDocumento('certRCP', data.docente.certRCP);
+            this.mostrarEnlaceDocumento('certIAAS', data.docente.certIAAS);
+            this.mostrarEnlaceDocumento('acuerdo', data.docente.acuerdo);
+
+            // Manejo especial para RUN (deshabilitar en edición)
+            const runInput = document.getElementById('runDocente');
+            const runHelp = document.getElementById('run-help-text');
+            if (runInput) {
+                runInput.readOnly = true;
+                runInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                if (runHelp) runHelp.classList.remove('hidden');
             }
         }
-        if (correoInput && !validarCorreo(correoInput.value)) {
-            esValido = false;
-            correoInput.classList.add('border-red-500');
-            const errorDiv = document.getElementById('error-correo');
-            if (errorDiv) {
-                errorDiv.textContent = 'Correo electrónico inválido.';
-                errorDiv.classList.remove('hidden');
+    }
+
+    mostrarEnlaceDocumento(campo, path) {
+        const container = document.getElementById(`${campo}-actual`);
+        const link = document.getElementById(`${campo}-link`);
+
+        if (container && link) {
+            if (path) {
+                container.classList.remove('hidden');
+                link.href = `/storage/${path}`;
+            } else {
+                container.classList.add('hidden');
+                link.href = '#';
             }
         }
-
-        return esValido;
     }
 
     limpiarFormulario() {
         super.limpiarFormulario();
-        const runInput = this.form.querySelector('#runDocente');
-        const runHelpText = document.getElementById('run-help-text');
-        const fotoPreview = document.getElementById('foto-preview');
 
+        // Ocultar enlaces de documentos
+        ['curriculum', 'certSuperInt', 'certRCP', 'certIAAS', 'acuerdo'].forEach(campo => {
+            const container = document.getElementById(`${campo}-actual`);
+            if (container) container.classList.add('hidden');
+        });
+
+        // Resetear RUN input
+        const runInput = document.getElementById('runDocente');
+        const runHelp = document.getElementById('run-help-text');
         if (runInput) {
-            runInput.removeAttribute('readonly');
-            runInput.closest('.mb-4').style.display = 'block';
+            runInput.readOnly = false;
+            runInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            if (runHelp) runHelp.classList.add('hidden');
         }
-        if (runHelpText) {
-            runHelpText.classList.add('hidden');
-        }
-        if (fotoPreview) {
-            fotoPreview.src = "/storage/placeholder.png";
-        }
-    }
-
-    async editarRegistro(id) {
-        const data = await super.editarRegistro(id);
-        if (!data) return;
-
-        const runInput = this.form.querySelector('#runDocente');
-        const runHelpText = document.getElementById('run-help-text');
-        const fotoPreview = document.getElementById('foto-preview');
-        const selectSedeCarrera = this.form.querySelector('[name="idSedeCarrera"]');
-        const docente = data.docente;
-        this.form.querySelector('[name="runDocente"]').value = docente.runDocente;
-        this.form.querySelector('[name="nombresDocente"]').value = docente.nombresDocente;
-        this.form.querySelector('[name="apellidoPaterno"]').value = docente.apellidoPaterno;
-        this.form.querySelector('[name="apellidoMaterno"]').value = docente.apellidoMaterno || '';
-        this.form.querySelector('[name="correo"]').value = docente.correo;
-        this.form.querySelector('[name="profesion"]').value = docente.profesion;
-        this.form.querySelector('[name="fechaNacto"]').value = docente.fechaNacto;
-
-        if (runInput) {
-            runInput.setAttribute('readonly', true);
-            runInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-        }
-        if (runHelpText) {
-            runHelpText.classList.remove('hidden');
-        }
-        if (fotoPreview) {
-            if (data && data.foto) {
-                fotoPreview.src = `/storage/${docente.foto}`;
-            } else {
-                fotoPreview.src = "/storage/placeholder.png";
-            }
-        }
-        if (selectSedeCarrera && data.sedesCarrerasDisponibles) {
-
-            selectSedeCarrera.innerHTML = '<option value="">Seleccione una opción...</option>';
-
-            data.sedesCarrerasDisponibles.forEach(sede => {
-                const option = document.createElement('option');
-                option.value = sede.idSedeCarrera;
-                const nombreSede = (sede.sede && sede.sede.nombreSede) ? sede.sede.nombreSede : '';
-                option.textContent = `${sede.nombreSedeCarrera} (${nombreSede || 'Sin Sede'})`;
-
-                if (sede.idSedeCarrera == data.idSedeCarreraActual) {
-                    option.selected = true;
-                }
-                selectSedeCarrera.appendChild(option);
-            });
-        }
-    }
-
-    async verDocumentos(id) {
-        const modal = document.getElementById('documentosModal');
-        const modalBody = document.getElementById('documentosModal-body');
-        const modalTitle = document.getElementById('documentosModal-title');
-        const modalPanel = modal.querySelector('div[class*="bg-white"]') || modal.querySelector('div[class*="max-w-"]');
-
-        if (!modal || !modalBody) return;
-
-        this.setModalMaxWidth(modalPanel, 'sm:max-w-3xl');
-
-        modal.classList.remove('hidden');
-        modal.classList.add('flex', 'items-center', 'justify-center');
-
-        if (modalTitle) modalTitle.textContent = 'Documentos del Docente';
-
-        modalBody.innerHTML = `<div class="flex justify-center items-center h-32"><i class="fas fa-spinner fa-spin fa-2x text-gray-500"></i></div>`;
-
-        try {
-            const response = await fetch(`/docentes/${id}/documentos`);
-            if (!response.ok) throw new Error('No se pudo cargar la lista de documentos.');
-
-            const html = await response.text();
-
-            modalBody.innerHTML = html;
-        } catch (error) {
-            console.error('Error al ver documentos:', error);
-            modalBody.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
-        }
-    }
-
-    async handleFileChange(fileInput) {
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        const docKey = fileInput.dataset.docKey; 
-        const docenteId = fileInput.dataset.docenteId;
-
-        const docNameReadable = docKey.replace(/([A-Z])/g, ' $1').trim();
-
-        const result = await Swal.fire({
-            title: '¿Cambiar archivo?',
-            text: `Se reemplazará el documento actual de "${docNameReadable}".`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, cambiar',
-            cancelButtonText: 'Cancelar'
-        });
-
-        if (!result.isConfirmed) {
-            fileInput.value = ''; 
-            return;
-        }
-
-        Swal.fire({
-            title: 'Subiendo archivo...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        try {
-            await this.uploadDocument(docenteId, docKey, file);
-            await Swal.fire({
-                title: '¡Actualizado!',
-                text: 'El documento se ha subido correctamente.',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            });
-            this.verDocumentos(docenteId);
-        } catch (error) {
-            console.error('Error al subir documento:', error);
-            Swal.fire({
-                title: 'Error',
-                text: error.message || 'No se pudo subir el archivo.',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-        } finally {
-            fileInput.value = '';
-        }
-    }
-
-    async uploadDocument(docenteId, docKey, file) {
-        const formData = new FormData();
-        formData.append('_method', 'POST');
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        formData.append(docKey, file);
-
-        const url = `docentes/${docenteId}/upload-document`;
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            },
-            body: formData,
-        });
-
-        if (!response.ok) {
-            let errorMessage = 'Error al subir el documento.';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorMessage;
-                
-                if (errorData.errors) {
-                    errorMessage += ': ' + Object.values(errorData.errors).flat().join(', ');
-                }
-            } catch (e) {
-                console.error('Error crítico (HTML recibido):', await response.text());
-                errorMessage = 'Error crítico del servidor. Revisa la consola (F12) para más detalles.';
-            }
-            throw new Error(errorMessage);
-        }
-
-        return response.json();
     }
 }
+
 
 // Solo inicializar si estamos en la página de docentes
 document.addEventListener('DOMContentLoaded', () => {

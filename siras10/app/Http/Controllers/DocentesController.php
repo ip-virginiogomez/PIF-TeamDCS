@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\CentroFormador;
 use App\Models\Docente;
+use App\Models\DocenteVacuna;
+use App\Models\EstadoVacuna;
 use App\Models\SedeCarrera;
+use App\Models\TipoVacuna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -73,8 +76,10 @@ class DocentesController extends Controller
             'sede_carrera_id' => $filtroSedeCarrera,
         ]);
 
-        $sedesCarreras = SedeCarrera::with('sede')->get();
+        $sedesCarreras = SedeCarrera::with(['sede', 'carrera'])->get();
         $centrosFormadores = CentroFormador::all();
+        $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
+        $estadosVacuna = EstadoVacuna::all();
 
         if (request()->ajax()) {
             return view('docentes._tabla', [
@@ -90,6 +95,8 @@ class DocentesController extends Controller
             'sortDirection' => $sortDirection,
             'sedesCarreras' => $sedesCarreras,
             'centrosFormadores' => $centrosFormadores,
+            'tiposVacuna' => $tiposVacuna,
+            'estadosVacuna' => $estadosVacuna,
         ]);
     }
 
@@ -207,7 +214,7 @@ class DocentesController extends Controller
 
     public function edit(Docente $docente)
     {
-        $sedesCarrerasDisponibles = SedeCarrera::with('sede')->get();
+        $sedesCarrerasDisponibles = SedeCarrera::with(['sede', 'carrera'])->get();
         $sedeCarreraActual = $docente->sedesCarreras()->first();
 
         return response()->json([
@@ -472,5 +479,85 @@ class DocentesController extends Controller
         $sedesCarreras = $query->get();
 
         return response()->json($sedesCarreras);
+    }
+
+    public function getVacunas($runDocente)
+    {
+        try {
+            $vacunas = DocenteVacuna::where('runDocente', $runDocente)->get();
+
+            return view('docentes._lista_vacunas', compact('vacunas'))->render();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function storeVacuna(Request $request, $runDocente)
+    {
+        $request->validate([
+            'idTipoVacuna' => 'required|integer',
+            'idEstadoVacuna' => 'required|integer',
+            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'archivo.max' => 'El archivo seleccionado excede el tamaño máximo permitido de 2MB. Por favor, optimice el archivo o seleccione uno más pequeño.',
+            'archivo.mimes' => 'Formato no válido. Solo se permite PDF, JPG o PNG.',
+            'archivo.required' => 'Debes seleccionar un archivo.',
+        ]);
+
+        try {
+            $path = $request->file('archivo')->store('vacunas_docentes', 'public');
+
+            DocenteVacuna::create([
+                'runDocente' => $runDocente,
+                'idTipoVacuna' => $request->idTipoVacuna,
+                'idEstadoVacuna' => $request->idEstadoVacuna,
+                'documento' => $path,
+                'fechaSubida' => now(),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Vacuna agregada correctamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error BD: '.$e->getMessage()], 500);
+        }
+    }
+
+    public function destroyVacuna($idDocenteVacuna)
+    {
+        $vacuna = DocenteVacuna::findOrFail($idDocenteVacuna);
+
+        if (Storage::disk('public')->exists($vacuna->documento)) {
+            Storage::disk('public')->delete($vacuna->documento);
+        }
+
+        $vacuna->delete();
+
+        return response()->json(['success' => true, 'message' => 'Vacuna eliminada']);
+    }
+
+    public function updateVacunaStatus(Request $request, $idDocenteVacuna)
+    {
+        $request->validate([
+            'idEstadoVacuna' => 'required|integer|exists:estado_vacuna,idEstadoVacuna',
+        ]);
+
+        $vacuna = DocenteVacuna::findOrFail($idDocenteVacuna);
+        $vacuna->idEstadoVacuna = $request->idEstadoVacuna;
+        $vacuna->save();
+
+        return response()->json(['success' => true, 'message' => 'Estado actualizado']);
+    }
+
+    public function getDocumentos($runDocente)
+    {
+        $docente = Docente::findOrFail($runDocente);
+
+        // Cargar vacunas filtradas por estado 'Activo'
+        $docente->load(['docenteVacunas' => function ($query) {
+            $query->whereHas('estadoVacuna', function ($q) {
+                $q->where('nombreEstado', 'Activo');
+            })->with(['tipoVacuna', 'estadoVacuna']);
+        }]);
+
+        return view('docentes._lista_documentos_completa', compact('docente'))->render();
     }
 }

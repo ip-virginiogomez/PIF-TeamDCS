@@ -1,4 +1,5 @@
 import './alumnos.js';
+import AlumnoVacunaManager from './alumnovacuna.js';
 import './asignacion.js';
 import './base-modal-manager.js';
 import './bootstrap';
@@ -26,3 +27,9 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 Alpine.start();
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('modalVacunas')) {
+        new AlumnoVacunaManager();
+    }
+});

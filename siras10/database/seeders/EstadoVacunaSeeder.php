@@ -11,23 +11,13 @@ class EstadoVacunaSeeder extends Seeder
     {
         $estados = [
             [
-                'nombreEstado' => 'Pendiente',
-                'descripcion' => 'Documentación de la vacuna pendiente de revisión',
-                'fechaCreacion' => now(),
-            ],
-            [
-                'nombreEstado' => 'Expirada',
+                'nombreEstado' => 'Expirado',
                 'descripcion' => 'Vacuna que ha expirado debido a la fecha de vencimiento',
                 'fechaCreacion' => now(),
             ],
             [
-                'nombreEstado' => 'Rechazada',
-                'descripcion' => 'Documento de la vacuna ha sido rechazado tras revisión',
-                'fechaCreacion' => now(),
-            ],
-            [
-                'nombreEstado' => 'Aprobada',
-                'descripcion' => 'Vacuna aprobada y válida, cumple con los requisitos',
+                'nombreEstado' => 'Activo',
+                'descripcion' => 'Vacuna activa y válida, cumple con los requisitos',
                 'fechaCreacion' => now(),
             ],
         ];

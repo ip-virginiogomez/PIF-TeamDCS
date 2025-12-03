@@ -39,7 +39,7 @@ class Alumno extends Model
     }
 
     // Relación uno a muchos con VacunaAlumno
-    public function vacunaAlumnos()
+    public function vacunas()
     {
         return $this->hasMany(VacunaAlumno::class, 'runAlumno', 'runAlumno');
     }
