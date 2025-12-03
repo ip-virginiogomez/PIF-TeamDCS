@@ -15,6 +15,7 @@
             <div id="selection-container"
                 data-centros="{{ json_encode($centrosFormadores) }}"
                 data-carreras="{{ json_encode($carrerasBase) }}"
+                data-coordinador-centro="{{ json_encode($coordinadorCentro) }}"
                 class="bg-white shadow-sm rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Seleccionar Sede</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

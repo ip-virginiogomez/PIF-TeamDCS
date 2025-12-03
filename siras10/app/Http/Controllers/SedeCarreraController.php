@@ -47,7 +47,24 @@ class SedeCarreraController extends Controller
             ->orderBy('nombreCarrera')
             ->get();
 
-        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase'));
+        // Verificar si el usuario es coordinador de campo clínico
+        $coordinadorCentro = null;
+        $user = auth()->user();
+
+        if ($user) {
+            $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)
+                ->with('centroFormador')
+                ->first();
+
+            if ($coordinador) {
+                $coordinadorCentro = [
+                    'idCentroFormador' => $coordinador->idCentroFormador,
+                    'nombreCentroFormador' => $coordinador->centroFormador->nombreCentroFormador,
+                ];
+            }
+        }
+
+        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase', 'coordinadorCentro'));
     }
 
     /**
@@ -273,7 +290,7 @@ class SedeCarreraController extends Controller
                     'idSedeCarrera' => $validated['idSedeCarrera'],
                     'nombre' => $validated['nombre'],
                     'documento' => $documentoPath,
-                    'fechaSubida' => now()->toDateString(),
+                    'fechaSubida' => now(),
                 ]);
 
                 \DB::commit();
@@ -387,14 +404,14 @@ class SedeCarreraController extends Controller
         $asignaturas = $sedeCarrera->asignaturas()
             ->with(['programas' => function ($q) {
                 $q->latest('fechaSubida');
-            }])
+            }, 'programa', 'tipoPractica'])
             ->orderBy('nombreAsignatura')
-            ->get();
+            ->paginate(5, ['*'], 'asignaturas_page');
 
         $mallas = $sedeCarrera->mallaSedeCarreras()
             ->with('mallaCurricular')
             ->orderByDesc('fechaSubida')
-            ->get();
+            ->paginate(5, ['*'], 'mallas_page');
 
         return view('gestion-carreras.archivos', [
             'sedeCarrera' => $sedeCarrera,
@@ -564,7 +581,7 @@ class SedeCarreraController extends Controller
                     'idMallaCurricular' => $mallaCurricular->idMallaCurricular,
                     'nombre' => $validated['nombre'],
                     'documento' => $documentoPath,
-                    'fechaSubida' => now()->toDateString(),
+                    'fechaSubida' => now(),
                 ]);
 
                 \DB::commit();
@@ -834,7 +851,7 @@ class SedeCarreraController extends Controller
      */
     public function showProgramas(Asignatura $asignatura)
     {
-        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->get();
+        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->paginate(5);
         \Log::debug('[showProgramas] idAsignatura: '.$asignatura->idAsignatura.' | count: '.$programas->count());
         foreach ($programas as $p) {
             \Log::debug('[showProgramas] Programa id: '.$p->idPrograma.' | documento: '.$p->documento);

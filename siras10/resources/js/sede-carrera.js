@@ -66,6 +66,7 @@ class SedeCarreraManager extends BaseModalManager {
 
         this.centros = JSON.parse(this.selectionContainer.dataset.centros || '[]');
         this.carreras = JSON.parse(this.selectionContainer.dataset.carreras || '[]');
+        this.coordinadorCentro = JSON.parse(this.selectionContainer.dataset.coordinadorCentro || 'null');
         this.currentSedeId = null;
 
         this.mallasListModal = document.getElementById('mallasListModal');
@@ -86,6 +87,7 @@ class SedeCarreraManager extends BaseModalManager {
         this.populateSelectors();
         this.attachSedeEvents();
         this.attachMallasModalEvents();
+        this.loadFromUrlParams(); // Cargar datos desde URL si existen
     }
 
     createSelectors() {
@@ -115,12 +117,57 @@ class SedeCarreraManager extends BaseModalManager {
             this.centroSelector.add(new Option(c.nombreCentroFormador, c.idCentroFormador));
         });
 
+        // Si es coordinador, preseleccionar y deshabilitar el centro
+        if (this.coordinadorCentro) {
+            this.centroSelector.value = this.coordinadorCentro.idCentroFormador;
+            this.centroSelector.disabled = true;
+
+            // Agregar estilo visual para indicar que está deshabilitado
+            this.centroSelector.classList.add('bg-gray-100', 'cursor-not-allowed');
+
+            // Cargar automáticamente las sedes del centro
+            this.updateSedeSelector(this.coordinadorCentro.idCentroFormador);
+        }
+
         const carreraSelect = this.form.querySelector('#idCarrera');
         if (carreraSelect) {
             carreraSelect.innerHTML = '<option value="">-- Seleccione Perfil --</option>';
             this.carreras.forEach(c => {
                 carreraSelect.add(new Option(c.nombreCarrera, c.idCarrera));
             });
+        }
+    }
+
+    loadFromUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const centroId = urlParams.get('centro');
+        const sedeId = urlParams.get('sede');
+
+        if (centroId && sedeId) {
+            // Si es coordinador, verificar que el centro coincida
+            if (this.coordinadorCentro && centroId != this.coordinadorCentro.idCentroFormador) {
+                console.warn('El coordinador no tiene acceso a este centro formador');
+                return;
+            }
+
+            // Establecer el centro (solo si no es coordinador o si coincide)
+            if (!this.coordinadorCentro) {
+                this.centroSelector.value = centroId;
+            }
+
+            // Actualizar sedes disponibles
+            this.updateSedeSelector(centroId);
+
+            // Esperar a que se actualicen las sedes y luego seleccionar
+            setTimeout(() => {
+                this.sedeSelector.value = sedeId;
+                // Disparar el evento change para cargar la tabla
+                this.handleSedeChange();
+
+                // Limpiar los parámetros de la URL (opcional, mantiene limpia la URL)
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
+            }, 100);
         }
     }
 
@@ -192,7 +239,7 @@ class SedeCarreraManager extends BaseModalManager {
 
     async handleSedeChange() {
         const selectedValue = this.sedeSelector.value;
-        
+
         // Ignorar si el valor está vacío o no ha cambiado
         if (!selectedValue || selectedValue === this.currentSedeId) {
             if (!selectedValue) this.hideGestion();
@@ -202,14 +249,14 @@ class SedeCarreraManager extends BaseModalManager {
         this.currentSedeId = selectedValue;
         this.updateSedeName();
         this.showGestion();
-        
+
         // Re-obtener tableContainer después de mostrar gestion-container
         await this.$nextTick();
         this.tableContainer = document.getElementById('tabla-container');
-        
+
         await this.loadTable();
     }
-    
+
     // Helper para esperar el próximo tick del DOM
     $nextTick() {
         return new Promise(resolve => setTimeout(resolve, 0));
@@ -1791,6 +1838,60 @@ function initArchivosPage() {
         }
     });
 
+    // Inicializar manejadores de paginación
+    initPaginationHandlers();
+
+
+    // Manejar paginación sin recarga de página
+    function initPaginationHandlers() {
+        document.addEventListener('click', async (e) => {
+            const link = e.target.closest('a[href*="mallas_page"], a[href*="asignaturas_page"]');
+            if (!link) return;
+
+            e.preventDefault();
+            const url = link.href;
+            const isMallasPagination = url.includes('mallas_page');
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar la página');
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Encontrar las secciones por su contenido específico
+                const sections = document.querySelectorAll('section.bg-white');
+                const newSections = doc.querySelectorAll('section.bg-white');
+
+                if (isMallasPagination && sections[0] && newSections[0]) {
+                    // Actualizar sección de mallas (primera sección)
+                    sections[0].innerHTML = newSections[0].innerHTML;
+                } else if (!isMallasPagination && sections[1] && newSections[1]) {
+                    // Actualizar sección de asignaturas (segunda sección)
+                    sections[1].innerHTML = newSections[1].innerHTML;
+                }
+
+                // Actualizar URL sin recargar
+                window.history.pushState({}, '', url);
+
+            } catch (error) {
+                console.error('Error en paginación:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar la página',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
 
     function initArchivosPreview() {
         const pdfModal = document.getElementById('pdfPreviewModal');
@@ -1878,6 +1979,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initArchivosPage();
+});
+
+// Manejar paginación en el modal de programas
+document.addEventListener('click', async (e) => {
+    const link = e.target.closest('#programasModalContent a[href*="page="]');
+    if (!link) return;
+
+    e.preventDefault();
+    const url = link.href;
+    const programasModalContent = document.getElementById('programasModalContent');
+
+    if (!programasModalContent) return;
+
+    programasModalContent.innerHTML = '<div class="p-8 text-center text-gray-400">Cargando...</div>';
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        });
+
+        if (!response.ok) throw new Error('Error al cargar la página');
+
+        const html = await response.text();
+        programasModalContent.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error en paginación:', error);
+        programasModalContent.innerHTML = '<div class="p-8 text-center text-red-400">Error al cargar la página</div>';
+    }
 });
 
 export default SedeCarreraManager;

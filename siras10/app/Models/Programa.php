@@ -21,6 +21,10 @@ class Programa extends Model
         'fechaSubida',
     ];
 
+    protected $casts = [
+        'fechaSubida' => 'datetime',
+    ];
+
     // Relación inversa con Asignatura
     public function asignatura()
     {
