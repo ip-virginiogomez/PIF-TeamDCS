@@ -56,22 +56,22 @@ class DashboardController extends Controller
         $dashboardData = [];
 
         if ($variant === 'coordinador_campo') {
-             $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)->first();
-             if ($coordinador) {
+            $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)->first();
+            if ($coordinador) {
                 $idCentroFormador = $coordinador->idCentroFormador;
                 $today = now();
-                
+
                 // 1. Periodo y Semana
                 $periodo = \App\Models\Periodo::where('fechaInicio', '<=', $today)
-                                  ->where('fechaFin', '>=', $today)
-                                  ->first();
+                    ->where('fechaFin', '>=', $today)
+                    ->first();
                 $semanaRotacion = 0;
                 if ($periodo) {
                     $start = \Carbon\Carbon::parse($periodo->fechaInicio);
                     $semanaRotacion = $start->diffInWeeks($today) + 1;
                 }
                 $dashboardData['periodoActual'] = $periodo;
-                $dashboardData['semanaRotacion'] = (int)$semanaRotacion;
+                $dashboardData['semanaRotacion'] = (int) $semanaRotacion;
 
                 // 2. Alumnos Totales del Centro Formador
                 $dashboardData['alumnosTotalesCF'] = Alumno::whereHas('alumnoCarreras.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
@@ -81,7 +81,7 @@ class DashboardController extends Controller
                 // 3. Alumnos en Práctica (Activos)
                 $dashboardData['alumnosEnPractica'] = Alumno::whereHas('dossierGrupos.grupo.cupoDistribucion.cupoOferta', function ($q) use ($today, $periodo) {
                     $q->where('fechaEntrada', '<=', $today)
-                      ->where('fechaSalida', '>=', $today);
+                        ->where('fechaSalida', '>=', $today);
                     if ($periodo) {
                         $q->where('idPeriodo', $periodo->idPeriodo);
                     }
@@ -105,22 +105,24 @@ class DashboardController extends Controller
                 // o que si lo está, cuenta como "ya cubierto".
                 // Para ser más precisos, contamos los alumnos únicos que tienen alguna actividad en el periodo.
                 $alumnosConActividad = Alumno::whereHas('dossierGrupos.grupo.cupoDistribucion.cupoOferta', function ($q) use ($today, $periodo) {
-                     if ($periodo) {
+                    if ($periodo) {
                         $q->where('idPeriodo', $periodo->idPeriodo);
-                     }
-                     $q->where(function($q2) use ($today) {
+                    }
+                    $q->where(function ($q2) use ($today) {
                         $q2->where('fechaSalida', '<', $today) // Finalizado
-                           ->orWhere(function($q3) use ($today) { // Activo
-                               $q3->where('fechaEntrada', '<=', $today)
-                                  ->where('fechaSalida', '>=', $today);
-                           });
-                     });
+                            ->orWhere(function ($q3) use ($today) { // Activo
+                                $q3->where('fechaEntrada', '<=', $today)
+                                    ->where('fechaSalida', '>=', $today);
+                            });
+                    });
                 })->whereHas('alumnoCarreras.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
                     $q->where('idCentroFormador', $idCentroFormador);
                 })->count();
 
                 $dashboardData['alumnosPendientes'] = $dashboardData['alumnosTotalesCF'] - $alumnosConActividad;
-                if ($dashboardData['alumnosPendientes'] < 0) $dashboardData['alumnosPendientes'] = 0;
+                if ($dashboardData['alumnosPendientes'] < 0) {
+                    $dashboardData['alumnosPendientes'] = 0;
+                }
 
                 // 6. Estado de Inmunización Global (Por Alumno)
                 // Definir estados
@@ -145,12 +147,12 @@ class DashboardController extends Controller
 
                 // 4. Sin Vacunas: Alumnos sin ningún registro de vacunas
                 $sinVacunas = (clone $baseAlumnoQuery)->doesntHave('vacunas')->count();
-                
+
                 $dashboardData['inmunizacionData'] = [
                     'vigentes' => $vigentes,
                     'vencidas' => $vencidas,
                     'sin_vacunas' => $sinVacunas,
-                    'total' => $vigentes + $vencidas + $sinVacunas
+                    'total' => $vigentes + $vencidas + $sinVacunas,
                 ];
 
                 // 7. Estado de Inmunización Docentes (Misma lógica)
@@ -177,10 +179,12 @@ class DashboardController extends Controller
                     'vigentes' => $docentesVigentes,
                     'vencidas' => $docentesVencidas,
                     'sin_vacunas' => $docentesSinVacunas,
-                    'total' => $docentesVigentes + $docentesVencidas + $docentesSinVacunas
+                    'total' => $docentesVigentes + $docentesVencidas + $docentesSinVacunas,
                 ];
-             }
-        }        return view('dashboard', array_merge([
+            }
+        }
+
+return view('dashboard', array_merge([
             'totalAlumnos' => $totalAlumnos,
             'totalDocentes' => $totalDocentes,
             'totalCupos' => $totalCupos,
