@@ -19,5 +19,4 @@
         window.inmunizacionData = {!! json_encode($inmunizacionData ?? []) !!};
         window.docenteInmunizacionData = {!! json_encode($docenteInmunizacionData ?? []) !!};
     </script>
-    <script src="{{ asset('resources/js/app.js') }}"></script>
 </x-app-layout>
