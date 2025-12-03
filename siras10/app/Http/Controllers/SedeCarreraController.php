@@ -433,7 +433,7 @@ class SedeCarreraController extends Controller
 
             try {
                 // No eliminar el programa anterior para mantener historial
-                
+
                 // Procesar el archivo
                 $file = $request->file('documento');
 
