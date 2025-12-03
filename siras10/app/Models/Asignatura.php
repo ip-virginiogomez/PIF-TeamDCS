@@ -42,6 +42,13 @@ class Asignatura extends Model
         return $this->hasMany(Programa::class, 'idAsignatura', 'idAsignatura');
     }
 
+    // Relación para obtener el programa más reciente (vigente)
+    public function programa()
+    {
+        return $this->hasOne(Programa::class, 'idAsignatura', 'idAsignatura')
+            ->latestOfMany('fechaSubida');
+    }
+
     public function grupos()
     {
         return $this->hasMany(Grupo::class, 'idAsignatura', 'idAsignatura');

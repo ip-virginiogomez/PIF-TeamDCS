@@ -13,7 +13,7 @@ class AsignacionController extends Controller
     {
         $this->middleware('permission:asignaciones.read')->only('index', 'getCentrosCampoClinico', 'getCentrosRad');
         $this->middleware('permission:asignaciones.create')->only('asignarCentroCoordinador', 'asignarCentroRad');
-        $this->middleware('permission:asignaciones.delete')->only('quitarCentroCoordinador', 'quitarCentroRad');
+        $this->middleware('permission:asignaciones.delete')->only('quitarCentroCampoClinico', 'quitarCentroRad');
     }
 
     public function index(Request $request)
@@ -61,7 +61,7 @@ class AsignacionController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function quitarCentroCoordinador(Usuario $usuario, CentroFormador $centro)
+    public function quitarCentroCampoClinico(Usuario $usuario, CentroFormador $centro)
     {
         $usuario->centrosFormadores()->detach($centro->idCentroFormador);
 

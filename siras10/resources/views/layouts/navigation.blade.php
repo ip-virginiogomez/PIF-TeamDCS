@@ -27,7 +27,7 @@
                                 @can('docentes.read')<x-dropdown-link :href="route('docentes.index')" wire:navigate>{{ __('Docentes') }}</x-dropdown-link>@endcan
                                 @can('carreras.read')<x-dropdown-link :href="route('carreras.index')" wire:navigate>{{ __('Carreras') }}</x-dropdown-link>@endcan
                                 <div class="border-t border-gray-200"></div>
-                                @can('sede-carrera.read')<x-dropdown-link :href="route('sede-carrera.index')" wire:navigate>{{ __('Asignar Carreras') }}</x-dropdown-link>@endcan
+                                @can('sede-carrera.read')<x-dropdown-link :href="route('sede-carrera.index')" wire:navigate>{{ __('Gestionar Carreras') }}</x-dropdown-link>@endcan
                             </x-slot>
                         </x-dropdown>
                     </div>

@@ -47,7 +47,24 @@ class SedeCarreraController extends Controller
             ->orderBy('nombreCarrera')
             ->get();
 
-        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase'));
+        // Verificar si el usuario es coordinador de campo clínico
+        $coordinadorCentro = null;
+        $user = auth()->user();
+
+        if ($user) {
+            $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)
+                ->with('centroFormador')
+                ->first();
+
+            if ($coordinador) {
+                $coordinadorCentro = [
+                    'idCentroFormador' => $coordinador->idCentroFormador,
+                    'nombreCentroFormador' => $coordinador->centroFormador->nombreCentroFormador,
+                ];
+            }
+        }
+
+        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase', 'coordinadorCentro'));
     }
 
     /**
@@ -273,7 +290,7 @@ class SedeCarreraController extends Controller
                     'idSedeCarrera' => $validated['idSedeCarrera'],
                     'nombre' => $validated['nombre'],
                     'documento' => $documentoPath,
-                    'fechaSubida' => now()->toDateString(),
+                    'fechaSubida' => now(),
                 ]);
 
                 \DB::commit();
@@ -387,14 +404,14 @@ class SedeCarreraController extends Controller
         $asignaturas = $sedeCarrera->asignaturas()
             ->with(['programas' => function ($q) {
                 $q->latest('fechaSubida');
-            }])
+            }, 'programa', 'tipoPractica'])
             ->orderBy('nombreAsignatura')
-            ->get();
+            ->paginate(5, ['*'], 'asignaturas_page');
 
         $mallas = $sedeCarrera->mallaSedeCarreras()
             ->with('mallaCurricular')
             ->orderByDesc('fechaSubida')
-            ->get();
+            ->paginate(5, ['*'], 'mallas_page');
 
         return view('gestion-carreras.archivos', [
             'sedeCarrera' => $sedeCarrera,
@@ -415,15 +432,7 @@ class SedeCarreraController extends Controller
             \DB::beginTransaction();
 
             try {
-                // Si ya existe un programa, eliminar el archivo anterior
-                if ($asignatura->programa) {
-                    $programaAnterior = $asignatura->programa;
-                    // Intentar eliminar archivo usando el campo doc
-                    if ($programaAnterior->documento && Storage::disk('public')->exists($programaAnterior->doc)) {
-                        Storage::disk('public')->delete($programaAnterior->doc);
-                    }
-                    $programaAnterior->delete();
-                }
+                // No eliminar el programa anterior para mantener historial
 
                 // Procesar el archivo
                 $file = $request->file('documento');
@@ -564,7 +573,7 @@ class SedeCarreraController extends Controller
                     'idMallaCurricular' => $mallaCurricular->idMallaCurricular,
                     'nombre' => $validated['nombre'],
                     'documento' => $documentoPath,
-                    'fechaSubida' => now()->toDateString(),
+                    'fechaSubida' => now(),
                 ]);
 
                 \DB::commit();
@@ -834,7 +843,7 @@ class SedeCarreraController extends Controller
      */
     public function showProgramas(Asignatura $asignatura)
     {
-        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->get();
+        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->paginate(5);
         \Log::debug('[showProgramas] idAsignatura: '.$asignatura->idAsignatura.' | count: '.$programas->count());
         foreach ($programas as $p) {
             \Log::debug('[showProgramas] Programa id: '.$p->idPrograma.' | documento: '.$p->documento);
@@ -854,5 +863,40 @@ class SedeCarreraController extends Controller
         $nombre = 'Programa_'.($programa->asignatura->nombreAsignatura ?? 'asignatura').'_'.($programa->fechaSubida ?? '').'.pdf';
 
         return \Storage::disk('public')->download($programa->documento, $nombre);
+    }
+
+    /**
+     * Eliminar un programa específico
+     */
+    public function destroyPrograma(\App\Models\Programa $programa)
+    {
+        try {
+            \DB::beginTransaction();
+
+            // Eliminar el archivo del almacenamiento
+            if ($programa->documento && \Storage::disk('public')->exists($programa->documento)) {
+                \Storage::disk('public')->delete($programa->documento);
+            }
+
+            // Eliminar el registro de la base de datos
+            $programa->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Programa eliminado correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error al eliminar programa: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el programa',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }

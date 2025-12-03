@@ -23,6 +23,10 @@ class MallaSedeCarrera extends Model
         'idSedeCarrera',
     ];
 
+    protected $casts = [
+        'fechaSubida' => 'datetime',
+    ];
+
     // Relación inversa con MallaCurricular
     public function mallaCurricular()
     {
