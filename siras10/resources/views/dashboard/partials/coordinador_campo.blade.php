@@ -90,6 +90,49 @@
         </div>
     </div>
 
+    <!-- Widget: Rotaciones Activas Hoy -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6 border-l-4 border-teal-500">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Rotaciones Activas Actuales</h3>
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="p-3 bg-teal-100 rounded-full text-teal-600 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-gray-900">{{ $rotacionesActivas['total'] ?? 0 }}</div>
+                    <div class="text-sm text-gray-500">Grupos en práctica</div>
+                </div>
+            </div>
+            <div class="w-full md:w-1/2">
+                <h4 class="text-sm font-medium text-gray-600 mb-2">Desglose por Centro de Salud:</h4>
+                <div class="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    @if(isset($rotacionesActivas['desglose']) && count($rotacionesActivas['desglose']) > 0)
+                        <ul class="space-y-2">
+                            @foreach($rotacionesActivas['desglose'] as $centro => $cantidad)
+                                <li class="flex justify-between text-sm border-b border-gray-200 pb-1 last:border-0 last:pb-0">
+                                    <span class="text-gray-700 truncate mr-2" title="{{ $centro }}">{{ $centro }}</span>
+                                    <span class="font-semibold text-gray-900 whitespace-nowrap">{{ $cantidad }} grupos</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-sm text-gray-400 italic">No hay rotaciones activas hoy.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget: Ocupación de Centros de Salud -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Ocupación de Centros de Salud (Actual)</h3>
+        <div class="relative h-64">
+            <canvas id="ocupacionChart"></canvas>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Widget: Estado de Inmunización Global (Alumnos) -->
         <div class="bg-white shadow rounded-lg p-6">
@@ -111,6 +154,47 @@
             <div class="mt-4 text-center">
                 <p class="text-sm text-gray-500">Haga clic en la sección "Vencidas" para ver detalles.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Widget: Vacunas por Vencer (Próximos 30 días) -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6 border-l-4 border-red-500 mt-6">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Vacunas por Vencer (Próximos 30 días)</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alumno</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vacuna</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vence el</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Días Restantes</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($vacunasPorVencer ?? [] as $vacuna)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $vacuna->alumno->nombres }} {{ $vacuna->alumno->apellidoPaterno }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $vacuna->tipoVacuna->nombreVacuna }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ $vacuna->fechaVencimiento->format('d/m/Y') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-bold">
+                                {{ now()->diffInDays($vacuna->fechaVencimiento, false) }} días
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center italic">
+                                No hay vacunas próximas a vencer.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

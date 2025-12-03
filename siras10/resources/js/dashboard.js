@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initCuposChart();
     initInmunizacionChart('inmunizacionChart', window.inmunizacionData, '/alumnos');
     initInmunizacionChart('inmunizacionDocenteChart', window.docenteInmunizacionData, '/docentes');
+    initOcupacionChart();
 });
 
 function initCuposChart() {
@@ -106,4 +107,59 @@ function initInmunizacionChart(canvasId, dataValues, baseUrl) {
         }
     });
 }
+
+function initOcupacionChart() {
+    const chartElement = document.getElementById('ocupacionChart');
+    if (!chartElement) return;
+
+    const ctx = chartElement.getContext('2d');
+    const labels = window.ocupacionLabels || [];
+    const dataTotal = window.ocupacionTotal || [];
+    const dataAsignados = window.ocupacionAsignada || [];
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Cupos Totales',
+                    data: dataTotal,
+                    backgroundColor: '#e5e7eb', // Gray-200
+                    borderColor: '#9ca3af', // Gray-400
+                    borderWidth: 1
+                },
+                {
+                    label: 'Alumnos Asignados',
+                    data: dataAsignados,
+                    backgroundColor: '#0ea5e9', // Sky-500
+                    borderColor: '#0284c7', // Sky-600
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+}
+
 

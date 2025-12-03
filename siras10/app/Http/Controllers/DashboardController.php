@@ -181,10 +181,98 @@ class DashboardController extends Controller
                     'sin_vacunas' => $docentesSinVacunas,
                     'total' => $docentesVigentes + $docentesVencidas + $docentesSinVacunas,
                 ];
+
+                // 8. Rotaciones Activas Hoy (Grupos)
+                $gruposActivos = \App\Models\Grupo::where('fechaInicio', '<=', $today)
+                    ->where('fechaFin', '>=', $today)
+                    ->whereHas('cupoDistribucion.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                        $q->where('idCentroFormador', $idCentroFormador);
+                    })
+                    ->with(['cupoDistribucion.cupoOferta.unidadClinica.centroSalud'])
+                    ->get();
+
+                $totalGruposActivos = $gruposActivos->count();
+
+                $desglosePorCentroSalud = $gruposActivos->groupBy(function ($grupo) {
+                    return $grupo->cupoDistribucion->cupoOferta->unidadClinica->centroSalud->nombreCentro ?? 'Desconocido';
+                })->map(function ($grupos) {
+                    return $grupos->count();
+                })->toArray();
+
+                $dashboardData['rotacionesActivas'] = [
+                    'total' => $totalGruposActivos,
+                    'desglose' => $desglosePorCentroSalud,
+                ];
+
+                // 7. Ocupación de Centros de Salud (Actualmente)
+                $ocupacion = \App\Models\CupoDistribucion::query()
+                    ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+                    ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
+                    ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
+                    ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
+                    ->where('sede.idCentroFormador', $idCentroFormador)
+                    ->whereDate('cupo_oferta.fechaEntrada', '<=', $today)
+                    ->whereDate('cupo_oferta.fechaSalida', '>=', $today)
+                    ->selectRaw('centro_salud.nombreCentro, SUM(cupo_distribucion.cantCupos) as total_cupos')
+                    ->groupBy('centro_salud.nombreCentro')
+                    ->get();
+
+                $asignados = \App\Models\DossierGrupo::query()
+                    ->join('grupo', 'dossier_grupo.idGrupo', '=', 'grupo.idGrupo')
+                    ->join('cupo_distribucion', 'grupo.idCupoDistribucion', '=', 'cupo_distribucion.idCupoDistribucion')
+                    ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
+                    ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+                    ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
+                    ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
+                    ->where('sede.idCentroFormador', $idCentroFormador)
+                    ->whereDate('grupo.fechaInicio', '<=', $today)
+                    ->whereDate('grupo.fechaFin', '>=', $today)
+                    ->selectRaw('centro_salud.nombreCentro, count(*) as total_asignados')
+                    ->groupBy('centro_salud.nombreCentro')
+                    ->pluck('total_asignados', 'nombreCentro');
+
+                $ocupacionLabels = [];
+                $ocupacionTotal = [];
+                $ocupacionAsignada = [];
+
+                foreach ($ocupacion as $row) {
+                    $ocupacionLabels[] = $row->nombreCentro;
+                    $ocupacionTotal[] = $row->total_cupos;
+                    $ocupacionAsignada[] = $asignados[$row->nombreCentro] ?? 0;
+                }
+
+                $dashboardData['ocupacionLabels'] = $ocupacionLabels;
+                $dashboardData['ocupacionTotal'] = $ocupacionTotal;
+                $dashboardData['ocupacionAsignada'] = $ocupacionAsignada;
+
+                // 8. Vacunas por Vencer (Próximos 30 días)
+                $vacunasPorVencer = \App\Models\VacunaAlumno::select('alumno_vacuna.*')
+                    ->join('tipo_vacuna', 'alumno_vacuna.idTipoVacuna', '=', 'tipo_vacuna.idTipoVacuna')
+                    ->join('estado_vacuna', 'alumno_vacuna.idEstadoVacuna', '=', 'estado_vacuna.idEstadoVacuna')
+                    ->with(['alumno', 'tipoVacuna'])
+                    ->whereHas('alumno.alumnoCarreras.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                        $q->where('idCentroFormador', $idCentroFormador);
+                    })
+                    ->where('estado_vacuna.nombreEstado', 'Activo')
+                    ->whereRaw('DATE_ADD(alumno_vacuna.fechaSubida, INTERVAL tipo_vacuna.duracion DAY) BETWEEN ? AND ?', [
+                        $today->format('Y-m-d'),
+                        $today->copy()->addDays(30)->format('Y-m-d'),
+                    ])
+                    ->get()
+                    ->map(function ($vacuna) {
+                        $fechaSubida = \Carbon\Carbon::parse($vacuna->fechaSubida);
+                        $vacuna->fechaVencimiento = $fechaSubida->addDays($vacuna->tipoVacuna->duracion);
+
+                        return $vacuna;
+                    });
+
+                $dashboardData['vacunasPorVencer'] = $vacunasPorVencer;
             }
         }
 
-return view('dashboard', array_merge([
+        return view('dashboard', array_merge([
             'totalAlumnos' => $totalAlumnos,
             'totalDocentes' => $totalDocentes,
             'totalCupos' => $totalCupos,

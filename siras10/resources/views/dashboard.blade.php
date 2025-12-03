@@ -18,5 +18,8 @@
         window.cuposPorCarreraData = {!! json_encode($cuposPorCarreraData ?? []) !!};
         window.inmunizacionData = {!! json_encode($inmunizacionData ?? []) !!};
         window.docenteInmunizacionData = {!! json_encode($docenteInmunizacionData ?? []) !!};
+        window.ocupacionLabels = {!! json_encode($ocupacionLabels ?? []) !!};
+        window.ocupacionTotal = {!! json_encode($ocupacionTotal ?? []) !!};
+        window.ocupacionAsignada = {!! json_encode($ocupacionAsignada ?? []) !!};
     </script>
 </x-app-layout>
