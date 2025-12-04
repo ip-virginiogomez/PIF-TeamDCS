@@ -17,7 +17,7 @@ class TipoVacunaSeeder extends Seeder
             ],
             [
                 'nombreVacuna' => 'Hepatitis B',
-                'duracion' => 1095,
+                'duracion' => 3650,
                 'fechaCreacion' => now(),
             ],
         ];
