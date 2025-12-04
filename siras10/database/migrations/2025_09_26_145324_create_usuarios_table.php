@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('correo', 45)->nullable();
             $table->string('telefono', 15)->nullable();
             $table->string('contrasenia', 255)->nullable();
+            $table->binary('foto')->nullable();
             $table->string('fechaCreacion', 45)->nullable();
             $table->unsignedBigInteger('idTipoPersonalSalud')->nullable();
             $table->rememberToken();

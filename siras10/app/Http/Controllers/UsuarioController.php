@@ -6,6 +6,7 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
 class UsuarioController extends Controller
@@ -52,11 +53,12 @@ class UsuarioController extends Controller
             'apellidoMaterno' => 'nullable|string|max:45',
             'correo' => 'required|email|max:45|unique:usuarios,correo',
             'telefono' => 'nullable|string|max:20',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'contrasenia' => 'required|string|min:8|confirmed',
             'roles' => 'required|array',
         ]);
 
-        $usuario = Usuario::create([
+        $usuarioData = [
             'runUsuario' => $validated['runUsuario'],
             'nombreUsuario' => $validated['nombreUsuario'],
             'apellidoPaterno' => $validated['apellidoPaterno'],
@@ -65,7 +67,15 @@ class UsuarioController extends Controller
             'telefono' => $validated['telefono'] ?? null,
             'contrasenia' => Hash::make($validated['contrasenia']),
             'fechaCreacion' => now(),
-        ]);
+        ];
+
+        // Manejo de foto
+        if ($request->hasFile('foto')) {
+            $rutafoto = $request->file('foto')->store('fotos/usuarios', 'public');
+            $usuarioData['foto'] = $rutafoto;
+        }
+
+        $usuario = Usuario::create($usuarioData);
 
         $usuario->syncRoles($validated['roles']);
 
@@ -105,6 +115,7 @@ class UsuarioController extends Controller
             'apellidoMaterno' => 'nullable|string|max:45',
             'correo' => 'required|email|max:45|unique:usuarios,correo,'.$usuario->runUsuario.',runUsuario',
             'telefono' => 'nullable|string|max:20',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'contrasenia' => 'nullable|string|min:8|confirmed',
             'roles' => 'required|array',
         ]);
@@ -116,6 +127,15 @@ class UsuarioController extends Controller
             'correo' => $validated['correo'],
             'telefono' => $validated['telefono'] ?? null,
         ];
+
+        // Manejo de foto
+        if ($request->hasFile('foto')) {
+            // Eliminar foto anterior si existe
+            if ($usuario->foto) {
+                Storage::disk('public')->delete($usuario->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('fotos/usuarios', 'public');
+        }
 
         if ($request->filled('contrasenia')) {
             $data['contrasenia'] = Hash::make($validated['contrasenia']);
@@ -145,6 +165,12 @@ class UsuarioController extends Controller
         }
 
         $usuario = Usuario::findOrFail($runUsuario);
+
+        // Eliminar la foto si existe
+        if ($usuario->foto) {
+            Storage::disk('public')->delete($usuario->foto);
+        }
+
         $usuario->delete();
 
         if ($request->ajax() || $request->wantsJson()) {

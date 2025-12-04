@@ -20,7 +20,8 @@ class Convenio extends Model
         'documento',
         'idCentroFormador',
         'fechaSubida',
-        'anioValidez',
+        'fechaInicio',
+        'fechaFin',
     ];
 
     // Relación inversa con CentroFormador

@@ -120,9 +120,19 @@ class CupoDistribucionController extends Controller
         }
     }
 
-    public function update(Request $request, CupoDistribucion $distribucion)
+    public function update(Request $request, $id)
     {
+        // Cargar la distribución sin el scope global para evitar conflictos
+        $distribucion = CupoDistribucion::withoutGlobalScopes()->findOrFail($id);
+
+        // Cargar explícitamente la relación cupoOferta
+        $distribucion->load('cupoOferta');
         $oferta = $distribucion->cupoOferta;
+
+        if (! $oferta) {
+            return response()->json(['error' => 'No se encontró la oferta de cupos asociada.'], 404);
+        }
+
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
         $cuposDisponiblesParaEditar = $cuposRestantes + $distribucion->cantCupos;
 
