@@ -932,8 +932,8 @@ class SedeCarreraController extends Controller
                     'message' => 'Pauta de evaluación subida correctamente',
                     'data' => [
                         'pauta_evaluacion' => $path,
-                        'url' => asset('storage/' . $path)
-                    ]
+                        'url' => asset('storage/'.$path),
+                    ],
                 ]);
 
             } catch (\Exception $e) {
@@ -942,7 +942,7 @@ class SedeCarreraController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Error en uploadPautaEvaluacion: ' . $e->getMessage());
+            \Log::error('Error en uploadPautaEvaluacion: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -960,16 +960,16 @@ class SedeCarreraController extends Controller
         try {
             $asig = Asignatura::findOrFail($asignatura);
 
-            if (!$asig->pauta_evaluacion || !\Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+            if (! $asig->pauta_evaluacion || ! \Storage::disk('public')->exists($asig->pauta_evaluacion)) {
                 abort(404, 'Pauta de evaluación no encontrada');
             }
 
-            $nombre = 'Pauta_Evaluacion_' . str_replace(' ', '_', $asig->nombreAsignatura) . '.pdf';
+            $nombre = 'Pauta_Evaluacion_'.str_replace(' ', '_', $asig->nombreAsignatura).'.pdf';
 
             return \Storage::disk('public')->download($asig->pauta_evaluacion, $nombre);
 
         } catch (\Exception $e) {
-            \Log::error('Error al descargar pauta: ' . $e->getMessage());
+            \Log::error('Error al descargar pauta: '.$e->getMessage());
             abort(404, 'Pauta de evaluación no encontrada');
         }
     }
@@ -1006,7 +1006,7 @@ class SedeCarreraController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Error al eliminar pauta: ' . $e->getMessage());
+            \Log::error('Error al eliminar pauta: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
