@@ -160,9 +160,6 @@ class DocentesController extends Controller
             $data = $request->except(['idSedeCarrera', 'foto', 'acuerdo', 'certIAAS', 'certRCP', 'certSuperInt', 'curriculum']);
             $sedeCarreraId = $request->input('idSedeCarrera');
 
-            if ($sedeCarreraId) {
-                $docente->sedesCarreras()->attach($sedeCarreraId);
-            }
             if (empty($data['fechaCreacion'])) {
                 $data['fechaCreacion'] = now()->format('Y-m-d');
             }
@@ -198,6 +195,10 @@ class DocentesController extends Controller
             }
 
             $docente = Docente::create($data);
+
+            if ($sedeCarreraId) {
+                $docente->sedesCarreras()->attach($sedeCarreraId);
+            }
 
             return response()->json([
                 'success' => true,
@@ -424,7 +425,32 @@ class DocentesController extends Controller
 
     public function destroy(Docente $docente)
     {
-        // Eliminar archivos individualmente
+        // 1. Verificar si el docente tiene grupos asignados
+        $tieneGrupos = $docente->docenteCarreras()->whereHas('grupos')->exists();
+
+        if ($tieneGrupos) {
+            $mensaje = 'No se puede eliminar el docente porque tiene grupos asignados. Desvincúlelo de los grupos primero.';
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $mensaje,
+                ], 422);
+            }
+
+            return redirect()->route('docentes.index')
+                ->with('error', $mensaje);
+        }
+
+        // 2. Eliminar relaciones dependientes
+        // Eliminar vacunas asociadas
+        $docente->docenteVacunas()->delete();
+        
+        // Eliminar asignaciones a carreras (SedeCarrera)
+        // Nota: Como ya verificamos que no tiene grupos, esto debería ser seguro si la FK en grupo es restrictiva
+        $docente->docenteCarreras()->delete();
+
+        // 3. Eliminar archivos individualmente
         if ($docente->foto) {
             Storage::disk('public')->delete($docente->foto);
         }
@@ -444,6 +470,7 @@ class DocentesController extends Controller
             Storage::disk('public')->delete($docente->acuerdo);
         }
 
+        // 4. Eliminar el docente
         $docente->delete();
 
         // Respuesta JSON para AJAX
