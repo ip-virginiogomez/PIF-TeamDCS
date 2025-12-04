@@ -430,7 +430,7 @@ class DocentesController extends Controller
 
         if ($tieneGrupos) {
             $mensaje = 'No se puede eliminar el docente porque tiene grupos asignados. Desvincúlelo de los grupos primero.';
-            
+
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -445,7 +445,7 @@ class DocentesController extends Controller
         // 2. Eliminar relaciones dependientes
         // Eliminar vacunas asociadas
         $docente->docenteVacunas()->delete();
-        
+
         // Eliminar asignaciones a carreras (SedeCarrera)
         // Nota: Como ya verificamos que no tiene grupos, esto debería ser seguro si la FK en grupo es restrictiva
         $docente->docenteCarreras()->delete();
