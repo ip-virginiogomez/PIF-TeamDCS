@@ -22,6 +22,7 @@ class Asignatura extends Model
         'fechaCreacion',
         'codAsignatura',
         'Semestre',
+        'pauta_evaluacion',
     ];
 
     // Relación inversa con TipoPractica
