@@ -124,15 +124,15 @@ class CupoDistribucionController extends Controller
     {
         // Cargar la distribución sin el scope global para evitar conflictos
         $distribucion = CupoDistribucion::withoutGlobalScopes()->findOrFail($id);
-        
+
         // Cargar explícitamente la relación cupoOferta
         $distribucion->load('cupoOferta');
         $oferta = $distribucion->cupoOferta;
-        
-        if (!$oferta) {
+
+        if (! $oferta) {
             return response()->json(['error' => 'No se encontró la oferta de cupos asociada.'], 404);
         }
-        
+
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
         $cuposDisponiblesParaEditar = $cuposRestantes + $distribucion->cantCupos;
 
