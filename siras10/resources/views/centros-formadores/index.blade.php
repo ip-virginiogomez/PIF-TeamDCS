@@ -57,6 +57,53 @@
         <div class="mb-4" id="fechaCreacion-container"></div>
     </x-crud-modal>
 
+    {{-- Modal Ver Convenios --}}
+    <div id="conveniosModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div id="conveniosModalBackdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40 cursor-pointer backdrop-blur-sm"></div>
+        
+        <div class="fixed inset-0 z-50 w-screen overflow-y-auto pointer-events-none">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 pointer-events-auto">
+                
+                {{-- Contenedor Principal --}}
+                <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-6xl border border-gray-200 h-[85vh] flex flex-col">
+                    
+                    {{-- ENCABEZADO --}}
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                            <svg class="w-6 h-6 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Convenios de <span id="conveniosCentroNombre" class="font-bold ml-1"></span>
+                        </h3>
+                        <button id="closeConveniosModalX" class="bg-gray-400 hover:bg-gray-600 text-white font-light py-2 px-4 rounded text-sm transition focus:outline-none flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Cerrar
+                        </button>
+                    </div>
+
+                    {{-- CUERPO CON IFRAME Y LISTA --}}
+                    <div class="flex-1 overflow-hidden flex">
+                        
+                        {{-- SIDEBAR IZQUIERDO - Lista de Convenios --}}
+                        <div class="w-80 bg-gray-50 border-r border-gray-200 overflow-y-auto p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Documentos Disponibles</h4>
+                            <div id="conveniosListContainer" class="space-y-2">
+                                {{-- Lista de convenios se carga aquí --}}
+                            </div>
+                        </div>
+
+                        {{-- CONTENIDO PRINCIPAL - Iframe --}}
+                        <div class="flex-1 bg-gray-100 p-4 overflow-hidden">
+                            <iframe id="convenioIframe" src="" class="w-full h-full rounded border bg-white"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal Ver Coordinador --}}
     <div id="coordinatorModal" class="relative z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div id="coordinatorModalBackdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40 cursor-pointer backdrop-blur-sm"></div>

@@ -23,7 +23,7 @@ class ConvenioController extends Controller
     {
         try {
             $columnasDisponibles = [
-                'idConvenio', 'fechaSubida', 'anioValidez',
+                'idConvenio', 'fechaSubida', 'fechaInicio', 'fechaFin',
                 'centro_formador.nombreCentroFormador',
             ];
 
@@ -96,7 +96,8 @@ class ConvenioController extends Controller
         $validator = Validator::make($request->all(), [
             'documento' => 'required|file|mimes:pdf,doc,docx|max:10240', // 10MB
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
-            'anioValidez' => 'required|integer|max:'.(date('Y') + 10),
+            'fechaInicio' => 'required|date',
+            'fechaFin' => 'required|date|after:fechaInicio',
         ], [
             'documento.required' => 'El documento del convenio es obligatorio.',
             'documento.file' => 'Debe seleccionar un archivo válido.',
@@ -104,9 +105,11 @@ class ConvenioController extends Controller
             'documento.max' => 'El documento no puede superar los 10MB.',
             'idCentroFormador.required' => 'Debe seleccionar un centro formador.',
             'idCentroFormador.exists' => 'El centro formador seleccionado no es válido.',
-            'anioValidez.required' => 'El año de validez es obligatorio.',
-            'anioValidez.integer' => 'El año de validez debe ser un número entero.',
-            'anioValidez.max' => 'El año de validez no puede superar 10 años desde hoy.',
+            'fechaInicio.required' => 'La fecha de inicio es obligatoria.',
+            'fechaInicio.date' => 'La fecha de inicio debe ser una fecha válida.',
+            'fechaFin.required' => 'La fecha de fin es obligatoria.',
+            'fechaFin.date' => 'La fecha de fin debe ser una fecha válida.',
+            'fechaFin.after' => 'La fecha de fin debe ser posterior a la fecha de inicio.',
         ]);
 
         if ($validator->fails()) {
@@ -130,7 +133,8 @@ class ConvenioController extends Controller
                 'documento' => $documentoPath,
                 'idCentroFormador' => $request->idCentroFormador,
                 'fechaSubida' => Carbon::now()->format('Y-m-d'),
-                'anioValidez' => $request->anioValidez,
+                'fechaInicio' => $request->fechaInicio,
+                'fechaFin' => $request->fechaFin,
             ]);
 
             $convenio->load('centroFormador');
@@ -178,16 +182,19 @@ class ConvenioController extends Controller
         $validator = Validator::make($request->all(), [
             'documento' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // 10MB - opcional en edición
             'idCentroFormador' => 'required|exists:centro_formador,idCentroFormador',
-            'anioValidez' => 'required|integer|max:'.(date('Y') + 10),
+            'fechaInicio' => 'required|date',
+            'fechaFin' => 'required|date|after:fechaInicio',
         ], [
             'documento.file' => 'Debe seleccionar un archivo válido.',
             'documento.mimes' => 'El documento debe ser un archivo PDF, DOC o DOCX.',
             'documento.max' => 'El documento no puede superar los 10MB.',
             'idCentroFormador.required' => 'Debe seleccionar un centro formador.',
             'idCentroFormador.exists' => 'El centro formador seleccionado no es válido.',
-            'anioValidez.required' => 'El año de validez es obligatorio.',
-            'anioValidez.integer' => 'El año de validez debe ser un número entero.',
-            'anioValidez.max' => 'El año de validez no puede superar 10 años desde hoy.',
+            'fechaInicio.required' => 'La fecha de inicio es obligatoria.',
+            'fechaInicio.date' => 'La fecha de inicio debe ser una fecha válida.',
+            'fechaFin.required' => 'La fecha de fin es obligatoria.',
+            'fechaFin.date' => 'La fecha de fin debe ser una fecha válida.',
+            'fechaFin.after' => 'La fecha de fin debe ser posterior a la fecha de inicio.',
         ]);
 
         if ($validator->fails()) {
@@ -200,7 +207,8 @@ class ConvenioController extends Controller
         try {
             $datosActualizar = [
                 'idCentroFormador' => $request->idCentroFormador,
-                'anioValidez' => $request->anioValidez,
+                'fechaInicio' => $request->fechaInicio,
+                'fechaFin' => $request->fechaFin,
             ];
 
             // Manejar la subida del nuevo documento si se proporciona

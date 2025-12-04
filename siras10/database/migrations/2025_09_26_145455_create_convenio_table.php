@@ -16,7 +16,8 @@ return new class extends Migration
             $table->binary('documento')->nullable();
             $table->unsignedBigInteger('idCentroFormador')->nullable();
             $table->date('fechaSubida')->nullable();
-            $table->integer('anioValidez')->nullable();
+            $table->date('fechaInicio')->nullable();
+            $table->date('fechaFin')->nullable();
             $table->timestamps();
 
             $table->foreign('idCentroFormador')

@@ -48,7 +48,7 @@
                             cursor-pointer"
                         onchange="previewFoto(event)"
                     />
-                    <p class="mt-1 text-xs text-gray-500">JPG, PNG (máx. 2MB)</p>
+                    <p class="mt-1 text-xs text-gray-500">Se recomienda a la hora de subir una foto, que sea de mitad de cuerpo hacia arriba o formal, en formato JPG, PNG (máx. 2MB)</p>
                     @error('foto')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -214,19 +214,6 @@
             </div>
             @endif
 
-            {{-- Fecha de Creación (No editable) --}}
-            <div>
-                <label for="fechaCreacion" class="block text-sm font-medium text-gray-700">Fecha de Registro</label>
-                <input 
-                    id="fechaCreacion" 
-                    type="text" 
-                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm cursor-not-allowed" 
-                    value="{{ $user->fechaCreacion ? \Carbon\Carbon::parse($user->fechaCreacion)->format('d/m/Y H:i') : 'No disponible' }}" 
-                    disabled
-                />
-            </div>
-        </div>
-
         {{-- Roles Asignados (No editable) --}}
         @if($user->roles->isNotEmpty())
         <div>
@@ -276,7 +263,6 @@
         </div>
         @endif
 
-        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
             <div class="flex items-center gap-4">
                 <button 
                     type="submit"
@@ -297,6 +283,5 @@
                     </p>
                 @endif
             </div>
-        </div>
     </form>
 </section>

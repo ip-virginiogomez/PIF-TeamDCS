@@ -16,7 +16,8 @@ class ConvenioManager extends BaseModalManager {
             tableContainerId: 'tabla-container',
             fields: [
                 'idCentroFormador',
-                'anioValidez',
+                'fechaInicio',
+                'fechaFin',
                 'fechaSubida'
             ]
         });
@@ -125,13 +126,36 @@ class ConvenioManager extends BaseModalManager {
                 const file = e.target.files[0];
                 if (file) {
                     preview.innerHTML = `
-                        <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded">
-                            <p class="text-sm font-medium text-blue-900">Nuevo archivo: ${file.name}</p>
-                            <p class="text-xs text-blue-700">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-blue-900">Nuevo archivo: ${file.name}</p>
+                                <p class="text-xs text-blue-700">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                            <button type="button" onclick="convenioManager.eliminarArchivoSeleccionado()" 
+                                    class="ml-3 text-red-600 hover:text-red-800 text-sm font-medium">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
                         </div>
                     `;
                 }
             });
+        }
+    }
+
+    /**
+     * Elimina el archivo seleccionado por el usuario.
+     */
+    eliminarArchivoSeleccionado() {
+        const fileInput = document.getElementById('documento');
+        const preview = document.getElementById('archivo-preview');
+        
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        if (preview) {
+            preview.innerHTML = '';
         }
     }
 
@@ -151,21 +175,38 @@ class ConvenioManager extends BaseModalManager {
         let esValido = true;
 
         // Validar centro formador
-        if (!this.form.querySelector('[name="idCentroFormador"]').value) {
+        const centroFormador = this.form.querySelector('[name="idCentroFormador"]');
+        if (!centroFormador || !centroFormador.value) {
             esValido = false;
             this.showValidationErrors({ 'idCentroFormador': ['Debe seleccionar un centro formador.'] });
         }
 
-        // Validar año de validez
-        if (!this.form.querySelector('[name="anioValidez"]').value) {
+        // Validar fecha de inicio
+        const fechaInicio = this.form.querySelector('[name="fechaInicio"]');
+        if (!fechaInicio || !fechaInicio.value) {
             esValido = false;
-            this.showValidationErrors({ 'anioValidez': ['El año de validez es obligatorio.'] });
+            this.showValidationErrors({ 'fechaInicio': ['La fecha de inicio es obligatoria.'] });
+        }
+
+        // Validar fecha de fin
+        const fechaFin = this.form.querySelector('[name="fechaFin"]');
+        if (!fechaFin || !fechaFin.value) {
+            esValido = false;
+            this.showValidationErrors({ 'fechaFin': ['La fecha de fin es obligatoria.'] });
+        }
+
+        // Validar que fecha fin sea posterior a fecha inicio
+        if (fechaInicio && fechaFin && fechaInicio.value && fechaFin.value) {
+            if (new Date(fechaFin.value) <= new Date(fechaInicio.value)) {
+                esValido = false;
+                this.showValidationErrors({ 'fechaFin': ['La fecha de fin debe ser posterior a la fecha de inicio.'] });
+            }
         }
 
         // Validar documento (solo en creación)
         if (!this.editando) {
             const docInput = this.form.querySelector('[name="documento"]');
-            if (!docInput.files || docInput.files.length === 0) {
+            if (!docInput || !docInput.files || docInput.files.length === 0) {
                 esValido = false;
                 this.showValidationErrors({ 'documento': ['Debe seleccionar un documento.'] });
             }
@@ -215,8 +256,38 @@ window.eliminarConvenio = function (id) {
 };
 
 window.verDocumento = function (id) {
-    window.open(`/convenios/${id}/documento/ver`, '_blank');
+    const modal = document.getElementById('modalPreviewConvenio');
+    const iframe = document.getElementById('iframe-preview-convenio');
+    const backdrop = document.getElementById('backdrop-preview-convenio');
+    
+    if (modal && iframe) {
+        iframe.src = `/convenios/${id}/documento/ver`;
+        modal.classList.remove('hidden');
+        
+        // Cerrar modal al hacer click en backdrop
+        if (backdrop) {
+            backdrop.onclick = () => cerrarPreviewConvenio();
+        }
+        
+        // Cerrar modal con el botón X
+        const closeBtn = document.querySelector('[data-action="close-preview-convenio"]');
+        if (closeBtn) {
+            closeBtn.onclick = () => cerrarPreviewConvenio();
+        }
+    }
 };
+
+function cerrarPreviewConvenio() {
+    const modal = document.getElementById('modalPreviewConvenio');
+    const iframe = document.getElementById('iframe-preview-convenio');
+    
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    if (iframe) {
+        iframe.src = '';
+    }
+}
 
 window.descargarDocumento = function (id) {
     window.location.href = `/convenios/${id}/documento/descargar`;

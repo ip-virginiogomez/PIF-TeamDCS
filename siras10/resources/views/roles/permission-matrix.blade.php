@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Filtros</h3>
-                    <form method="GET" action="{{ route('roles.permission_matrix') }}" id="filterForm">
+                    <form method="GET" action="{{ route('roles.permission_matrix') }}" id="filterForm" data-selected-user-run="{{ $selectedUser->runUsuario ?? '' }}">
                         
                         {{-- CAMBIO: Reducido a 3 columnas, ya que la 4ta se oculta --}}
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -74,9 +74,24 @@
                                         <p class="font-bold text-gray-700">{{ ucfirst($resource) }}</p>
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                                             @foreach ($permissionList as $permission)
+                                                @php
+                                                    $action = explode('.', $permission->name)[1] ?? $permission->name;
+                                                    $translations = [
+                                                        'create' => ['nombre' => 'crear', 'descripcion' => 'Permite crear nuevos registros'],
+                                                        'read' => ['nombre' => 'leer', 'descripcion' => 'Permite ver y consultar registros existentes'],
+                                                        'update' => ['nombre' => 'editar', 'descripcion' => 'Permite modificar registros existentes'],
+                                                        'delete' => ['nombre' => 'eliminar', 'descripcion' => 'Permite eliminar registros']
+                                                    ];
+                                                    $actionData = $translations[$action] ?? ['nombre' => $action, 'descripcion' => 'Acción personalizada'];
+                                                @endphp
                                                 <label class="inline-flex items-center">
                                                     <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" class="rounded" @if ($selectedUser->getAllPermissions()->contains('name', $permission->name)) checked @endif>
-                                                    <span class="ml-2 text-sm text-gray-600">{{ explode('.', $permission->name)[1] ?? $permission->name }}</span>
+                                                    <span class="ml-2 text-sm text-gray-600">{{ $actionData['nombre'] }}</span>
+                                                    <span class="ml-1 text-gray-400 cursor-help" title="{{ $actionData['descripcion'] }}">
+                                                        <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                                        </svg>
+                                                    </span>
                                                 </label>
                                             @endforeach
                                         </div>
@@ -98,134 +113,5 @@
         </div>
     </div>
 
-{{-- ===================================================================== --}}
-{{-- CAMBIO: LÓGICA COMPLETA DEL SCRIPT ACTUALIZADA --}}
-{{-- ===================================================================== --}}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const roleSelect = document.getElementById('role_id_selector');
-    const userSelect = document.getElementById('user_select');
-    const menuSelect = document.getElementById('menu_select');
-    const submenuSelect = document.getElementById('submenu_select'); // Aún se usa internamente
-    const filterForm = document.getElementById('filterForm');
-    const noPermissionsMessage = document.getElementById('no-permissions-message');
-
-    // --- NUEVAS FUNCIONES DE AYUDA ---
-
-    /**
-     * Oculta TODOS los grupos de permisos y muestra el mensaje de "vacío".
-     */
-    function hideAllPermissionGroups() {
-        document.querySelectorAll('.permission-group').forEach(group => {
-            group.style.display = 'none';
-        });
-        noPermissionsMessage.style.display = 'block'; 
-    }
-
-    /**
-     * Muestra UN grupo de permisos por su nombre (resourceName).
-     * Retorna 'true' si lo encontró y 'false' si no.
-     */
-    function showPermissionGroup(resourceName) {
-        const group = document.querySelector(`.permission-group[data-resource-name="${resourceName}"]`);
-        if (group) {
-            group.style.display = 'block';
-            return true; // Lo encontró y lo mostró
-        }
-        return false; // No lo encontró
-    }
-
-    // --- Lógica para Rol y Usuario (recarga de página) ---
-    // (Esta parte no cambia)
-    roleSelect.addEventListener('change', () => {
-        userSelect.value = ''; // Limpia la selección de usuario
-        filterForm.submit();
-    });
-    userSelect.addEventListener('change', () => {
-        if (userSelect.value) {
-            filterForm.submit();
-        }
-    });
-    
-    // --- LÓGICA MODIFICADA DE MENÚ -> PERMISOS ---
-    menuSelect.addEventListener('change', function() {
-        const menuId = this.value;
-
-        // 1. Ocultamos todos los permisos anteriores
-        hideAllPermissionGroups();
-        
-        // (Usamos el select oculto para mostrar "cargando" al usuario)
-        submenuSelect.innerHTML = '<option value="">Cargando...</option>';
-        submenuSelect.disabled = true; // Sigue deshabilitado (y oculto)
-
-        if (!menuId) {
-            submenuSelect.innerHTML = '<option value="">-- Selecciona un menú --</option>';
-            return;
-        }
-
-        // 2. Buscamos los submenús de este menú
-        fetch(`/api/menus/${menuId}/submenus`)
-            .then(response => response.json())
-            .then(submenus => {
-                // Ya no poblamos el select, solo lo usamos para feedback
-                submenuSelect.innerHTML = '<option value="">Submenús cargados</option>'; 
-                let permissionsFound = false; // Flag para ver si encontramos algo
-
-                // 3. ¡LA MAGIA! Iteramos por CADA submenú encontrado...
-                submenus.forEach(submenu => {
-                    
-                    // ...y mostramos su grupo de permisos correspondiente.
-                    if (showPermissionGroup(submenu.nombreSubmenu)) {
-                        permissionsFound = true; // Marcamos que sí encontramos permisos
-                    }
-                });
-                
-                // 4. Si encontramos al menos un permiso, ocultamos el mensaje de "vacío".
-                if (permissionsFound) {
-                    noPermissionsMessage.style.display = 'none';
-                }
-                
-                // (Ya no es necesario habilitar el select de submenú)
-            });
-    });
-
-    // --- LÓGICA ELIMINADA ---
-    // Ya no necesitamos un "listener" para el dropdown de submenú.
-    // submenuSelect.addEventListener('change', ...); // <--- ESTO SE FUE
-
-    // --- Lógica de Inicialización al cargar la página ---
-    // (Esta parte no cambia)
-    function populateUsersOnLoad() {
-        const roleId = roleSelect.value;
-        if (!roleId) return;
-
-        userSelect.disabled = true;
-        userSelect.innerHTML = '<option value="">Cargando...</option>';
-
-        fetch(`/api/roles/${roleId}/users`)
-            .then(response => response.json())
-            .then(users => {
-                userSelect.innerHTML = '<option value="">-- Elige un usuario --</option>';
-                const selectedUserRun = '{{ $selectedUser->runUsuario ?? '' }}';
-                
-                users.forEach(user => {
-                    const option = document.createElement('option');
-                    option.value = user.runUsuario;
-                    option.textContent = `${user.nombreUsuario} ${user.apellidoPaterno}`;
-                    if (user.runUsuario === selectedUserRun) {
-                        option.selected = true;
-                    }
-                    userSelect.appendChild(option);
-                                });
-                
-                userSelect.disabled = false;
-
-                // Activamos el selector de Menú SOLO si hay un usuario seleccionado
-                menuSelect.disabled = !selectedUserRun;
-            });
-    }
-    
-    populateUsersOnLoad();
-});
-</script>
+@vite(['resources/js/permission-matrix.js'])
 </x-app-layout>

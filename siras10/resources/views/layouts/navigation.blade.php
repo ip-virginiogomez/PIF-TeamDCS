@@ -120,6 +120,13 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-dcs-blue-800 hover:bg-dcs-blue-700 focus:outline-none transition">
+                            @if(Auth::user()->foto)
+                                <img class="w-8 h-8 rounded-full object-cover mr-2" src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto de {{ Auth::user()->nombreUsuario }}">
+                            @else
+                                <div class="w-8 h-8 rounded-full bg-dcs-blue-600 flex items-center justify-center text-white mr-2">
+                                    <span class="text-sm font-semibold">{{ substr(Auth::user()->nombreUsuario ?? Auth::user()->name, 0, 1) }}{{ substr(Auth::user()->apellidoPaterno ?? '', 0, 1) }}</span>
+                                </div>
+                            @endif
                             <div>{{ Auth::user()->nombreUsuario ?? Auth::user()->name }}</div>
                             <div class="ml-1"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
                         </button>
@@ -277,9 +284,18 @@
         </div>
 
         <div class="pt-4 pb-1 border-t border-dcs-blue-700">
-            <div class="px-4">
-                <div class="font-medium text-base text-white">{{ Auth::user()->nombreUsuario ?? Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-400">{{ Auth::user()->correo }}</div>
+            <div class="px-4 flex items-center">
+                @if(Auth::user()->foto)
+                    <img class="w-10 h-10 rounded-full object-cover mr-3" src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto de {{ Auth::user()->nombreUsuario }}">
+                @else
+                    <div class="w-10 h-10 rounded-full bg-dcs-blue-600 flex items-center justify-center text-white mr-3">
+                        <span class="text-base font-semibold">{{ substr(Auth::user()->nombreUsuario ?? Auth::user()->name, 0, 1) }}{{ substr(Auth::user()->apellidoPaterno ?? '', 0, 1) }}</span>
+                    </div>
+                @endif
+                <div>
+                    <div class="font-medium text-base text-white">{{ Auth::user()->nombreUsuario ?? Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-gray-400">{{ Auth::user()->correo }}</div>
+                </div>
             </div>
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')" class="text-gray-300" wire:navigate>{{ __('Profile') }}</x-responsive-nav-link>

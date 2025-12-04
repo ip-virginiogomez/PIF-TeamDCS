@@ -41,7 +41,7 @@ class CentroFormadorController extends Controller
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $centrosFormadores = $query->with(['tipoCentroFormador', 'coordinadorCampoClinicos.usuario'])->paginate(10);
+        $centrosFormadores = $query->with(['tipoCentroFormador', 'coordinadorCampoClinicos.usuario', 'convenios'])->paginate(10);
 
         if (request()->ajax()) {
             return view('centros-formadores._tabla', [
