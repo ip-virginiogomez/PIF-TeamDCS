@@ -247,8 +247,8 @@ class DashboardController extends Controller
                 $dashboardData['ocupacionTotal'] = $ocupacionTotal;
                 $dashboardData['ocupacionAsignada'] = $ocupacionAsignada;
 
-                // 8. Vacunas por Vencer (Próximos 30 días)
-                $vacunasPorVencer = \App\Models\VacunaAlumno::select('alumno_vacuna.*')
+                // 8. Vacunas por Vencer (Próximos 30 días) - Alumnos
+                $vacunasAlumnosPorVencer = \App\Models\VacunaAlumno::select('alumno_vacuna.*')
                     ->join('tipo_vacuna', 'alumno_vacuna.idTipoVacuna', '=', 'tipo_vacuna.idTipoVacuna')
                     ->join('estado_vacuna', 'alumno_vacuna.idEstadoVacuna', '=', 'estado_vacuna.idEstadoVacuna')
                     ->with(['alumno', 'tipoVacuna'])
@@ -264,11 +264,39 @@ class DashboardController extends Controller
                     ->map(function ($vacuna) {
                         $fechaSubida = \Carbon\Carbon::parse($vacuna->fechaSubida);
                         $vacuna->fechaVencimiento = $fechaSubida->addDays($vacuna->tipoVacuna->duracion);
+                        $vacuna->tipo_persona = 'Alumno';
+                        $vacuna->nombre_completo = $vacuna->alumno->nombres.' '.$vacuna->alumno->apellidoPaterno;
 
                         return $vacuna;
                     });
 
-                $dashboardData['vacunasPorVencer'] = $vacunasPorVencer;
+                // 9. Vacunas por Vencer (Próximos 30 días) - Docentes
+                $vacunasDocentesPorVencer = \App\Models\DocenteVacuna::select('docente_vacuna.*')
+                    ->join('tipo_vacuna', 'docente_vacuna.idTipoVacuna', '=', 'tipo_vacuna.idTipoVacuna')
+                    ->join('estado_vacuna', 'docente_vacuna.idEstadoVacuna', '=', 'estado_vacuna.idEstadoVacuna')
+                    ->with(['docente', 'tipoVacuna'])
+                    ->whereHas('docente.docenteCarreras.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                        $q->where('idCentroFormador', $idCentroFormador);
+                    })
+                    ->where('estado_vacuna.nombreEstado', 'Activo')
+                    ->whereRaw('DATE_ADD(docente_vacuna.fechaSubida, INTERVAL tipo_vacuna.duracion DAY) BETWEEN ? AND ?', [
+                        $today->format('Y-m-d'),
+                        $today->copy()->addDays(30)->format('Y-m-d'),
+                    ])
+                    ->get()
+                    ->map(function ($vacuna) {
+                        $fechaSubida = \Carbon\Carbon::parse($vacuna->fechaSubida);
+                        $vacuna->fechaVencimiento = $fechaSubida->addDays($vacuna->tipoVacuna->duracion);
+                        $vacuna->tipo_persona = 'Docente';
+                        $vacuna->nombre_completo = $vacuna->docente->nombresDocente.' '.$vacuna->docente->apellidoPaterno;
+
+                        return $vacuna;
+                    });
+
+                // Fusionar y ordenar por fecha de vencimiento
+                $dashboardData['vacunasPorVencer'] = $vacunasAlumnosPorVencer
+                    ->concat($vacunasDocentesPorVencer)
+                    ->sortBy('fechaVencimiento');
             }
         }
 
