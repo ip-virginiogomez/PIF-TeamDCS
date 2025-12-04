@@ -94,7 +94,7 @@ class GrupoController extends Controller
 
         try {
             // 4. CREAR EN BD
-            $grupo = Grupo::create($input);
+            $grupo = Grupo::create($request->all());
 
             return response()->json(['success' => true, 'message' => 'Grupo creado exitosamente.', 'data' => $grupo]);
 
@@ -125,7 +125,7 @@ class GrupoController extends Controller
 
         try {
             // 4. ACTUALIZAR EN BD
-            $grupo->update($input);
+            $grupo->update($request->all());
 
             return response()->json(['success' => true, 'message' => 'Grupo actualizado exitosamente.', 'data' => $grupo]);
 
