@@ -1894,7 +1894,7 @@ function initArchivosPage() {
     }
 
     function initArchivosPreview() {
-        const pdfModal = document.getElementById('pdfPreviewModal');
+        const pdfModal = document.getElementById('pdfModal');
         if (!pdfModal) return;
 
         const pdfViewer = document.getElementById('pdfViewer');
@@ -1954,6 +1954,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initArchivosPage();
+    initPautaEvaluacion();
 
     // Event listeners globales para cerrar el modal de PDF
     const pdfModal = document.getElementById('pdfModal');
@@ -2134,5 +2135,204 @@ document.addEventListener('click', async (e) => {
         });
     }
 });
+
+// ================================================================================
+// FUNCIONES DE PAUTA DE EVALUACIÓN
+// ================================================================================
+function initPautaEvaluacion() {
+    const pautaModal = document.getElementById('pautaModal');
+    if (!pautaModal) return;
+
+    const pautaViewer = document.getElementById('pautaViewer');
+    const pautaViewerContainer = document.getElementById('pautaViewerContainer');
+    const pautaUploadContainer = document.getElementById('pautaUploadContainer');
+    const pautaModalTitle = document.getElementById('pautaModalTitle');
+    const pautaModalSubtitle = document.getElementById('pautaModalSubtitle');
+    const pautaDeleteBtn = document.getElementById('pautaDeleteBtn');
+    const pautaFallbackLink = document.getElementById('pautaFallbackLink');
+    const pautaUploadForm = document.getElementById('pautaUploadForm');
+    const pautaAsignaturaId = document.getElementById('pautaAsignaturaId');
+
+    let currentAsignaturaId = null;
+    let currentAsignaturaNombre = null;
+
+    // Abrir modal de pauta
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="view-pauta"]');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        currentAsignaturaId = btn.dataset.id;
+        currentAsignaturaNombre = btn.dataset.nombre;
+        const tienePauta = btn.dataset.tienePauta === 'true';
+        const url = btn.dataset.url;
+
+        pautaModalTitle.textContent = 'Pauta de Evaluación';
+        pautaModalSubtitle.textContent = currentAsignaturaNombre;
+
+        if (pautaAsignaturaId) {
+            pautaAsignaturaId.value = currentAsignaturaId;
+        }
+
+        if (tienePauta && url) {
+            // Mostrar visor PDF
+            pautaViewerContainer.classList.remove('hidden');
+            pautaUploadContainer.classList.add('hidden');
+            pautaDeleteBtn.classList.remove('hidden');
+
+            if (pautaViewer) pautaViewer.src = url;
+            if (pautaFallbackLink) pautaFallbackLink.href = url;
+        } else {
+            // Mostrar formulario de subida
+            pautaViewerContainer.classList.add('hidden');
+            pautaUploadContainer.classList.remove('hidden');
+            pautaDeleteBtn.classList.add('hidden');
+        }
+
+        pautaModal.classList.remove('hidden');
+    });
+
+    // Cerrar modal
+    const closeBtn = pautaModal.querySelector('[data-action="close-pauta-modal"]');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            pautaModal.classList.add('hidden');
+            if (pautaViewer) pautaViewer.src = '';
+            if (pautaUploadForm) pautaUploadForm.reset();
+        });
+    }
+
+    // Cerrar al hacer clic en el fondo
+    pautaModal.addEventListener('click', (e) => {
+        if (e.target === pautaModal) {
+            pautaModal.classList.add('hidden');
+            if (pautaViewer) pautaViewer.src = '';
+            if (pautaUploadForm) pautaUploadForm.reset();
+        }
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !pautaModal.classList.contains('hidden')) {
+            pautaModal.classList.add('hidden');
+            if (pautaViewer) pautaViewer.src = '';
+            if (pautaUploadForm) pautaUploadForm.reset();
+        }
+    });
+
+    // Eliminar pauta
+    if (pautaDeleteBtn) {
+        pautaDeleteBtn.addEventListener('click', async () => {
+            if (!currentAsignaturaId) return;
+
+            const result = await Swal.fire({
+                title: '¿Eliminar pauta de evaluación?',
+                text: `Se eliminará la pauta de evaluación de ${currentAsignaturaNombre}`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/gestion-carreras/asignaturas/${currentAsignaturaId}/pauta`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminada!',
+                        text: data.message || 'Pauta eliminada correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Cerrar modal y recargar página
+                    pautaModal.classList.add('hidden');
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Error al eliminar la pauta');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al eliminar la pauta',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
+
+    // Subir pauta
+    if (pautaUploadForm) {
+        pautaUploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentAsignaturaId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo identificar la asignatura',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            const formData = new FormData(pautaUploadForm);
+
+            try {
+                const response = await fetch(`/gestion-carreras/asignaturas/${currentAsignaturaId}/pauta`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Subida exitosa!',
+                        text: data.message || 'Pauta subida correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Cerrar modal y recargar página
+                    pautaModal.classList.add('hidden');
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Error al subir la pauta');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al subir la pauta',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
+}
 
 export default SedeCarreraManager;

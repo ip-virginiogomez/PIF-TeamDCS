@@ -73,7 +73,7 @@
                                             </span>
                                         </td>
                                         <td class="py-2 px-4">
-                                            <div class="flex space-x-2">
+                                            <div class="flex justify-center space-x-2">
                                                 <button type="button"
                                                         data-action="preview-malla" 
                                                         data-url="{{ asset('storage/' . $malla->documento) }}"
@@ -173,6 +173,7 @@
                                     <th class="py-2 px-4 text-left font-bold">Semestre</th>
                                     <th class="py-2 px-4 text-left font-bold">Tipo Práctica</th>
                                     <th class="py-2 px-4 text-left font-bold">Programa Vigente</th>
+                                    <th class="py-2 px-4 text-left font-bold">Pauta Evaluación</th>
                                     <th class="py-2 px-4 text-left font-bold">Acciones</th>
                                 </tr>
                             </thead>
@@ -216,8 +217,23 @@
                                                 <span class="text-sm text-gray-400">Sin programa</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <div class="flex space-x-2">
+                                        <td class="py-2 px-4 text-center">
+                                            <button
+                                                type="button"
+                                                data-action="view-pauta"
+                                                data-id="{{ $asignatura->idAsignatura }}"
+                                                data-nombre="{{ $asignatura->nombreAsignatura }}"
+                                                data-tiene-pauta="{{ $asignatura->pauta_evaluacion ? 'true' : 'false' }}"
+                                                data-url="{{ $asignatura->pauta_evaluacion ? asset('storage/' . $asignatura->pauta_evaluacion) : '' }}"
+                                                title="Ver/Subir pauta de evaluación"
+                                                class="inline-flex items-center justify-center w-8 h-8 {{ $asignatura->pauta_evaluacion ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-400 hover:bg-gray-500' }} text-white rounded-md transition-colors duration-150">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <div class="flex justify-center space-x-2">
                                                 {{-- Botón Ver todos los programas --}}
                                                 <button
                                                     type="button"
@@ -300,7 +316,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="py-4 px-4 text-center text-gray-500">
+                                        <td colspan="7" class="py-4 px-4 text-center text-gray-500">
                                             <div class="flex flex-col items-center">
                                                 <i class="fas fa-book text-4xl text-gray-300 mb-2"></i>
                                                 <span>No hay asignaturas registradas.</span>
@@ -624,6 +640,96 @@
                 </div>
         </div>
     </div>
+
+    {{-- MODAL PAUTA DE EVALUACIÓN --}}
+    <div id="pautaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <div class="flex-1">
+                    <h3 id="pautaModalTitle" class="text-lg font-semibold text-gray-900">Pauta de Evaluación</h3>
+                    <p id="pautaModalSubtitle" class="text-sm text-gray-500 mt-1"></p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button 
+                        id="pautaDeleteBtn"
+                        type="button"
+                        class="hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-4 py-2">
+                        <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar
+                    </button>
+                    <button 
+                        type="button"
+                        data-action="close-pauta-modal" 
+                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <!-- Vista del PDF cuando existe -->
+                <div id="pautaViewerContainer" class="hidden bg-gray-100 rounded-lg overflow-hidden h-[calc(90vh-200px)] min-h-[500px]">
+                    <iframe 
+                        id="pautaViewer"
+                        src="" 
+                        class="w-full h-full border-0"
+                        frameborder="0"
+                        title="Visor de Pauta de Evaluación">
+                        <p class="p-4 text-center text-gray-600">
+                            Tu navegador no soporta iframes. 
+                            <a id="pautaFallbackLink" href="#" target="_blank" class="text-blue-600 hover:underline">
+                                Haz clic aquí para abrir el PDF
+                            </a>
+                        </p>
+                    </iframe>
+                </div>
+
+                <!-- Formulario de subida cuando no existe -->
+                <div id="pautaUploadContainer" class="hidden">
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay pauta de evaluación</h3>
+                        <p class="text-sm text-gray-500 mb-6">Sube un archivo PDF con la pauta de evaluación para esta asignatura</p>
+                        
+                        <form id="pautaUploadForm" enctype="multipart/form-data" class="max-w-md mx-auto">
+                            <input type="hidden" id="pautaAsignaturaId" name="idAsignatura">
+                            
+                            <div class="mb-4">
+                                <label for="pautaArchivo" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Archivo PDF <span class="text-red-500">*</span>
+                                    <span class="text-gray-500 text-xs font-normal">(Máximo 2MB)</span>
+                                </label>
+                                <input
+                                    id="pautaArchivo"
+                                    name="documento"
+                                    type="file"
+                                    accept=".pdf"
+                                    required
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                >
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-6 py-3">
+                                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                Subir Pauta de Evaluación
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
         @vite(['resources/js/app.js'])
     @endpush

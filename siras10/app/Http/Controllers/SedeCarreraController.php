@@ -899,4 +899,120 @@ class SedeCarreraController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Subir pauta de evaluación para una asignatura
+     */
+    public function uploadPautaEvaluacion(Request $request, $asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            $request->validate([
+                'documento' => 'required|file|mimes:pdf|max:2048',
+            ]);
+
+            \DB::beginTransaction();
+
+            try {
+                // Eliminar pauta anterior si existe
+                if ($asig->pauta_evaluacion && \Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+                    \Storage::disk('public')->delete($asig->pauta_evaluacion);
+                }
+
+                // Guardar nueva pauta
+                $path = $request->file('documento')->store('pautas-evaluacion', 'public');
+
+                $asig->update(['pauta_evaluacion' => $path]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pauta de evaluación subida correctamente',
+                    'data' => [
+                        'pauta_evaluacion' => $path,
+                        'url' => asset('storage/' . $path)
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error en uploadPautaEvaluacion: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al subir la pauta de evaluación',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Descargar pauta de evaluación de una asignatura
+     */
+    public function descargarPautaEvaluacion($asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            if (!$asig->pauta_evaluacion || !\Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+                abort(404, 'Pauta de evaluación no encontrada');
+            }
+
+            $nombre = 'Pauta_Evaluacion_' . str_replace(' ', '_', $asig->nombreAsignatura) . '.pdf';
+
+            return \Storage::disk('public')->download($asig->pauta_evaluacion, $nombre);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al descargar pauta: ' . $e->getMessage());
+            abort(404, 'Pauta de evaluación no encontrada');
+        }
+    }
+
+    /**
+     * Eliminar pauta de evaluación de una asignatura
+     */
+    public function destroyPautaEvaluacion($asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            \DB::beginTransaction();
+
+            try {
+                // Eliminar el archivo del almacenamiento
+                if ($asig->pauta_evaluacion && \Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+                    \Storage::disk('public')->delete($asig->pauta_evaluacion);
+                }
+
+                // Actualizar el registro
+                $asig->update(['pauta_evaluacion' => null]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pauta de evaluación eliminada correctamente',
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error al eliminar pauta: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la pauta de evaluación',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
 }
