@@ -37,6 +37,20 @@ class PeriodoController extends Controller
             'fechaFin' => 'required|date|after_or_equal:fechaInicio',
         ]);
 
+        // Validar que no exista un periodo para el año especificado
+        $añoSolicitado = $request->input('Año');
+        $periodoExistente = Periodo::where('Año', $añoSolicitado)->first();
+
+        if ($periodoExistente) {
+            return response()->json([
+                'success' => false,
+                'message' => "Ya existe un periodo para el año {$añoSolicitado}. Solo se permite un periodo de oferta de cupos por año.",
+                'errors' => [
+                    'Año' => ["Ya existe un periodo para el año {$añoSolicitado}."],
+                ],
+            ], 422);
+        }
+
         Periodo::create($request->all());
 
         return response()->json(['success' => true, 'message' => 'Período creado exitosamente.']);
@@ -55,6 +69,22 @@ class PeriodoController extends Controller
             'fechaInicio' => 'required|date',
             'fechaFin' => 'required|date|after_or_equal:fechaInicio',
         ]);
+
+        // Validar que no exista otro periodo para el año especificado (excepto el actual)
+        $añoSolicitado = $request->input('Año');
+        $periodoExistente = Periodo::where('Año', $añoSolicitado)
+            ->where('idPeriodo', '!=', $periodo->idPeriodo)
+            ->first();
+
+        if ($periodoExistente) {
+            return response()->json([
+                'success' => false,
+                'message' => "Ya existe un periodo para el año {$añoSolicitado}. Solo se permite un periodo de oferta de cupos por año.",
+                'errors' => [
+                    'Año' => ["Ya existe un periodo para el año {$añoSolicitado}."],
+                ],
+            ], 422);
+        }
 
         $periodo->update($request->all());
 

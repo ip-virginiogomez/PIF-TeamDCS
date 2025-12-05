@@ -75,7 +75,7 @@
             </div>
             <div>
                 <label for="cantCupos" class="block text-sm font-medium text-gray-700">Cantidad de Cupos *</label>
-                <input type="number" id="cantCupos" name="cantCupos" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                <input type="number" id="cantCupos" name="cantCupos" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" min="1" max="99" oninput="if(this.value.length > 2) this.value = this.value.slice(0, 2);" required>
                 <div class="text-red-500 text-sm mt-1 hidden" id="error-cantCupos"></div>
             </div>
             <div>
