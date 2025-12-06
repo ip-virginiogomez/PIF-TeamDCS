@@ -3,8 +3,28 @@
         {{-- HEADERS --}}
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
             <tr>
-                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">Nombre del Grupo</th>
-                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">Asignatura</th>
+                @php
+                    $getSortLink = function($column, $text) use ($sortBy, $sortDirection, $distribucion) {
+                        $direction = ($sortBy === $column && $sortDirection == 'asc') ? 'desc' : 'asc';
+                        $params = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction, 'page' => 1]);
+                        // Usamos la ruta específica para obtener grupos por distribución
+                        $url = route('grupos.by-distribucion', array_merge(['idDistribucion' => $distribucion->idCupoDistribucion], $params));
+                        
+                        $icon = '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
+                        if ($sortBy === $column) {
+                             $icon = $sortDirection === 'asc' 
+                                ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+                                : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+                        }
+                        return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
+                    };
+                @endphp
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">
+                    {!! $getSortLink('nombre_grupo', 'Nombre del Grupo') !!}
+                </th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">
+                    {!! $getSortLink('asignatura', 'Asignatura') !!}
+                </th>
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600">Docente Encargado</th>
                 {{-- NUEVA COLUMNA: FECHAS --}}
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center">Período</th>

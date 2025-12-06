@@ -22,12 +22,17 @@ class CarreraController extends Controller
 
         $sortBy = request()->get('sort_by', 'idCarrera');
         $sortDirection = request()->get('sort_direction', 'desc');
+        $search = request()->input('search');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idCarrera';
         }
 
         $query = Carrera::query();
+
+        if ($search) {
+            $query->where('nombreCarrera', 'like', "%{$search}%");
+        }
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);

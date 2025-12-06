@@ -27,12 +27,26 @@ class CentroSaludController extends Controller
 
         $sortBy = request()->get('sort_by', 'idCentroSalud');
         $sortDirection = request()->get('sort_direction', 'desc');
+        $search = request()->input('search');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idCentroSalud';
         }
 
         $query = CentroSalud::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombreCentro', 'like', "%{$search}%")
+                    ->orWhereHas('ciudad', function ($q2) use ($search) {
+                        $q2->where('nombreCiudad', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tipoCentroSalud', function ($q3) use ($search) {
+                        $q3->where('acronimo', 'like', "%{$search}%")
+                            ->orWhere('nombreTipo', 'like', "%{$search}%");
+                    });
+            });
+        }
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);

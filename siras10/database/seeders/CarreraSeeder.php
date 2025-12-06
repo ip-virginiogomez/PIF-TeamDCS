@@ -36,6 +36,10 @@ class CarreraSeeder extends Seeder
                 'nombreCarrera' => 'Kinesiología',
                 'fechaCreacion' => now(),
             ],
+            [
+                'nombreCarrera' => 'Técnico en Enfermería',
+                'fechaCreacion' => now(),
+            ],
         ];
 
         foreach ($carreras as $carrera) {

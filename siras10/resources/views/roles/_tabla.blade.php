@@ -2,8 +2,22 @@
     <table class="min-w-full bg-white">
         <thead class="bg-gray-200">
             <tr>
+                @php
+                    $getSortIcon = function($column) use ($sortBy, $sortDirection) {
+                        if ($sortBy !== $column) {
+                            return '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
+                        }
+                        return $sortDirection === 'asc' 
+                            ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+                            : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+                    };
+                @endphp
                 <th class="py-2 px-4 text-left">ID</th>
-                <th class="py-2 px-4 text-left">Nombre del Rol</th>
+                <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-100" onclick="toggleSort('name')">
+                    <div class="flex items-center gap-1">
+                        Nombre del Rol {!! $getSortIcon('name') !!}
+                    </div>
+                </th>
                 <th class="py-2 px-4 text-left">Acciones</th>
             </tr>
         </thead>

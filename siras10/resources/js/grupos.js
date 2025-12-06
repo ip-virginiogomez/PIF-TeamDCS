@@ -10,9 +10,9 @@ class GrupoManager extends BaseModalManager {
             baseUrl: '/grupos',
             primaryKey: 'idGrupo',
             fields: [
-                'nombreGrupo', 
-                'idCupoDistribucion', 
-                'idAsignatura', 
+                'nombreGrupo',
+                'idCupoDistribucion',
+                'idAsignatura',
                 'idDocenteCarrera',
                 'fechaInicio', // ✅ Correcto
                 'fechaFin'     // ✅ Correcto
@@ -20,6 +20,22 @@ class GrupoManager extends BaseModalManager {
         });
 
         this.currentEditId = null;
+        this.currentDistId = null;
+        this.groupSort = '';
+        this.groupDirection = 'asc';
+
+        // Exponer función global para el ordenamiento de grupos
+        window.toggleGroupSort = (column) => {
+            if (this.groupSort === column) {
+                this.groupDirection = this.groupDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.groupSort = column;
+                this.groupDirection = 'asc';
+            }
+            if (this.currentDistId) {
+                this.cargarTablaGrupos(this.currentDistId);
+            }
+        };
 
         // Inicializamos todos los módulos
         this.initDistribucionSelector();
@@ -40,13 +56,13 @@ class GrupoManager extends BaseModalManager {
         const title = document.getElementById('preview-title');
         const errorDiv = document.getElementById('preview-error');
         const fallbackLink = document.getElementById('btn-fallback-download');
-        
+
         const btnClose = document.getElementById('btn-close-preview');
         const backdrop = document.getElementById('backdropPreview');
 
         const closePreview = () => {
             if (modal) modal.classList.add('hidden');
-            if (iframe) iframe.src = ''; 
+            if (iframe) iframe.src = '';
             document.body.classList.remove('overflow-hidden');
         };
 
@@ -63,7 +79,7 @@ class GrupoManager extends BaseModalManager {
 
             if (modal && iframe && title) {
                 title.textContent = name;
-                
+
                 if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
                     iframe.src = url;
                     iframe.classList.remove('hidden');
@@ -88,20 +104,36 @@ class GrupoManager extends BaseModalManager {
         const container = document.getElementById('tabla-distribuciones-container');
         const inputSearch = document.getElementById('input-search');
         const selectPeriodo = document.getElementById('select-periodo');
-        const btnLimpiar = document.getElementById('btn-limpiar'); // <--- Nuevo selector
+        const btnLimpiar = document.getElementById('btn-limpiar');
 
         if (!form || !container) return;
 
         let debounceTimer;
+        let currentSort = '';
+        let currentDirection = 'asc';
 
         // Función principal para cargar datos
         const fetchResultados = async (url = null) => {
-            const targetUrl = url || new URL(form.action);
-            
+            // Siempre trabajar con objeto URL
+            const targetUrl = url ? new URL(url) : new URL(form.action);
+
+            // Obtener parámetros actuales de la URL para mantener el ordenamiento
+            const currentParams = new URLSearchParams(window.location.search);
+            const sortBy = currentParams.get('sort_by');
+            const sortDirection = currentParams.get('sort_direction');
+
             // Si no es una URL directa (paginación), construimos los parámetros del form
             if (!url) {
-                const params = new URLSearchParams(new FormData(form)).toString();
-                targetUrl.search = params;
+                const params = new URLSearchParams(new FormData(form));
+                if (sortBy) params.set('sort_by', sortBy);
+                if (sortDirection) params.set('sort_direction', sortDirection);
+                targetUrl.search = params.toString();
+            } else {
+                // Si es URL de paginación, aseguramos que mantenga el sort
+                if (!targetUrl.searchParams.has('sort_by') && sortBy) {
+                    targetUrl.searchParams.set('sort_by', sortBy);
+                    targetUrl.searchParams.set('sort_direction', sortDirection || 'asc');
+                }
             }
 
             // Efecto visual
@@ -116,7 +148,7 @@ class GrupoManager extends BaseModalManager {
 
                 const html = await response.text();
                 container.innerHTML = html;
-                
+
                 // Actualizar URL del navegador
                 window.history.pushState({}, '', targetUrl);
 
@@ -129,6 +161,8 @@ class GrupoManager extends BaseModalManager {
                 container.classList.remove('opacity-50', 'pointer-events-none');
             }
         };
+
+
 
         // EVENTO 1: Escribir
         if (inputSearch) {
@@ -149,12 +183,18 @@ class GrupoManager extends BaseModalManager {
             fetchResultados();
         });
 
-        // EVENTO 4: Botón Limpiar (NUEVO)
+        // EVENTO 4: Botón Limpiar
         if (btnLimpiar) {
             btnLimpiar.addEventListener('click', () => {
                 // 1. Resetear valores
                 if (inputSearch) inputSearch.value = '';
                 if (selectPeriodo) selectPeriodo.value = '';
+
+                // Limpiar URL params de sort
+                const url = new URL(window.location.href);
+                url.searchParams.delete('sort_by');
+                url.searchParams.delete('sort_direction');
+                window.history.pushState({}, '', url);
 
                 // 2. Disparar búsqueda "vacía" para traer todo de nuevo
                 fetchResultados();
@@ -163,7 +203,7 @@ class GrupoManager extends BaseModalManager {
 
         // EVENTO 5: Paginación
         container.addEventListener('click', (e) => {
-            const link = e.target.closest('.pagination a');
+            const link = e.target.closest('.pagination a, .sort-link');
             if (link) {
                 e.preventDefault();
                 fetchResultados(link.href);
@@ -178,11 +218,11 @@ class GrupoManager extends BaseModalManager {
     toggleBtnLimpiar(input, select, btn) {
         if (!btn) return;
         const hasFilter = (input && input.value.trim() !== '') || (select && select.value !== '');
-        
+
         // Si quieres que se oculte cuando no hay filtros, descomenta esto:
         // if (hasFilter) btn.classList.remove('hidden');
         // else btn.classList.add('hidden');
-        
+
         // O si prefieres solo deshabilitarlo visualmente:
         btn.disabled = !hasFilter;
         btn.classList.toggle('opacity-50', !hasFilter);
@@ -196,8 +236,8 @@ class GrupoManager extends BaseModalManager {
         e.preventDefault();
 
         const isEdit = !!this.currentEditId;
-        const submitUrl = isEdit 
-            ? `${this.config.baseUrl}/${this.currentEditId}` 
+        const submitUrl = isEdit
+            ? `${this.config.baseUrl}/${this.currentEditId}`
             : this.config.baseUrl;
 
         const formData = new FormData(this.form);
@@ -212,7 +252,7 @@ class GrupoManager extends BaseModalManager {
             this.limpiarErroresVisuales();
 
             const response = await fetch(submitUrl, {
-                method: 'POST', 
+                method: 'POST',
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -251,7 +291,7 @@ class GrupoManager extends BaseModalManager {
     }
 
     // ... (El resto de tus métodos: refreshTable, initDistribucionSelector, etc. se mantienen igual) ...
-    
+
     refreshTable() { this.reloadTable(); }
 
     initDistribucionSelector() {
@@ -275,9 +315,12 @@ class GrupoManager extends BaseModalManager {
 
             if (seccionGrupos) seccionGrupos.classList.remove('hidden');
             if (tituloDistribucion) tituloDistribucion.textContent = `(${distribucionSummary})`;
-            
+
             if (btnNuevoGrupo) btnNuevoGrupo.dataset.distribucionId = distribucionId;
-            
+
+            // Resetear ordenamiento al cambiar de distribución
+            this.groupSort = '';
+            this.groupDirection = 'asc';
             this.cargarTablaGrupos(distribucionId);
         });
 
@@ -300,6 +343,14 @@ class GrupoManager extends BaseModalManager {
         if (!container) return;
 
         container.addEventListener('click', (e) => {
+            // Paginación y Sort
+            const link = e.target.closest('.pagination a, .sort-link');
+            if (link) {
+                e.preventDefault();
+                this.cargarTablaGrupos(this.currentDistId, link.href);
+                return;
+            }
+
             const btnEdit = e.target.closest('button[data-action="edit"]');
             if (btnEdit) {
                 this.cargarDatosGrupo(btnEdit.dataset.id);
@@ -313,15 +364,28 @@ class GrupoManager extends BaseModalManager {
         });
     }
 
-    async cargarTablaGrupos(distId) {
+    async cargarTablaGrupos(distId, url = null) {
         const container = document.getElementById('tabla-grupos-container');
         const seccion = document.getElementById('seccion-grupos');
         if (!container) return;
 
+        this.currentDistId = distId;
+
         container.innerHTML = '<div class="flex justify-center p-4"><i class="fas fa-spinner fa-spin fa-2x text-green-600"></i></div>';
-        
+
         try {
-            const response = await fetch(`/grupos/por-distribucion/${distId}`);
+            let targetUrl = url;
+            if (!targetUrl) {
+                targetUrl = `/grupos/por-distribucion/${distId}`;
+                const params = new URLSearchParams();
+                if (this.groupSort) {
+                    params.set('sort_by', this.groupSort);
+                    params.set('sort_direction', this.groupDirection);
+                }
+                if (params.toString()) targetUrl += `?${params.toString()}`;
+            }
+
+            const response = await fetch(targetUrl);
             if (!response.ok) throw new Error('Error HTTP');
             const html = await response.text();
             container.innerHTML = html;
@@ -365,7 +429,7 @@ class GrupoManager extends BaseModalManager {
     }
 
     async eliminarGrupo(id) {
-        const confirmacion = typeof Swal !== 'undefined' 
+        const confirmacion = typeof Swal !== 'undefined'
             ? await Swal.fire({
                 title: '¿Estás seguro?',
                 text: "No podrás revertir esto",
