@@ -2,8 +2,30 @@
     <table class="min-w-full bg-white">
         <thead class="bg-gray-200">
             <tr>
-                <th class="py-2 px-4 text-left">ID</th>
-                <th class="py-2 px-4 text-left">Nombre de la Práctica</th>
+                <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-300" onclick="toggleSort('idTipoPractica')">
+                    <div class="flex items-center justify-between">
+                        ID
+                        @if(request('sort') == 'idTipoPractica')
+                            @if(request('direction') == 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </div>
+                </th>
+                <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-300" onclick="toggleSort('nombrePractica')">
+                    <div class="flex items-center justify-between">
+                        Nombre de la Práctica
+                        @if(request('sort') == 'nombrePractica')
+                            @if(request('direction') == 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </div>
+                </th>
                 <th class="py-2 px-4 text-left">Acciones</th>
             </tr>
         </thead>
