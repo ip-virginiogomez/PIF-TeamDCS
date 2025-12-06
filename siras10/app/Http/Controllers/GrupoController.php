@@ -36,6 +36,7 @@ class GrupoController extends Controller
             ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
             ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
             ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+            ->join('tipo_practica', 'cupo_oferta.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
             ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
             ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
             ->with([
@@ -74,6 +75,9 @@ class GrupoController extends Controller
                     break;
                 case 'unidad_clinica':
                     $query->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
+                    break;
+                case 'tipo_practica':
+                    $query->orderBy('tipo_practica.nombrePractica', $sortDirection);
                     break;
                 default:
                     $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');

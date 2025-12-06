@@ -27,7 +27,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             
             {{-- TARJETA PRINCIPAL --}}
             <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg border border-gray-200">
@@ -167,32 +167,48 @@
                                 </div>
                             </div>
 
-                            <div class="mt-4 sm:mt-0 z-10">
+                            <div class="mt-4 sm:mt-0 z-10 flex space-x-2">
                                 @php
-                                    $urlPrograma = null;
+                                    $docsAsignatura = [];
+                                    
+                                    // Programa
                                     if ($grupo->asignatura && $grupo->asignatura->programas->isNotEmpty()) {
                                         $ultimo = $grupo->asignatura->programas->last();
                                         if ($ultimo && $ultimo->documento) { 
-                                            $urlPrograma = asset('storage/' . $ultimo->documento);
+                                            $docsAsignatura[] = [
+                                                'nombre' => 'Programa de Asignatura',
+                                                'url' => asset('storage/' . $ultimo->documento),
+                                                'type' => 'programa'
+                                            ];
                                         }
                                     }
+
+                                    // Pauta
+                                    if ($grupo->asignatura && $grupo->asignatura->pauta_evaluacion) {
+                                        $docsAsignatura[] = [
+                                            'nombre' => 'Pauta de Evaluación',
+                                            'url' => asset('storage/' . $grupo->asignatura->pauta_evaluacion),
+                                            'type' => 'pauta'
+                                        ];
+                                    }
                                 @endphp
-                                @if($urlPrograma)
-                                    <button id="btn-open-asignatura" 
-                                            type="button"
-                                            data-url="{{ $urlPrograma }}"
+
+                                {{-- Botón Documentos Asignatura --}}
+                                @if(count($docsAsignatura) > 0)
+                                    <button type="button"
+                                            data-docs='@json($docsAsignatura)'
                                             data-nombre="{{ $grupo->asignatura->nombreAsignatura }}"
-                                            class="text-sky-600 hover:text-white hover:bg-sky-600 p-2 ml-4 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center" 
-                                            title="Ver Programa de la Asignatura">
+                                            class="btn-open-asignatura-docs ml-6 text-sky-600 hover:text-white hover:bg-sky-600 p-2 rounded-md transition shadow-sm bg-white border border-gray-200 flex items-center gap-2 px-3" 
+                                            title="Ver Documentos">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
+                                        <span class="font-medium">Ver Documentos</span>
                                     </button>
                                 @else
-                                    <span class="inline-flex items-center ml-4 px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none">
+                                    <span class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 text-sm font-bold rounded-md border border-gray-200 cursor-not-allowed select-none" title="Sin Documentos">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                                        Sin Programa
+                                        Sin Documentos
                                     </span>
                                 @endif
                             </div>
@@ -240,11 +256,10 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">N°</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">RUN</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-16">Foto</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-32">RUN</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Nombre Completo</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Correo</th>
-                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Acciones</th>
+                                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-48">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -255,16 +270,35 @@
                                             ];
                                         @endphp
                                         <tr class="hover:bg-gray-50 transition">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $index + 1 }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                                                    @if($alumno->foto)
+                                                        <img src="{{ asset('storage/' . $alumno->foto) }}" class="h-full w-full object-cover">
+                                                    @else
+                                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                                        <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}</span>
+                                                    </div>                                                    
+                                                    @endif
+                                                </div>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $alumno->runAlumno }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $alumno->nombres ?? '' }} {{ $alumno->apellidoPaterno ?? '' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <a  class="text-sky-600">{{ $alumno->correo ?? 'No registrado' }}</a>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <div class="flex items-center justify-end gap-2">
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                                <div class="flex items-center justify-center gap-2">
         
-                                                    {{-- BOTÓN 1: VER DOCUMENTOS --}}
+                                                    {{-- BOTÓN 1: VER FICHA --}}
+                                                    <button type="button"
+                                                            data-action="view-alumno-ficha"
+                                                            data-alumno='@json($alumno)'
+                                                            class="inline-flex items-center justify-center w-8 h-8 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                                                            title="Ver Ficha">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    {{-- BOTÓN 2: VER DOCUMENTOS --}}
                                                     <button type="button" 
                                                             data-action="view-alumno-docs"
                                                             data-nombre="{{ $alumno->nombres }} {{ $alumno->apellidoPaterno }}"
@@ -276,7 +310,7 @@
                                                         </svg>
                                                     </button>
 
-                                                    {{-- BOTÓN 2: ELIMINAR --}}
+                                                    {{-- BOTÓN 3: ELIMINAR --}}
                                                     <button type="button" 
                                                             data-action="delete-alumno" 
                                                             data-run="{{ $alumno->runAlumno }}" 
@@ -386,7 +420,6 @@
                                 <div class="flex justify-between border-b border-gray-200 pb-2"><span class="text-gray-500 font-medium">RUN</span><span class="text-gray-900 font-semibold">{{ $docente->runDocente }}</span></div>
                                 <div class="flex justify-between items-center border-b border-gray-200 pb-2"><span class="text-gray-500 font-medium">Correo</span><a class="text-sky-600 font-semibold truncate ml-4 block text-right">{{ $docente->correo ?? 'No registrado' }}</a></div>
                                 <div class="flex justify-between items-center border-b border-gray-200 pb-2"><span class="text-gray-500 font-medium">Fecha de Nacimiento</span><a class="text-sky-600 font-semibold truncate ml-4 block text-right">{{ $docente->fechaNacto ? \Carbon\Carbon::parse($docente->fechaNacto)->format('d/m/Y') : 'No registrado' }}</a></div>
-                                <div class="flex justify-between items-center pt-2"><span class="text-gray-500 font-medium">Documentos</span><button id="btn-view-docs-internal" class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></button></div>
                             </div>
                             <div class="mt-6"><button id="btn-close-bottom" class="w-full inline-flex justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none transition-colors">Cerrar Ficha</button></div>
                         </div>
@@ -479,7 +512,7 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- MODAL 5: PROGRAMA ASIGNATURA               --}}
+    {{-- MODAL 5: DOCUMENTOS ASIGNATURA             --}}
     {{-- ========================================== --}}
     <div id="modalAsignatura" class="relative z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div id="modal-asignatura-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40 cursor-pointer backdrop-blur-sm"></div>
@@ -489,19 +522,70 @@
                 <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-gray-200 h-[85vh] flex flex-col">
                     
                     {{-- Header --}}
-                    <div class="bg-sky-600 px-6 py-4 border-b border-sky-700 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-white flex items-center">
-                            <svg class="w-6 h-6 mr-2 text-sky-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                            Programa: <span id="asignatura-modal-nombre" class="ml-2 font-normal text-sky-100"></span>
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                            <svg class="w-6 h-6 text-sky-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Documentos de <span id="asignatura-modal-nombre" class="ml-2"></span>
                         </h3>
-                        <button id="btn-close-asignatura" class="text-indigo-200 hover:text-white transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <button id="btn-close-asignatura" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded text-sm transition">
+                            <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                         </button>
                     </div>
 
-                    {{-- Iframe --}}
-                    <div class="flex-1 bg-gray-100 p-0 relative">
-                        <iframe id="iframe-asignatura" src="" class="w-full h-full"></iframe>
+                    <div class="flex-1 overflow-hidden flex">
+                        {{-- Sidebar Lista --}}
+                        <div class="w-full md:w-1/3 border-r border-gray-200 bg-white flex flex-col">
+                            <div id="lista-docs-asignatura" class="flex-1 overflow-y-auto p-4 space-y-2">
+                                {{-- LISTA DINÁMICA --}}
+                            </div>
+                            <div class="p-4 border-t border-gray-200 bg-gray-50 shrink-0">
+                                <button id="btn-back-asignatura" class="w-full inline-flex justify-center items-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-100 focus:outline-none transition-colors">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                    Volver
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Preview --}}
+                        <div class="hidden md:flex w-full md:w-2/3 bg-gray-100 flex-col items-center justify-center p-4">
+                            <div id="empty-state-asignatura" class="text-center text-gray-400">
+                                <svg class="w-16 h-16 mb-4 opacity-30 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                <p>Selecciona un documento para visualizar</p>
+                            </div>
+                            <iframe id="iframe-asignatura" src="" class="hidden w-full h-full rounded-lg border shadow-sm bg-white"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 6. FICHA DEL ALUMNO (DINÁMICA) --}}
+    <div id="modalFichaAlumno" class="relative z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div id="modal-ficha-alumno-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40 cursor-pointer backdrop-blur-sm"></div>
+        <div class="fixed inset-0 z-50 w-screen overflow-y-auto pointer-events-none">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 pointer-events-auto">
+                <div class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-200">
+                    <div class="bg-gradient-to-r from-sky-700 to-blue-800 h-24 w-full absolute top-0 left-0 z-0"></div>
+                    <button id="btn-close-ficha-alumno" class="absolute top-4 right-4 z-20 text-white hover:text-gray-200 focus:outline-none transition-transform hover:scale-110">
+                        <svg class="w-6 h-6 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <div class="relative z-10 px-6 pt-12 pb-6">
+                        <div class="flex justify-center mb-4">
+                            <div class="h-24 w-24 rounded-full border-4 border-white shadow-md bg-white overflow-hidden flex items-center justify-center relative z-10">
+                                <img id="ficha-alumno-foto" src="" class="h-full w-full object-cover">
+                            </div>
+                        </div>
+                        <div class="text-center mb-6">
+                            <h3 id="ficha-alumno-nombre" class="text-xl font-bold text-gray-900"></h3>
+                            <p class="text-sky-700 text-sm font-medium bg-sky-50 inline-block px-3 py-0.5 rounded-full mt-1 border border-sky-100">Estudiante</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-5 border border-gray-100 text-sm space-y-3 shadow-inner">
+                            <div class="flex justify-between border-b border-gray-200 pb-2"><span class="text-gray-500 font-medium">RUN</span><span id="ficha-alumno-run" class="text-gray-900 font-semibold"></span></div>
+                            <div class="flex justify-between items-center border-b border-gray-200 pb-2"><span class="text-gray-500 font-medium">Correo</span><a id="ficha-alumno-correo" class="text-sky-600 font-semibold truncate ml-4 block text-right"></a></div>
+                            <div class="flex justify-between items-center border-b border-gray-200 pb-2"><span class="text-gray-500 font-medium">Fecha de Nacimiento</span><a id="ficha-alumno-nacimiento" class="text-sky-600 font-semibold truncate ml-4 block text-right"></a></div>
+                        </div>
+                        <div class="mt-6"><button id="btn-close-ficha-alumno-bottom" class="w-full inline-flex justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none transition-colors">Cerrar Ficha</button></div>
                     </div>
                 </div>
             </div>

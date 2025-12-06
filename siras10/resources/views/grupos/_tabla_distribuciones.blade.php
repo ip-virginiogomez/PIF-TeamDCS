@@ -28,6 +28,9 @@
                 <th scope="col" class="px-6 py-3">
                     {!! $getSortLink('unidad_clinica', 'Unidad Clínica') !!}
                 </th>
+                <th scope="col" class="px-6 py-3">
+                    {!! $getSortLink('tipo_practica', 'Tipo de Práctica') !!}
+                </th>
                 <th scope="col" class="px-6 py-3 text-center">Cupos</th>
                 <th scope="col" class="px-6 py-3 text-center">Fechas</th>
                 <th scope="col" class="px-6 py-3 text-center">Horario</th>
@@ -60,6 +63,12 @@
                     {{-- Unidad Clínica --}}
                     <td class="px-6 py-4 font-medium text-gray-900">
                         {{ $oferta->unidadClinica->nombreUnidad ?? 'N/A' }}
+                    </td>
+                    {{-- Tipo de Práctica --}}
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            {{ $oferta->tipoPractica->nombrePractica ?? 'N/A' }}
+                        </span>
                     </td>
                     {{-- Cupos --}}
                     <td class="px-6 py-4 text-center">
