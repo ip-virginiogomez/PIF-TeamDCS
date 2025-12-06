@@ -19,16 +19,56 @@ class UnidadClinicaController extends Controller
 
     public function index(Request $request)
     {
-        $unidadesClinicas = UnidadClinica::with('centroSalud')->orderBy('idUnidadClinica', 'desc')->paginate(10);
+        $columnasDisponibles = ['idUnidadClinica', 'nombreUnidad', 'centroSalud.nombreCentro', 'fechaCreacion'];
+        $sortBy = $request->get('sort_by', 'idUnidadClinica');
+        $sortDirection = $request->get('sort_direction', 'desc');
+        $search = $request->input('search');
+
+        if (! in_array($sortBy, $columnasDisponibles)) {
+            $sortBy = 'idUnidadClinica';
+        }
+
+        $query = UnidadClinica::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombreUnidad', 'like', "%{$search}%")
+                  ->orWhereHas('centroSalud', function ($q2) use ($search) {
+                      $q2->where('nombreCentro', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if (strpos($sortBy, '.') !== false) {
+            [$tableRelacion, $columna] = explode('.', $sortBy);
+            if ($tableRelacion === 'centroSalud') {
+                $query->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
+                    ->orderBy('centro_salud.'.$columna, $sortDirection)
+                    ->select('unidad_clinica.*');
+            }
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $unidadesClinicas = $query->with('centroSalud')->paginate(10);
 
         if ($request->ajax()) {
-            return View::make('unidad-clinicas._tabla', compact('unidadesClinicas'))->render();
+            return View::make('unidad-clinicas._tabla', [
+                'unidadesClinicas' => $unidadesClinicas,
+                'sortBy' => $sortBy,
+                'sortDirection' => $sortDirection,
+            ])->render();
         }
 
         // Cargamos los Centros de Salud para el <select> del modal
         $centrosSalud = CentroSalud::orderBy('nombreCentro')->get();
 
-        return view('unidad-clinicas.index', compact('unidadesClinicas', 'centrosSalud'));
+        return view('unidad-clinicas.index', [
+            'unidadesClinicas' => $unidadesClinicas,
+            'centrosSalud' => $centrosSalud,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+        ]);
     }
 
     public function store(Request $request)
