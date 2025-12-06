@@ -23,6 +23,7 @@ class CentroFormadorController extends Controller
 
         $sortBy = request()->get('sort_by', 'idCentroFormador');
         $sortDirection = request()->get('sort_direction', 'desc');
+        $search = request()->input('search');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idCentroFormador';
@@ -30,9 +31,13 @@ class CentroFormadorController extends Controller
 
         $query = CentroFormador::query();
 
+        if ($search) {
+            $query->where('nombreCentroFormador', 'like', "%{$search}%");
+        }
+
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
-            if (tableRelacion === 'tipoCentroFormador') {
+            if ($tableRelacion === 'tipoCentroFormador') {
                 $query->join('tipo_centro_formador', 'centro_formador.idTipoCentroFormador', '=', 'tipo_centro_formador.idTipoCentroFormador')
                     ->orderBy('tipo_centro_formador.'.$columna, $sortDirection)
                     ->select('centro_formador.*');
