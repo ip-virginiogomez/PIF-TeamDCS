@@ -34,7 +34,6 @@
                         };
                     @endphp
                     
-                    <th class="py-2 px-4 text-left whitespace-nowrap">{!! $getSortLink('idConvenio', 'ID') !!}</th>
                     <th class="py-2 px-4 text-left whitespace-nowrap">{!! $getSortLink('centro_formador.nombreCentroFormador', 'Centro Formador') !!}</th>
                     <th class="py-2 px-4 text-left whitespace-nowrap">{!! $getSortLink('fechaInicio', 'Fecha Inicio') !!}</th>
                     <th class="py-2 px-4 text-left whitespace-nowrap">{!! $getSortLink('fechaFin', 'Fecha Fin') !!}</th>
@@ -45,13 +44,10 @@
             </thead>
             <tbody>
                 @foreach($convenios as $convenio)
-                    <tr class="border-b" id="convenio-{{ $convenio->idConvenio }}">
-                        <td class="py-2 px-4 whitespace-nowrap">
-                            <span>{{ $convenio->idConvenio }}</span>
-                        </td>
+                                        <tr class="border-b" id="convenio-{{ $convenio->idConvenio }}">
                         <td class="py-2 px-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {{ $convenio->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                                /* Lines 54-55 omitted */
                             </span>
                         </td>
                         <td class="py-2 px-4">

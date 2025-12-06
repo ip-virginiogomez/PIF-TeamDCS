@@ -16,7 +16,6 @@
                         return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
                     };
                 @endphp
-                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('idCentroSalud', 'ID') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('nombreCentro', 'Nombre del Centro') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('director', 'Director') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('direccion', 'Dirección') !!}</th>
@@ -29,9 +28,6 @@
         <tbody>
             @forelse ($centrosSalud as $centro)
                 <tr class="border-b" id="centro-{{ $centro->idCentroSalud }}">
-                    <td class="py-2 px-4 whitespace-nowrap">
-                        <span>{{ $centro->idCentroSalud }}</span>
-                    </td>
                     <td class="py-2 px-4">
                         <span>{{ $centro->nombreCentro }}</span>
                     </td>

@@ -16,7 +16,6 @@
                         return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
                     };
                 @endphp
-                <th class="py-2 px-4 text-left">ID</th>
                 <th class="py-2 px-4 text-left">
                     {!! $getSortLink('Año', 'Año') !!}
                 </th>
@@ -28,9 +27,6 @@
         <tbody>
             @forelse ($periodos as $periodo)
             <tr class="border-b" id="periodo-{{ $periodo->idPeriodo }}">
-                <td class="py-2 px-4">
-                    <span>{{ $periodo->idPeriodo }}</span>
-                </td>
                 <td class="py-2 px-4">
                     <span>{{ $periodo->Año }}</span>
                 </td>

@@ -83,10 +83,10 @@
         <div class="mb-4">
             <label for="documento" class="block text-sm font-medium text-gray-700">Documento del Convenio *</label>
             <input type="file" 
-                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
-                   id="documento" 
-                   name="documento" 
-                   accept=".pdf,.doc,.docx">
+                    class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
+                    id="documento" 
+                    name="documento" 
+                    accept=".pdf,.doc,.docx">
             <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-documento"></div>
             <div id="archivo-preview"></div>

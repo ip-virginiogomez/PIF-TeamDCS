@@ -12,7 +12,6 @@
                             : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
                     };
                 @endphp
-                <th class="py-2 px-4 text-left">ID</th>
                 <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-100" onclick="toggleSort('name')">
                     <div class="flex items-center gap-1">
                         Nombre del Rol {!! $getSortIcon('name') !!}
@@ -24,11 +23,6 @@
         <tbody>
             @forelse ($roles as $role)
                 <tr class="border-b">
-                    <td class="py-2 px-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ $role->id }}
-                        </span>
-                    </td>
                     <td class="py-2 px-4">{{ $role->name }}</td>
                     <td class="py-2 px-4">
                         <div class="flex space-x-2">
