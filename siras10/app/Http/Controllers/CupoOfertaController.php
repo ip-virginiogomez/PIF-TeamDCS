@@ -31,9 +31,9 @@ class CupoOfertaController extends Controller
         $sortDirection = $request->get('sort_direction', 'desc');
 
         // Cargamos las relaciones para mostrar la información en la tabla
-        $query = CupoOferta::with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
-            ->withSum('cupoDistribuciones', 'cantCupos')
-            ->select('cupo_oferta.*'); // Importante para evitar conflictos de ID en los joins
+        $query = CupoOferta::select('cupo_oferta.*')
+            ->with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
+            ->withSum('cupoDistribuciones', 'cantCupos');
 
         if ($search) {
             $query->whereHas('unidadClinica', function ($q) use ($search) {
