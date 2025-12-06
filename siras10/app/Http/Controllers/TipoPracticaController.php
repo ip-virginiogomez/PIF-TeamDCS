@@ -20,8 +20,8 @@ class TipoPracticaController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $sort = $request->input('sort');
-        $direction = $request->input('direction', 'asc');
+        $sortBy = $request->input('sort_by', 'idTipoPractica');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
         $query = TipoPractica::query();
 
@@ -29,25 +29,21 @@ class TipoPracticaController extends Controller
             $query->where('nombrePractica', 'like', "%{$search}%");
         }
 
-        if ($sort) {
-            $query->orderBy($sort, $direction);
-        } else {
-            $query->orderBy('idTipoPractica', 'desc');
-        }
+        $query->orderBy($sortBy, $sortDirection);
 
         $tiposPractica = $query->paginate(10);
 
         $tiposPractica->appends([
             'search' => $search,
-            'sort' => $sort,
-            'direction' => $direction
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection
         ]);
 
         if ($request->ajax()) {
-            return View::make('tipos-practica._tabla', compact('tiposPractica'))->render();
+            return View::make('tipos-practica._tabla', compact('tiposPractica', 'sortBy', 'sortDirection'))->render();
         }
 
-        return view('tipos-practica.index', compact('tiposPractica'));
+        return view('tipos-practica.index', compact('tiposPractica', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)

@@ -38,7 +38,7 @@
                             <input type="text" id="search-input" 
                                 class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
                                 placeholder="Buscar por nombre de rol...">
-                            <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 flex items-center pr-3 hidden">
+                            <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 items-center pr-3 hidden">
                                 <svg class="w-4 h-4 text-gray-500 hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>

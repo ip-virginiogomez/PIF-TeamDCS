@@ -3,19 +3,22 @@
         <thead class="bg-gray-200">
             <tr>
                 @php
-                    $link = function ($columna, $texto) use ($sortBy, $sortDirection) {
-                        $direction = ($sortBy === $columna && $sortDirection == 'asc') ? 'desc' : 'asc';
-                        $symbol = '';
-                        if ($sortBy == $columna) {
-                            $symbol = $sortDirection == 'asc' ? '↑' : '↓';
+                    $getSortLink = function($column, $text) use ($sortBy, $sortDirection) {
+                        $direction = ($sortBy === $column && $sortDirection == 'asc') ? 'desc' : 'asc';
+                        $params = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction, 'page' => 1]);
+                        $url = route('carreras.index', $params);
+                        $icon = '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
+                        if ($sortBy === $column) {
+                             $icon = $sortDirection === 'asc' 
+                                ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+                                : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
                         }
-                        $url = route('carreras.index', ['sort_by' => $columna, 'sort_direction' => $direction]);
-                        return "<a href=\"{$url}\" class='sort-link text-left font-bold'>{$texto} {$symbol}</a>";
+                        return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
                     };
                 @endphp
-                <th class="py-2 px-4 text-left">{!! $link('idCarrera', 'ID') !!}</th>
-                <th class="py-2 px-4 text-left">{!! $link('nombreCarrera', 'Nombre') !!}</th>
-                <th class="py-2 px-4 text-left">{!! $link('fechaCreacion', 'Fecha de Creación') !!}</th>
+                <th class="py-2 px-4 text-left">{!! $getSortLink('idCarrera', 'ID') !!}</th>
+                <th class="py-2 px-4 text-left">{!! $getSortLink('nombreCarrera', 'Nombre') !!}</th>
+                <th class="py-2 px-4 text-left">{!! $getSortLink('fechaCreacion', 'Fecha de Creación') !!}</th>
                 <th class="py-2 px-4 text-left">Acciones</th>
             </tr>
         </thead>

@@ -23,8 +23,8 @@ class GrupoController extends Controller
     {
         $search = $request->input('search');
         $periodo = $request->input('periodo');
-        $sort = $request->input('sort');
-        $direction = $request->input('direction', 'asc');
+        $sortBy = $request->input('sort_by');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
         $periodosDisponibles = \App\Models\CupoOferta::selectRaw('YEAR(fechaEntrada) as year')
             ->distinct()
@@ -61,19 +61,19 @@ class GrupoController extends Controller
         }
 
         // Ordenamiento
-        if ($sort) {
-            switch ($sort) {
+        if ($sortBy) {
+            switch ($sortBy) {
                 case 'centro_formador':
-                    $query->orderBy('centro_formador.nombreCentroFormador', $direction);
+                    $query->orderBy('centro_formador.nombreCentroFormador', $sortDirection);
                     break;
                 case 'sede_carrera':
-                    $query->orderBy('sede_carrera.nombreSedeCarrera', $direction);
+                    $query->orderBy('sede_carrera.nombreSedeCarrera', $sortDirection);
                     break;
                 case 'centro_salud':
-                    $query->orderBy('centro_salud.nombreCentro', $direction);
+                    $query->orderBy('centro_salud.nombreCentro', $sortDirection);
                     break;
                 case 'unidad_clinica':
-                    $query->orderBy('unidad_clinica.nombreUnidad', $direction);
+                    $query->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
                     break;
                 default:
                     $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
@@ -88,8 +88,8 @@ class GrupoController extends Controller
         $distribuciones->appends([
             'search' => $search, 
             'periodo' => $periodo,
-            'sort' => $sort,
-            'direction' => $direction
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection
         ]);
 
         $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
@@ -97,10 +97,10 @@ class GrupoController extends Controller
         $listaAsignaturas = Asignatura::orderBy('nombreAsignatura')->get();
 
         if ($request->ajax() && ! $request->has('get_grupos')) {
-            return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
+            return view('grupos._tabla_distribuciones', compact('distribuciones', 'sortBy', 'sortDirection'))->render();
         }
 
-        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas', 'periodosDisponibles'));
+        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas', 'periodosDisponibles', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)
@@ -170,20 +170,20 @@ class GrupoController extends Controller
 
     public function getGruposByDistribucion(Request $request, $idDistribucion)
     {
-        $sort = $request->input('sort');
-        $direction = $request->input('direction', 'asc');
+        $sortBy = $request->input('sort_by');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
         $query = Grupo::with(['docenteCarrera.docente', 'asignatura'])
             ->where('idCupoDistribucion', $idDistribucion);
 
-        if ($sort) {
-            switch ($sort) {
+        if ($sortBy) {
+            switch ($sortBy) {
                 case 'nombre_grupo':
-                    $query->orderBy('nombreGrupo', $direction);
+                    $query->orderBy('nombreGrupo', $sortDirection);
                     break;
                 case 'asignatura':
                     $query->join('asignatura', 'grupo.idAsignatura', '=', 'asignatura.idAsignatura')
-                          ->orderBy('asignatura.nombreAsignatura', $direction)
+                          ->orderBy('asignatura.nombreAsignatura', $sortDirection)
                           ->select('grupo.*');
                     break;
                 default:
@@ -197,8 +197,8 @@ class GrupoController extends Controller
         $grupos = $query->paginate(5);
 
         $grupos->appends([
-            'sort' => $sort,
-            'direction' => $direction
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection
         ]);
 
         $distribucion = CupoDistribucion::with([
@@ -210,7 +210,7 @@ class GrupoController extends Controller
             return response()->json(['error' => 'Distribución no encontrada'], 404);
         }
 
-        return view('grupos._tabla_grupos', compact('grupos', 'distribucion'))->render();
+        return view('grupos._tabla_grupos', compact('grupos', 'distribucion', 'sortBy', 'sortDirection'))->render();
     }
 
     public function generarDossier($idGrupo)

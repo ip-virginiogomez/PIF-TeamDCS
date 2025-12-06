@@ -114,24 +114,26 @@ class GrupoManager extends BaseModalManager {
 
         // Función principal para cargar datos
         const fetchResultados = async (url = null) => {
-            const targetUrl = url || new URL(form.action);
+            // Siempre trabajar con objeto URL
+            const targetUrl = url ? new URL(url) : new URL(form.action);
+
+            // Obtener parámetros actuales de la URL para mantener el ordenamiento
+            const currentParams = new URLSearchParams(window.location.search);
+            const sortBy = currentParams.get('sort_by');
+            const sortDirection = currentParams.get('sort_direction');
 
             // Si no es una URL directa (paginación), construimos los parámetros del form
             if (!url) {
                 const params = new URLSearchParams(new FormData(form));
-                if (currentSort) {
-                    params.set('sort', currentSort);
-                    params.set('direction', currentDirection);
-                }
+                if (sortBy) params.set('sort_by', sortBy);
+                if (sortDirection) params.set('sort_direction', sortDirection);
                 targetUrl.search = params.toString();
             } else {
                 // Si es URL de paginación, aseguramos que mantenga el sort
-                const urlObj = new URL(url);
-                if (currentSort && !urlObj.searchParams.has('sort')) {
-                    urlObj.searchParams.set('sort', currentSort);
-                    urlObj.searchParams.set('direction', currentDirection);
+                if (!targetUrl.searchParams.has('sort_by') && sortBy) {
+                    targetUrl.searchParams.set('sort_by', sortBy);
+                    targetUrl.searchParams.set('sort_direction', sortDirection || 'asc');
                 }
-                targetUrl.href = urlObj.href;
             }
 
             // Efecto visual
@@ -160,16 +162,7 @@ class GrupoManager extends BaseModalManager {
             }
         };
 
-        // Exponer función global para el onclick del HTML
-        window.toggleSort = (column) => {
-            if (currentSort === column) {
-                currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort = column;
-                currentDirection = 'asc';
-            }
-            fetchResultados();
-        };
+
 
         // EVENTO 1: Escribir
         if (inputSearch) {
@@ -196,8 +189,12 @@ class GrupoManager extends BaseModalManager {
                 // 1. Resetear valores
                 if (inputSearch) inputSearch.value = '';
                 if (selectPeriodo) selectPeriodo.value = '';
-                currentSort = '';
-                currentDirection = 'asc';
+
+                // Limpiar URL params de sort
+                const url = new URL(window.location.href);
+                url.searchParams.delete('sort_by');
+                url.searchParams.delete('sort_direction');
+                window.history.pushState({}, '', url);
 
                 // 2. Disparar búsqueda "vacía" para traer todo de nuevo
                 fetchResultados();
@@ -206,7 +203,7 @@ class GrupoManager extends BaseModalManager {
 
         // EVENTO 5: Paginación
         container.addEventListener('click', (e) => {
-            const link = e.target.closest('.pagination a');
+            const link = e.target.closest('.pagination a, .sort-link');
             if (link) {
                 e.preventDefault();
                 fetchResultados(link.href);
@@ -346,8 +343,8 @@ class GrupoManager extends BaseModalManager {
         if (!container) return;
 
         container.addEventListener('click', (e) => {
-            // Paginación
-            const link = e.target.closest('.pagination a');
+            // Paginación y Sort
+            const link = e.target.closest('.pagination a, .sort-link');
             if (link) {
                 e.preventDefault();
                 this.cargarTablaGrupos(this.currentDistId, link.href);
@@ -382,8 +379,8 @@ class GrupoManager extends BaseModalManager {
                 targetUrl = `/grupos/por-distribucion/${distId}`;
                 const params = new URLSearchParams();
                 if (this.groupSort) {
-                    params.set('sort', this.groupSort);
-                    params.set('direction', this.groupDirection);
+                    params.set('sort_by', this.groupSort);
+                    params.set('sort_direction', this.groupDirection);
                 }
                 if (params.toString()) targetUrl += `?${params.toString()}`;
             }

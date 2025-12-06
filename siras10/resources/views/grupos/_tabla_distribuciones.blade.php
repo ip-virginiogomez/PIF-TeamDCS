@@ -2,53 +2,31 @@
     <table class="w-full text-sm text-left text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
-                <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-gray-100" onclick="toggleSort('centro_formador')">
-                    <div class="flex items-center justify-between">
-                        Centro Formador
-                        @if(request('sort') == 'centro_formador')
-                            @if(request('direction') == 'asc')
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                            @else
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            @endif
-                        @endif
-                    </div>
+                @php
+                    $getSortLink = function($column, $text) use ($sortBy, $sortDirection) {
+                        $direction = ($sortBy === $column && $sortDirection == 'asc') ? 'desc' : 'asc';
+                        $params = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction, 'page' => 1]);
+                        $url = route('grupos.index', $params);
+                        $icon = '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
+                        if ($sortBy === $column) {
+                             $icon = $sortDirection === 'asc' 
+                                ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+                                : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+                        }
+                        return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
+                    };
+                @endphp
+                <th scope="col" class="px-6 py-3">
+                    {!! $getSortLink('centro_formador', 'Centro Formador') !!}
                 </th>
-                <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-gray-100" onclick="toggleSort('sede_carrera')">
-                    <div class="flex items-center justify-between">
-                        Sede / Carrera
-                        @if(request('sort') == 'sede_carrera')
-                            @if(request('direction') == 'asc')
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                            @else
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            @endif
-                        @endif
-                    </div>
+                <th scope="col" class="px-6 py-3">
+                    {!! $getSortLink('sede_carrera', 'Sede / Carrera') !!}
                 </th>
-                <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-gray-100" onclick="toggleSort('centro_salud')">
-                    <div class="flex items-center justify-between">
-                        Centro de Salud
-                        @if(request('sort') == 'centro_salud')
-                            @if(request('direction') == 'asc')
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                            @else
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            @endif
-                        @endif
-                    </div>
+                <th scope="col" class="px-6 py-3">
+                    {!! $getSortLink('centro_salud', 'Centro de Salud') !!}
                 </th>
-                <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-gray-100" onclick="toggleSort('unidad_clinica')">
-                    <div class="flex items-center justify-between">
-                        Unidad Clínica
-                        @if(request('sort') == 'unidad_clinica')
-                            @if(request('direction') == 'asc')
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                            @else
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            @endif
-                        @endif
-                    </div>
+                <th scope="col" class="px-6 py-3">
+                    {!! $getSortLink('unidad_clinica', 'Unidad Clínica') !!}
                 </th>
                 <th scope="col" class="px-6 py-3 text-center">Cupos</th>
                 <th scope="col" class="px-6 py-3 text-center">Fechas</th>

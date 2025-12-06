@@ -40,7 +40,11 @@
                     </div>
 
                     <div id="tabla-container">
-                        @include('tipos-practica._tabla', ['tiposPractica' => $tiposPractica])
+                        @include('tipos-practica._tabla', [
+                            'tiposPractica' => $tiposPractica,
+                            'sortBy' => $sortBy,
+                            'sortDirection' => $sortDirection
+                        ])
                     </div>
                 </div>
             </div>
