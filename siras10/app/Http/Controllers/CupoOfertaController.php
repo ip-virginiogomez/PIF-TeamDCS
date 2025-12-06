@@ -22,15 +22,62 @@ class CupoOfertaController extends Controller
 
     public function index(Request $request)
     {
+        $search = $request->input('search');
+        $idPeriodo = $request->input('idPeriodo');
+        $idTipoPractica = $request->input('idTipoPractica');
+        $idCarrera = $request->input('idCarrera');
+
+        $sortBy = $request->get('sort_by', 'idCupoOferta');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
         // Cargamos las relaciones para mostrar la información en la tabla
-        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
-            ->withSum('cupoDistribuciones', 'cantCupos')
-            ->orderBy('idCupoOferta', 'desc')
-            ->paginate(10);
+        $query = CupoOferta::select('cupo_oferta.*')
+            ->with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
+            ->withSum('cupoDistribuciones', 'cantCupos');
+
+        if ($search) {
+            $query->whereHas('unidadClinica', function ($q) use ($search) {
+                $q->where('nombreUnidad', 'like', "%{$search}%")
+                    ->orWhereHas('centroSalud', function ($q2) use ($search) {
+                        $q2->where('nombreCentro', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($idPeriodo) {
+            $query->where('idPeriodo', $idPeriodo);
+        }
+
+        if ($idTipoPractica) {
+            $query->where('idTipoPractica', $idTipoPractica);
+        }
+
+        if ($idCarrera) {
+            $query->where('idCarrera', $idCarrera);
+        }
+
+        // Lógica de ordenamiento
+        if ($sortBy === 'periodo.Año') {
+            $query->join('periodo', 'cupo_oferta.idPeriodo', '=', 'periodo.idPeriodo')
+                ->orderBy('periodo.Año', $sortDirection);
+        } elseif ($sortBy === 'unidadClinica.nombreUnidad') {
+            $query->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
+                ->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
+        } elseif ($sortBy === 'tipoPractica.nombrePractica') {
+            $query->join('tipo_practica', 'cupo_oferta.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
+                ->orderBy('tipo_practica.nombrePractica', $sortDirection);
+        } elseif ($sortBy === 'carrera.nombreCarrera') {
+            $query->join('carrera', 'cupo_oferta.idCarrera', '=', 'carrera.idCarrera')
+                ->orderBy('carrera.nombreCarrera', $sortDirection);
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $cupoOfertas = $query->paginate(10);
 
         // Si es una petición AJAX, devolvemos solo la tabla
         if ($request->ajax()) {
-            return View::make('cupo-ofertas._tabla', compact('cupoOfertas'))->render();
+            return View::make('cupo-ofertas._tabla', compact('cupoOfertas', 'sortBy', 'sortDirection'))->render();
         }
 
         // Para la carga inicial, también necesitamos los datos para los selectores del modal
@@ -39,7 +86,7 @@ class CupoOfertaController extends Controller
         $tiposPractica = TipoPractica::all();
         $carreras = Carrera::all();
 
-        return view('cupo-ofertas.index', compact('cupoOfertas', 'periodos', 'unidadesClinicas', 'tiposPractica', 'carreras'));
+        return view('cupo-ofertas.index', compact('cupoOfertas', 'periodos', 'unidadesClinicas', 'tiposPractica', 'carreras', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)

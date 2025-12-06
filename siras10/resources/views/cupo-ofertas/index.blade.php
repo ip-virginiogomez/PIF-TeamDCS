@@ -11,9 +11,57 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    <div class="mb-4">
+                        <form id="search-form" class="flex flex-col md:flex-row gap-2" onsubmit="return false;">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                    </svg>
+                                </div>
+                                <input type="text" id="search-input" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Buscar por unidad clínica o centro de salud...">
+                                <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 items-center pr-3 hidden text-gray-500 hover:text-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            <div class="w-full md:w-48">
+                                <select id="filter-periodo" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                                    <option value="">Todos los Periodos</option>
+                                    @foreach($periodos as $periodo)
+                                        <option value="{{ $periodo->idPeriodo }}">{{ $periodo->Año }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="w-full md:w-48">
+                                <select id="filter-tipo-practica" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                                    <option value="">Todas las Prácticas</option>
+                                    @foreach($tiposPractica as $tipo)
+                                        <option value="{{ $tipo->idTipoPractica }}">{{ $tipo->nombrePractica }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="w-full md:w-48">
+                                <select id="filter-carrera" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                                    <option value="">Todas las Carreras</option>
+                                    @foreach($carreras as $carrera)
+                                        <option value="{{ $carrera->idCarrera }}">{{ $carrera->nombreCarrera }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex items-center">
+                                <button type="button" id="btn-reset-filters" class="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center me-2" title="Limpiar filtros">
+                                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    <span class="sr-only">Limpiar filtros</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                     <div id="tabla-container">
                         {{-- La tabla se carga aquí --}}
                         @include('cupo-ofertas._tabla', ['cupoOfertas' => $cupoOfertas])

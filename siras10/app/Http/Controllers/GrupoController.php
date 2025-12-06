@@ -23,57 +23,84 @@ class GrupoController extends Controller
     {
         $search = $request->input('search');
         $periodo = $request->input('periodo');
+        $sortBy = $request->input('sort_by');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
         $periodosDisponibles = \App\Models\CupoOferta::selectRaw('YEAR(fechaEntrada) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
 
-        $query = CupoDistribucion::with([
-            'sedeCarrera.sede.centroFormador',
-            'cupoOferta.unidadClinica.centroSalud',
-        ]);
+        $query = CupoDistribucion::select('cupo_distribucion.*')
+            ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+            ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
+            ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
+            ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+            ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
+            ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
+            ->with([
+                'sedeCarrera.sede.centroFormador',
+                'cupoOferta.unidadClinica.centroSalud',
+            ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 // A. Buscar por Centro Formador
-                $q->whereHas('sedeCarrera.sede.centroFormador', function ($sub) use ($search) {
-                    $sub->where('nombreCentroFormador', 'like', "%{$search}%");
-                })
+                $q->where('centro_formador.nombreCentroFormador', 'like', "%{$search}%")
                 // B. Buscar por Sede / Carrera
-                    ->orWhereHas('sedeCarrera', function ($sub) use ($search) {
-                        $sub->where('nombreSedeCarrera', 'like', "%{$search}%");
-                    })
+                    ->orWhere('sede_carrera.nombreSedeCarrera', 'like', "%{$search}%")
                 // C. Buscar por Centro de Salud
-                    ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($sub) use ($search) {
-                        $sub->where('nombreCentro', 'like', "%{$search}%"); // Ojo: verifica si es 'nombreCentro' o 'nombreCentroSalud' en tu BD
-                    })
+                    ->orWhere('centro_salud.nombreCentro', 'like', "%{$search}%")
                 // D. Buscar por Unidad Clínica
-                    ->orWhereHas('cupoOferta.unidadClinica', function ($sub) use ($search) {
-                        $sub->where('nombreUnidad', 'like', "%{$search}%");
-                    });
+                    ->orWhere('unidad_clinica.nombreUnidad', 'like', "%{$search}%");
             });
         }
 
         if ($periodo) {
-            $query->whereHas('cupoOferta', function ($q) use ($periodo) {
-                $q->whereYear('fechaEntrada', $periodo);
-            });
+            $query->whereYear('cupo_oferta.fechaEntrada', $periodo);
         }
 
-        $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
+        // Ordenamiento
+        if ($sortBy) {
+            switch ($sortBy) {
+                case 'centro_formador':
+                    $query->orderBy('centro_formador.nombreCentroFormador', $sortDirection);
+                    break;
+                case 'sede_carrera':
+                    $query->orderBy('sede_carrera.nombreSedeCarrera', $sortDirection);
+                    break;
+                case 'centro_salud':
+                    $query->orderBy('centro_salud.nombreCentro', $sortDirection);
+                    break;
+                case 'unidad_clinica':
+                    $query->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
+                    break;
+                default:
+                    $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
+        }
 
-        $distribuciones->appends(['search' => $search, 'periodo' => $periodo]);
+        $distribuciones = $query->paginate(5);
+
+        $distribuciones->appends([
+            'search' => $search,
+            'periodo' => $periodo,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ]);
 
         $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
 
         $listaAsignaturas = Asignatura::orderBy('nombreAsignatura')->get();
 
         if ($request->ajax() && ! $request->has('get_grupos')) {
-            return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
+            return view('grupos._tabla_distribuciones', compact('distribuciones', 'sortBy', 'sortDirection'))->render();
         }
 
-        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas', 'periodosDisponibles'));
+        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas', 'periodosDisponibles', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)
@@ -141,11 +168,38 @@ class GrupoController extends Controller
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);
     }
 
-    public function getGruposByDistribucion($idDistribucion)
+    public function getGruposByDistribucion(Request $request, $idDistribucion)
     {
-        $grupos = Grupo::with(['docenteCarrera.docente', 'asignatura'])
-            ->where('idCupoDistribucion', $idDistribucion)
-            ->paginate(5);
+        $sortBy = $request->input('sort_by');
+        $sortDirection = $request->input('sort_direction', 'asc');
+
+        $query = Grupo::with(['docenteCarrera.docente', 'asignatura'])
+            ->where('idCupoDistribucion', $idDistribucion);
+
+        if ($sortBy) {
+            switch ($sortBy) {
+                case 'nombre_grupo':
+                    $query->orderBy('nombreGrupo', $sortDirection);
+                    break;
+                case 'asignatura':
+                    $query->join('asignatura', 'grupo.idAsignatura', '=', 'asignatura.idAsignatura')
+                        ->orderBy('asignatura.nombreAsignatura', $sortDirection)
+                        ->select('grupo.*');
+                    break;
+                default:
+                    $query->orderBy('idGrupo', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('idGrupo', 'desc');
+        }
+
+        $grupos = $query->paginate(5);
+
+        $grupos->appends([
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ]);
 
         $distribucion = CupoDistribucion::with([
             'sedeCarrera.sede',
@@ -156,7 +210,7 @@ class GrupoController extends Controller
             return response()->json(['error' => 'Distribución no encontrada'], 404);
         }
 
-        return view('grupos._tabla_grupos', compact('grupos', 'distribucion'))->render();
+        return view('grupos._tabla_grupos', compact('grupos', 'distribucion', 'sortBy', 'sortDirection'))->render();
     }
 
     public function generarDossier($idGrupo)

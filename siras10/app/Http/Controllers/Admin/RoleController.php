@@ -18,8 +18,15 @@ class RoleController extends Controller
     {
         $sortBy = $request->get('sortBy', 'name');
         $sortDirection = $request->get('sortDirection', 'asc');
+        $search = $request->get('search');
 
-        $roles = Role::orderBy($sortBy, $sortDirection)->paginate(10);
+        $query = Role::query();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $roles = $query->orderBy($sortBy, $sortDirection)->paginate(10);
 
         // Esta es la comprobación correcta y robusta
         if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {

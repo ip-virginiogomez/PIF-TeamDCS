@@ -21,12 +21,17 @@ class TipoCentroFormadorController extends Controller
         $columnasDisponibles = ['idTipoCentroFormador', 'nombreTipo', 'fechaCreacion'];
         $sortBy = request()->get('sort_by', 'idTipoCentroFormador');
         $sortDirection = request()->get('sort_direction', 'desc');
+        $search = request()->input('search');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idTipoCentroFormador';
         }
 
         $query = TipoCentroFormador::query();
+
+        if ($search) {
+            $query->where('nombreTipo', 'like', "%{$search}%");
+        }
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);

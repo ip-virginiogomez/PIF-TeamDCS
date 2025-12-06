@@ -23,9 +23,23 @@ class UsuarioController extends Controller
     {
         $sortBy = $request->query('sort_by', 'runUsuario');
         $sortDirection = $request->query('sort_direction', 'desc');
+        $search = $request->query('search');
 
-        $usuarios = Usuario::with('roles')
-            ->orderBy($sortBy, $sortDirection)
+        $query = Usuario::with('roles');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('runUsuario', 'like', "%{$search}%")
+                    ->orWhere('nombreUsuario', 'like', "%{$search}%")
+                    ->orWhere('apellidoPaterno', 'like', "%{$search}%")
+                    ->orWhere('apellidoMaterno', 'like', "%{$search}%")
+                    ->orWhereHas('roles', function ($qRole) use ($search) {
+                        $qRole->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $usuarios = $query->orderBy($sortBy, $sortDirection)
             ->paginate(10);
 
         $roles = Role::all();

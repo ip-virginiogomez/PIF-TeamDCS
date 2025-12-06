@@ -87,7 +87,7 @@
                    id="documento" 
                    name="documento" 
                    accept=".pdf,.doc,.docx">
-            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 10MB)</div>
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX (máx. 2MB)</div>
             <div class="text-red-500 text-sm mt-1 hidden" id="error-documento"></div>
             <div id="archivo-preview"></div>
         </div>

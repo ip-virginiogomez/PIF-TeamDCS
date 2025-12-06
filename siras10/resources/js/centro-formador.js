@@ -19,6 +19,96 @@ class CentroFormadorManager extends BaseModalManager {
 
         this.initCoordinatorModal();
         this.initConveniosModal();
+        this.initSearch();
+    }
+
+    initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('btn-clear-search');
+        const tablaContainer = document.getElementById('tabla-container');
+
+        if (!searchInput || !tablaContainer) return;
+
+        // Mostrar X si ya hay texto
+        if (clearBtn && searchInput.value.trim().length > 0) {
+            clearBtn.classList.remove('hidden');
+            clearBtn.classList.add('flex');
+        }
+
+        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
+        const executeSearch = (page = 1) => {
+            const params = new URLSearchParams();
+
+            if (searchInput.value.trim()) {
+                params.append('search', searchInput.value.trim());
+            }
+
+            if (page > 1) {
+                params.append('page', page);
+            }
+
+            // Mantener ordenamiento si existe en URL actual
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            if (currentUrlParams.has('sort_by')) params.append('sort_by', currentUrlParams.get('sort_by'));
+            if (currentUrlParams.has('sort_direction')) params.append('sort_direction', currentUrlParams.get('sort_direction'));
+
+            const url = `${window.location.pathname}?${params.toString()}`;
+
+            // Actualizar URL sin recargar
+            window.history.pushState({}, '', url);
+
+            // Fetch AJAX
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    tablaContainer.innerHTML = html;
+                    // Re-inicializar listeners de paginación y ordenamiento si es necesario
+                    // (Depende de cómo BaseModalManager maneje esto, pero generalmente los eventos delegados funcionan)
+                })
+                .catch(error => console.error('Error en búsqueda:', error));
+        };
+
+        // --- EVENT LISTENERS ---
+        let debounceTimer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+
+            // Mostrar/Ocultar botón X
+            if (searchInput.value.trim().length > 0) {
+                clearBtn.classList.remove('hidden');
+                clearBtn.classList.add('flex');
+            } else {
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+            }
+
+            debounceTimer = setTimeout(() => {
+                executeSearch();
+            }, 300); // Debounce de 300ms
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+                executeSearch();
+                searchInput.focus();
+            });
+        }
+
+        // Prevenir submit del form
+        const form = document.getElementById('search-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                executeSearch();
+            });
+        }
     }
 
     initConveniosModal() {
@@ -38,11 +128,11 @@ class CentroFormadorManager extends BaseModalManager {
             if (btn) {
                 const convenios = JSON.parse(btn.dataset.convenios);
                 const nombre = btn.dataset.centroNombre;
-                
+
                 if (centroNombre) {
                     centroNombre.textContent = nombre;
                 }
-                
+
                 this.showConveniosList(convenios, listContainer, iframe);
                 modal.classList.remove('hidden');
             }
@@ -53,7 +143,7 @@ class CentroFormadorManager extends BaseModalManager {
             modal.classList.add('hidden');
             if (iframe) iframe.src = '';
         };
-        
+
         if (closeBtnX) closeBtnX.addEventListener('click', closeModal);
         if (backdrop) backdrop.addEventListener('click', closeModal);
     }
@@ -65,13 +155,13 @@ class CentroFormadorManager extends BaseModalManager {
         }
 
         const html = convenios.map((convenio, index) => {
-            const fechaInicio = convenio.fechaInicio 
+            const fechaInicio = convenio.fechaInicio
                 ? new Date(convenio.fechaInicio).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
                 : 'N/A';
-            const fechaFin = convenio.fechaFin 
+            const fechaFin = convenio.fechaFin
                 ? new Date(convenio.fechaFin).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
                 : 'N/A';
-            
+
             const estadoBadge = convenio.vigente
                 ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Vigente</span>'
                 : '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Vencido</span>';
