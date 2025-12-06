@@ -11,7 +11,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="mb-4">
@@ -23,7 +23,7 @@
                                     </svg>
                                 </div>
                                 <input type="text" id="search-input" class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Buscar por unidad clínica o centro de salud...">
-                                <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 flex items-center pr-3 hidden text-gray-500 hover:text-gray-700">
+                                <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 items-center pr-3 hidden text-gray-500 hover:text-gray-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                             </div>
