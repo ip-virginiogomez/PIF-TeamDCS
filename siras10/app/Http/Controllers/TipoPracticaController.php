@@ -36,7 +36,7 @@ class TipoPracticaController extends Controller
         $tiposPractica->appends([
             'search' => $search,
             'sort_by' => $sortBy,
-            'sort_direction' => $sortDirection
+            'sort_direction' => $sortDirection,
         ]);
 
         if ($request->ajax()) {

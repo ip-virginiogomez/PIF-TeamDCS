@@ -86,10 +86,10 @@ class GrupoController extends Controller
         $distribuciones = $query->paginate(5);
 
         $distribuciones->appends([
-            'search' => $search, 
+            'search' => $search,
             'periodo' => $periodo,
             'sort_by' => $sortBy,
-            'sort_direction' => $sortDirection
+            'sort_direction' => $sortDirection,
         ]);
 
         $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
@@ -183,8 +183,8 @@ class GrupoController extends Controller
                     break;
                 case 'asignatura':
                     $query->join('asignatura', 'grupo.idAsignatura', '=', 'asignatura.idAsignatura')
-                          ->orderBy('asignatura.nombreAsignatura', $sortDirection)
-                          ->select('grupo.*');
+                        ->orderBy('asignatura.nombreAsignatura', $sortDirection)
+                        ->select('grupo.*');
                     break;
                 default:
                     $query->orderBy('idGrupo', 'desc');
@@ -198,7 +198,7 @@ class GrupoController extends Controller
 
         $grupos->appends([
             'sort_by' => $sortBy,
-            'sort_direction' => $sortDirection
+            'sort_direction' => $sortDirection,
         ]);
 
         $distribucion = CupoDistribucion::with([

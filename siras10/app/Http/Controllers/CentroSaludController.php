@@ -38,13 +38,13 @@ class CentroSaludController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombreCentro', 'like', "%{$search}%")
-                  ->orWhereHas('ciudad', function ($q2) use ($search) {
-                      $q2->where('nombreCiudad', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('tipoCentroSalud', function ($q3) use ($search) {
-                      $q3->where('acronimo', 'like', "%{$search}%")
-                         ->orWhere('nombreTipo', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('ciudad', function ($q2) use ($search) {
+                        $q2->where('nombreCiudad', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tipoCentroSalud', function ($q3) use ($search) {
+                        $q3->where('acronimo', 'like', "%{$search}%")
+                            ->orWhere('nombreTipo', 'like', "%{$search}%");
+                    });
             });
         }
 

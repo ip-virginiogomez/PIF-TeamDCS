@@ -28,14 +28,14 @@ class UsuarioController extends Controller
         $query = Usuario::with('roles');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('runUsuario', 'like', "%{$search}%")
-                  ->orWhere('nombreUsuario', 'like', "%{$search}%")
-                  ->orWhere('apellidoPaterno', 'like', "%{$search}%")
-                  ->orWhere('apellidoMaterno', 'like', "%{$search}%")
-                  ->orWhereHas('roles', function($qRole) use ($search) {
-                      $qRole->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nombreUsuario', 'like', "%{$search}%")
+                    ->orWhere('apellidoPaterno', 'like', "%{$search}%")
+                    ->orWhere('apellidoMaterno', 'like', "%{$search}%")
+                    ->orWhereHas('roles', function ($qRole) use ($search) {
+                        $qRole->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 

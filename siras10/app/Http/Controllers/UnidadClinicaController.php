@@ -33,9 +33,9 @@ class UnidadClinicaController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombreUnidad', 'like', "%{$search}%")
-                  ->orWhereHas('centroSalud', function ($q2) use ($search) {
-                      $q2->where('nombreCentro', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('centroSalud', function ($q2) use ($search) {
+                        $q2->where('nombreCentro', 'like', "%{$search}%");
+                    });
             });
         }
 

@@ -26,7 +26,7 @@ class CupoOfertaController extends Controller
         $idPeriodo = $request->input('idPeriodo');
         $idTipoPractica = $request->input('idTipoPractica');
         $idCarrera = $request->input('idCarrera');
-        
+
         $sortBy = $request->get('sort_by', 'idCupoOferta');
         $sortDirection = $request->get('sort_direction', 'desc');
 
@@ -38,9 +38,9 @@ class CupoOfertaController extends Controller
         if ($search) {
             $query->whereHas('unidadClinica', function ($q) use ($search) {
                 $q->where('nombreUnidad', 'like', "%{$search}%")
-                  ->orWhereHas('centroSalud', function ($q2) use ($search) {
-                      $q2->where('nombreCentro', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('centroSalud', function ($q2) use ($search) {
+                        $q2->where('nombreCentro', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -59,16 +59,16 @@ class CupoOfertaController extends Controller
         // Lógica de ordenamiento
         if ($sortBy === 'periodo.Año') {
             $query->join('periodo', 'cupo_oferta.idPeriodo', '=', 'periodo.idPeriodo')
-                  ->orderBy('periodo.Año', $sortDirection);
+                ->orderBy('periodo.Año', $sortDirection);
         } elseif ($sortBy === 'unidadClinica.nombreUnidad') {
             $query->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
-                  ->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
+                ->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
         } elseif ($sortBy === 'tipoPractica.nombrePractica') {
             $query->join('tipo_practica', 'cupo_oferta.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
-                  ->orderBy('tipo_practica.nombrePractica', $sortDirection);
+                ->orderBy('tipo_practica.nombrePractica', $sortDirection);
         } elseif ($sortBy === 'carrera.nombreCarrera') {
             $query->join('carrera', 'cupo_oferta.idCarrera', '=', 'carrera.idCarrera')
-                  ->orderBy('carrera.nombreCarrera', $sortDirection);
+                ->orderBy('carrera.nombreCarrera', $sortDirection);
         } else {
             $query->orderBy($sortBy, $sortDirection);
         }
