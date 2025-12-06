@@ -3,20 +3,31 @@
         <thead class="bg-gray-200">
             <tr>
                 @php
-                    $link = function ($columna, $texto) use ($sortBy, $sortDirection) {
-                        $direction = ($sortBy === $columna && $sortDirection == 'asc') ? 'desc' : 'asc';
-                        $symbol = '';
-                        if ($sortBy == $columna) {
-                            $symbol = $sortDirection == 'asc' ? '↑' : '↓';
+                    $getSortIcon = function($column) use ($sortBy, $sortDirection) {
+                        if ($sortBy !== $column) {
+                            return '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
                         }
-                        $url = route('usuarios.index', ['sort_by' => $columna, 'sort_direction' => $direction]);
-                        return "<a href=\"{$url}\" class='sort-link text-left font-bold'>{$texto} {$symbol}</a>";
+                        return $sortDirection === 'asc' 
+                            ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
+                            : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
                     };
                 @endphp
-                <th class="py-2 px-4 text-left"> {!! $link('runUsuario', 'RUN') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('foto', 'Foto') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('nombreUsuario', 'Nombre') !!}</th>
-                <th class="py-2 px-4 text-left"> {!! $link('correo', 'Correo') !!}</th>
+                <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-100" onclick="toggleSort('runUsuario')">
+                    <div class="flex items-center gap-1">
+                        RUN {!! $getSortIcon('runUsuario') !!}
+                    </div>
+                </th>
+                <th class="py-2 px-4 text-left">Foto</th>
+                <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-100" onclick="toggleSort('nombreUsuario')">
+                    <div class="flex items-center gap-1">
+                        Nombre {!! $getSortIcon('nombreUsuario') !!}
+                    </div>
+                </th>
+                <th class="py-2 px-4 text-left cursor-pointer hover:bg-gray-100" onclick="toggleSort('correo')">
+                    <div class="flex items-center gap-1">
+                        Correo {!! $getSortIcon('correo') !!}
+                    </div>
+                </th>
                 <th class="py-2 px-4 text-left">Teléfono</th>
                 <th class="py-2 px-4 text-left">Roles</th>
                 <th class="py-2 px-4 text-left">Acciones</th>
