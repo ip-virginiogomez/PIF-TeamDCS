@@ -23,12 +23,22 @@ class SedeController extends Controller
 
         $sortBy = request()->get('sort_by', 'idSede');
         $sortDirection = request()->get('sort_direction', 'desc');
+        $search = request()->input('search');
 
         if (! in_array($sortBy, $columnasDisponibles)) {
             $sortBy = 'idSede';
         }
 
         $query = Sede::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombreSede', 'like', "%{$search}%")
+                  ->orWhereHas('centroFormador', function ($q2) use ($search) {
+                      $q2->where('nombreCentroFormador', 'like', "%{$search}%");
+                  });
+            });
+        }
 
         if (strpos($sortBy, '.') !== false) {
             [$tableRelacion, $columna] = explode('.', $sortBy);
