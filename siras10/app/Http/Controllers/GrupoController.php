@@ -23,47 +23,74 @@ class GrupoController extends Controller
     {
         $search = $request->input('search');
         $periodo = $request->input('periodo');
+        $sort = $request->input('sort');
+        $direction = $request->input('direction', 'asc');
 
         $periodosDisponibles = \App\Models\CupoOferta::selectRaw('YEAR(fechaEntrada) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
 
-        $query = CupoDistribucion::with([
-            'sedeCarrera.sede.centroFormador',
-            'cupoOferta.unidadClinica.centroSalud',
-        ]);
+        $query = CupoDistribucion::select('cupo_distribucion.*')
+            ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+            ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
+            ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
+            ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+            ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
+            ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
+            ->with([
+                'sedeCarrera.sede.centroFormador',
+                'cupoOferta.unidadClinica.centroSalud',
+            ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 // A. Buscar por Centro Formador
-                $q->whereHas('sedeCarrera.sede.centroFormador', function ($sub) use ($search) {
-                    $sub->where('nombreCentroFormador', 'like', "%{$search}%");
-                })
+                $q->where('centro_formador.nombreCentroFormador', 'like', "%{$search}%")
                 // B. Buscar por Sede / Carrera
-                    ->orWhereHas('sedeCarrera', function ($sub) use ($search) {
-                        $sub->where('nombreSedeCarrera', 'like', "%{$search}%");
-                    })
+                    ->orWhere('sede_carrera.nombreSedeCarrera', 'like', "%{$search}%")
                 // C. Buscar por Centro de Salud
-                    ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($sub) use ($search) {
-                        $sub->where('nombreCentro', 'like', "%{$search}%"); // Ojo: verifica si es 'nombreCentro' o 'nombreCentroSalud' en tu BD
-                    })
+                    ->orWhere('centro_salud.nombreCentro', 'like', "%{$search}%")
                 // D. Buscar por Unidad Clínica
-                    ->orWhereHas('cupoOferta.unidadClinica', function ($sub) use ($search) {
-                        $sub->where('nombreUnidad', 'like', "%{$search}%");
-                    });
+                    ->orWhere('unidad_clinica.nombreUnidad', 'like', "%{$search}%");
             });
         }
 
         if ($periodo) {
-            $query->whereHas('cupoOferta', function ($q) use ($periodo) {
-                $q->whereYear('fechaEntrada', $periodo);
-            });
+            $query->whereYear('cupo_oferta.fechaEntrada', $periodo);
         }
 
-        $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
+        // Ordenamiento
+        if ($sort) {
+            switch ($sort) {
+                case 'centro_formador':
+                    $query->orderBy('centro_formador.nombreCentroFormador', $direction);
+                    break;
+                case 'sede_carrera':
+                    $query->orderBy('sede_carrera.nombreSedeCarrera', $direction);
+                    break;
+                case 'centro_salud':
+                    $query->orderBy('centro_salud.nombreCentro', $direction);
+                    break;
+                case 'unidad_clinica':
+                    $query->orderBy('unidad_clinica.nombreUnidad', $direction);
+                    break;
+                default:
+                    $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
+        }
 
-        $distribuciones->appends(['search' => $search, 'periodo' => $periodo]);
+        $distribuciones = $query->paginate(5);
+
+        $distribuciones->appends([
+            'search' => $search, 
+            'periodo' => $periodo,
+            'sort' => $sort,
+            'direction' => $direction
+        ]);
 
         $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
 

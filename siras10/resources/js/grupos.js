@@ -10,9 +10,9 @@ class GrupoManager extends BaseModalManager {
             baseUrl: '/grupos',
             primaryKey: 'idGrupo',
             fields: [
-                'nombreGrupo', 
-                'idCupoDistribucion', 
-                'idAsignatura', 
+                'nombreGrupo',
+                'idCupoDistribucion',
+                'idAsignatura',
                 'idDocenteCarrera',
                 'fechaInicio', // ✅ Correcto
                 'fechaFin'     // ✅ Correcto
@@ -40,13 +40,13 @@ class GrupoManager extends BaseModalManager {
         const title = document.getElementById('preview-title');
         const errorDiv = document.getElementById('preview-error');
         const fallbackLink = document.getElementById('btn-fallback-download');
-        
+
         const btnClose = document.getElementById('btn-close-preview');
         const backdrop = document.getElementById('backdropPreview');
 
         const closePreview = () => {
             if (modal) modal.classList.add('hidden');
-            if (iframe) iframe.src = ''; 
+            if (iframe) iframe.src = '';
             document.body.classList.remove('overflow-hidden');
         };
 
@@ -63,7 +63,7 @@ class GrupoManager extends BaseModalManager {
 
             if (modal && iframe && title) {
                 title.textContent = name;
-                
+
                 if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
                     iframe.src = url;
                     iframe.classList.remove('hidden');
@@ -88,20 +88,34 @@ class GrupoManager extends BaseModalManager {
         const container = document.getElementById('tabla-distribuciones-container');
         const inputSearch = document.getElementById('input-search');
         const selectPeriodo = document.getElementById('select-periodo');
-        const btnLimpiar = document.getElementById('btn-limpiar'); // <--- Nuevo selector
+        const btnLimpiar = document.getElementById('btn-limpiar');
 
         if (!form || !container) return;
 
         let debounceTimer;
+        let currentSort = '';
+        let currentDirection = 'asc';
 
         // Función principal para cargar datos
         const fetchResultados = async (url = null) => {
             const targetUrl = url || new URL(form.action);
-            
+
             // Si no es una URL directa (paginación), construimos los parámetros del form
             if (!url) {
-                const params = new URLSearchParams(new FormData(form)).toString();
-                targetUrl.search = params;
+                const params = new URLSearchParams(new FormData(form));
+                if (currentSort) {
+                    params.set('sort', currentSort);
+                    params.set('direction', currentDirection);
+                }
+                targetUrl.search = params.toString();
+            } else {
+                // Si es URL de paginación, aseguramos que mantenga el sort
+                const urlObj = new URL(url);
+                if (currentSort && !urlObj.searchParams.has('sort')) {
+                    urlObj.searchParams.set('sort', currentSort);
+                    urlObj.searchParams.set('direction', currentDirection);
+                }
+                targetUrl.href = urlObj.href;
             }
 
             // Efecto visual
@@ -116,7 +130,7 @@ class GrupoManager extends BaseModalManager {
 
                 const html = await response.text();
                 container.innerHTML = html;
-                
+
                 // Actualizar URL del navegador
                 window.history.pushState({}, '', targetUrl);
 
@@ -128,6 +142,17 @@ class GrupoManager extends BaseModalManager {
             } finally {
                 container.classList.remove('opacity-50', 'pointer-events-none');
             }
+        };
+
+        // Exponer función global para el onclick del HTML
+        window.toggleSort = (column) => {
+            if (currentSort === column) {
+                currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = column;
+                currentDirection = 'asc';
+            }
+            fetchResultados();
         };
 
         // EVENTO 1: Escribir
@@ -149,12 +174,14 @@ class GrupoManager extends BaseModalManager {
             fetchResultados();
         });
 
-        // EVENTO 4: Botón Limpiar (NUEVO)
+        // EVENTO 4: Botón Limpiar
         if (btnLimpiar) {
             btnLimpiar.addEventListener('click', () => {
                 // 1. Resetear valores
                 if (inputSearch) inputSearch.value = '';
                 if (selectPeriodo) selectPeriodo.value = '';
+                currentSort = '';
+                currentDirection = 'asc';
 
                 // 2. Disparar búsqueda "vacía" para traer todo de nuevo
                 fetchResultados();
@@ -178,11 +205,11 @@ class GrupoManager extends BaseModalManager {
     toggleBtnLimpiar(input, select, btn) {
         if (!btn) return;
         const hasFilter = (input && input.value.trim() !== '') || (select && select.value !== '');
-        
+
         // Si quieres que se oculte cuando no hay filtros, descomenta esto:
         // if (hasFilter) btn.classList.remove('hidden');
         // else btn.classList.add('hidden');
-        
+
         // O si prefieres solo deshabilitarlo visualmente:
         btn.disabled = !hasFilter;
         btn.classList.toggle('opacity-50', !hasFilter);
@@ -196,8 +223,8 @@ class GrupoManager extends BaseModalManager {
         e.preventDefault();
 
         const isEdit = !!this.currentEditId;
-        const submitUrl = isEdit 
-            ? `${this.config.baseUrl}/${this.currentEditId}` 
+        const submitUrl = isEdit
+            ? `${this.config.baseUrl}/${this.currentEditId}`
             : this.config.baseUrl;
 
         const formData = new FormData(this.form);
@@ -212,7 +239,7 @@ class GrupoManager extends BaseModalManager {
             this.limpiarErroresVisuales();
 
             const response = await fetch(submitUrl, {
-                method: 'POST', 
+                method: 'POST',
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -251,7 +278,7 @@ class GrupoManager extends BaseModalManager {
     }
 
     // ... (El resto de tus métodos: refreshTable, initDistribucionSelector, etc. se mantienen igual) ...
-    
+
     refreshTable() { this.reloadTable(); }
 
     initDistribucionSelector() {
@@ -275,9 +302,9 @@ class GrupoManager extends BaseModalManager {
 
             if (seccionGrupos) seccionGrupos.classList.remove('hidden');
             if (tituloDistribucion) tituloDistribucion.textContent = `(${distribucionSummary})`;
-            
+
             if (btnNuevoGrupo) btnNuevoGrupo.dataset.distribucionId = distribucionId;
-            
+
             this.cargarTablaGrupos(distribucionId);
         });
 
@@ -319,7 +346,7 @@ class GrupoManager extends BaseModalManager {
         if (!container) return;
 
         container.innerHTML = '<div class="flex justify-center p-4"><i class="fas fa-spinner fa-spin fa-2x text-green-600"></i></div>';
-        
+
         try {
             const response = await fetch(`/grupos/por-distribucion/${distId}`);
             if (!response.ok) throw new Error('Error HTTP');
@@ -365,7 +392,7 @@ class GrupoManager extends BaseModalManager {
     }
 
     async eliminarGrupo(id) {
-        const confirmacion = typeof Swal !== 'undefined' 
+        const confirmacion = typeof Swal !== 'undefined'
             ? await Swal.fire({
                 title: '¿Estás seguro?',
                 text: "No podrás revertir esto",
