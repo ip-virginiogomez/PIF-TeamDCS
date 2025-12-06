@@ -400,7 +400,7 @@ function initFichaAlumnoModal() {
         const alumno = JSON.parse(btn.dataset.alumno);
 
         // Rellenar datos
-        txtNombre.textContent = `${alumno.nombres} ${alumno.apellidoPaterno}`;
+        txtNombre.textContent = `${alumno.nombres} ${alumno.apellidoPaterno} ${alumno.apellidoMaterno || ''}`;
         txtRun.textContent = alumno.runAlumno;
         txtCorreo.textContent = alumno.correo || 'No registrado';
 

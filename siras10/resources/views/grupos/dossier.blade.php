@@ -259,15 +259,24 @@
                                         <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-16">Foto</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-32">RUN</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Nombre Completo</th>
-                                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-48">Acciones</th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-48">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @forelse($grupo->alumnos as $index => $alumno)
                                         @php
-                                            $documentosAlumno = [
-                                                ['nombre' => 'Acuerdo de Confidencialidad', 'file' => $alumno->acuerdo ?? null],
-                                            ];
+                                            $documentosAlumno = [];
+                                            if($alumno->acuerdo) {
+                                                $documentosAlumno[] = ['nombre' => 'Acuerdo de Confidencialidad', 'file' => $alumno->acuerdo];
+                                            }
+                                            foreach($alumno->vacunas as $vacuna) {
+                                                if($vacuna->documento && $vacuna->estadoVacuna && $vacuna->estadoVacuna->nombreEstado === 'Activo') {
+                                                    $documentosAlumno[] = [
+                                                        'nombre' => $vacuna->tipoVacuna->nombreVacuna ?? 'Vacuna',
+                                                        'file' => $vacuna->documento
+                                                    ];
+                                                }
+                                            }
                                         @endphp
                                         <tr class="hover:bg-gray-50 transition">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -276,13 +285,13 @@
                                                         <img src="{{ asset('storage/' . $alumno->foto) }}" class="h-full w-full object-cover">
                                                     @else
                                                     <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                                        <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}</span>
+                                                        <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}{{ substr($alumno->apellidoMaterno, 0, 1) }}</span>
                                                     </div>                                                    
                                                     @endif
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $alumno->runAlumno }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $alumno->nombres ?? '' }} {{ $alumno->apellidoPaterno ?? '' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $alumno->nombres ?? '' }} {{ $alumno->apellidoPaterno ?? '' }} {{ $alumno->apellidoMaterno ?? '' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                                 <div class="flex items-center justify-center gap-2">
         
