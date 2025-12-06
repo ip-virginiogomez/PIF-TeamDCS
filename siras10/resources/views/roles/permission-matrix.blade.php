@@ -64,9 +64,29 @@
                             @if (session('success'))
                                 <div class="bg-green-100 border-green-400 text-green-700 border-l-4 p-4 mb-4" role="alert"><p>{{ session('success') }}</p></div>
                             @endif
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">
-                                Permisos para: <span class="font-extrabold text-blue-600">{{ $selectedUser->nombres }} {{ $selectedUser->apellidoPaterno }}</span>
-                            </h3>
+                            
+                            <!-- Título y botones en la misma línea -->
+                            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    Permisos para: <span class="font-extrabold text-blue-600">{{ $selectedUser->nombreUsuario }} {{ $selectedUser->apellidoPaterno }} {{ $selectedUser->apellidoMaterno }}</span>
+                                </h3>
+
+                                <!-- Botones para seleccionar/deseleccionar todos los permisos del menú -->
+                                <div class="flex gap-3" id="bulk-action-buttons" style="display: none;">
+                                    <button type="button" id="select-all-menu" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-150">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Seleccionar Todos los Permisos
+                                    </button>
+                                    <button type="button" id="deselect-all-menu" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md transition-colors duration-150">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Quitar Todos los Permisos
+                                    </button>
+                                </div>
+                            </div>
 
                             <div class="space-y-6">
                                 @foreach ($permissions as $resource => $permissionList)

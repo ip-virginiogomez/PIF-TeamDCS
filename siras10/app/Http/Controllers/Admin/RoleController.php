@@ -195,7 +195,7 @@ class RoleController extends Controller
 
     public function getUsersByRole(Role $role)
     {
-        $users = $role->users()->select('runUsuario', 'nombreUsuario', 'apellidoPaterno')->get();
+        $users = $role->users()->select('runUsuario', 'nombreUsuario', 'apellidoPaterno', 'apellidoMaterno')->get();
 
         return response()->json($users);
     }
