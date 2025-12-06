@@ -42,25 +42,48 @@ class CupoOfertaManager extends BaseModalManager {
         }
 
         // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
-        const executeSearch = (page = 1) => {
-            const params = new URLSearchParams();
+        const executeSearch = (page = 1, newSortBy = null) => {
+            const params = new URLSearchParams(window.location.search);
 
             if (searchInput.value.trim()) {
-                params.append('search', searchInput.value.trim());
+                params.set('search', searchInput.value.trim());
+            } else {
+                params.delete('search');
             }
 
             if (filterPeriodo && filterPeriodo.value) {
-                params.append('idPeriodo', filterPeriodo.value);
+                params.set('idPeriodo', filterPeriodo.value);
+            } else {
+                params.delete('idPeriodo');
             }
             if (filterTipoPractica && filterTipoPractica.value) {
-                params.append('idTipoPractica', filterTipoPractica.value);
+                params.set('idTipoPractica', filterTipoPractica.value);
+            } else {
+                params.delete('idTipoPractica');
             }
             if (filterCarrera && filterCarrera.value) {
-                params.append('idCarrera', filterCarrera.value);
+                params.set('idCarrera', filterCarrera.value);
+            } else {
+                params.delete('idCarrera');
             }
 
             if (page > 1) {
-                params.append('page', page);
+                params.set('page', page);
+            } else {
+                params.delete('page');
+            }
+
+            // Actualizar ordenamiento
+            if (newSortBy) {
+                const currentSortBy = params.get('sort_by') || 'idCupoOferta';
+                const currentSortDir = params.get('sort_direction') || 'desc';
+
+                if (newSortBy === currentSortBy) {
+                    params.set('sort_direction', currentSortDir === 'asc' ? 'desc' : 'asc');
+                } else {
+                    params.set('sort_by', newSortBy);
+                    params.set('sort_direction', 'asc');
+                }
             }
 
             const url = `${window.location.pathname}?${params.toString()}`;
@@ -79,6 +102,11 @@ class CupoOfertaManager extends BaseModalManager {
                     tablaContainer.innerHTML = html;
                 })
                 .catch(error => console.error('Error en búsqueda:', error));
+        };
+
+        // Exponer función de ordenamiento globalmente
+        window.updateSort = (column) => {
+            executeSearch(1, column);
         };
 
         // --- EVENT LISTENERS ---

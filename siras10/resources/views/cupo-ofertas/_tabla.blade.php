@@ -2,13 +2,55 @@
     <table class="min-w-full bg-white">
         <thead class="bg-gray-200">
             <tr>
-                <th class="py-2 px-4 text-left">Período</th>
                 <th class="py-2 px-4 text-left">
-                    <div>Unidad Clínica</div>
+                    <a href="#" onclick="event.preventDefault(); updateSort('periodo.Año')" class="flex items-center text-gray-600 hover:text-gray-900">
+                        Período
+                        @if ($sortBy === 'periodo.Año')
+                            @if ($sortDirection === 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </a>
+                </th>
+                <th class="py-2 px-4 text-left">
+                    <a href="#" onclick="event.preventDefault(); updateSort('unidadClinica.nombreUnidad')" class="flex items-center text-gray-600 hover:text-gray-900">
+                        Unidad Clínica
+                        @if ($sortBy === 'unidadClinica.nombreUnidad')
+                            @if ($sortDirection === 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </a>
                     <div class="text-xs font-normal text-gray-600">(Centro Salud)</div>
                 </th>
-                <th class="py-2 px-4 text-left">Tipo Práctica</th>
-                <th class="py-2 px-4 text-left">Carrera</th>
+                <th class="py-2 px-4 text-left">
+                    <a href="#" onclick="event.preventDefault(); updateSort('tipoPractica.nombrePractica')" class="flex items-center text-gray-600 hover:text-gray-900">
+                        Tipo Práctica
+                        @if ($sortBy === 'tipoPractica.nombrePractica')
+                            @if ($sortDirection === 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </a>
+                </th>
+                <th class="py-2 px-4 text-left">
+                    <a href="#" onclick="event.preventDefault(); updateSort('carrera.nombreCarrera')" class="flex items-center text-gray-600 hover:text-gray-900">
+                        Carrera
+                        @if ($sortBy === 'carrera.nombreCarrera')
+                            @if ($sortDirection === 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </a>
+                </th>
                 <th class="py-2 px-4 text-left">Cupos Ofertados</th>
                 <th class="py-2 px-4 text-left">Cupos Asignados</th>
                 <th class="py-2 px-4 text-center">Fechas</th>
