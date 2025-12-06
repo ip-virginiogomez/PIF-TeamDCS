@@ -17,7 +17,7 @@
                     };
                 @endphp
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('runDocente', 'RUN') !!}</th>
-                <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('foto', 'Foto') !!}</th>
+                <th class="py-2 px-4 text-left whitespace-nowrap">Foto</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('nombresDocente', 'Nombres') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('apellidoPaterno', 'Primer Apellido') !!}</th>
                 <th class="py-2 px-4 text-left whitespace-nowrap"> {!! $getSortLink('apellidoMaterno', 'Segundo Apellido') !!}</th>
