@@ -22,10 +22,37 @@ class CupoOfertaController extends Controller
 
     public function index(Request $request)
     {
+        $search = $request->input('search');
+        $idPeriodo = $request->input('idPeriodo');
+        $idTipoPractica = $request->input('idTipoPractica');
+        $idCarrera = $request->input('idCarrera');
+
         // Cargamos las relaciones para mostrar la información en la tabla
-        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
-            ->withSum('cupoDistribuciones', 'cantCupos')
-            ->orderBy('idCupoOferta', 'desc')
+        $query = CupoOferta::with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
+            ->withSum('cupoDistribuciones', 'cantCupos');
+
+        if ($search) {
+            $query->whereHas('unidadClinica', function ($q) use ($search) {
+                $q->where('nombreUnidad', 'like', "%{$search}%")
+                  ->orWhereHas('centroSalud', function ($q2) use ($search) {
+                      $q2->where('nombreCentro', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($idPeriodo) {
+            $query->where('idPeriodo', $idPeriodo);
+        }
+
+        if ($idTipoPractica) {
+            $query->where('idTipoPractica', $idTipoPractica);
+        }
+
+        if ($idCarrera) {
+            $query->where('idCarrera', $idCarrera);
+        }
+
+        $cupoOfertas = $query->orderBy('idCupoOferta', 'desc')
             ->paginate(10);
 
         // Si es una petición AJAX, devolvemos solo la tabla
