@@ -36,22 +36,36 @@ class UnidadClinicaManager extends BaseModalManager {
             clearBtn.classList.add('flex');
         }
 
-        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
-        const executeSearch = (page = 1) => {
-            const params = new URLSearchParams();
+        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA Y ORDENAMIENTO ---
+        const executeSearch = (page = 1, newSortBy = null) => {
+            const params = new URLSearchParams(window.location.search);
 
+            // Actualizar búsqueda
             if (searchInput.value.trim()) {
-                params.append('search', searchInput.value.trim());
+                params.set('search', searchInput.value.trim());
+            } else {
+                params.delete('search');
             }
 
+            // Actualizar página
             if (page > 1) {
-                params.append('page', page);
+                params.set('page', page);
+            } else {
+                params.delete('page');
             }
 
-            // Mantener ordenamiento si existe en URL actual
-            const currentUrlParams = new URLSearchParams(window.location.search);
-            if (currentUrlParams.has('sort_by')) params.append('sort_by', currentUrlParams.get('sort_by'));
-            if (currentUrlParams.has('sort_direction')) params.append('sort_direction', currentUrlParams.get('sort_direction'));
+            // Actualizar ordenamiento
+            if (newSortBy) {
+                const currentSortBy = params.get('sort_by') || 'idUnidadClinica';
+                const currentSortDir = params.get('sort_direction') || 'desc';
+
+                if (newSortBy === currentSortBy) {
+                    params.set('sort_direction', currentSortDir === 'asc' ? 'desc' : 'asc');
+                } else {
+                    params.set('sort_by', newSortBy);
+                    params.set('sort_direction', 'asc');
+                }
+            }
 
             const url = `${window.location.pathname}?${params.toString()}`;
 
@@ -67,10 +81,13 @@ class UnidadClinicaManager extends BaseModalManager {
                 .then(response => response.text())
                 .then(html => {
                     tablaContainer.innerHTML = html;
-                    // Re-inicializar listeners de paginación y ordenamiento si es necesario
-                    // (Depende de cómo BaseModalManager maneje esto, pero generalmente los eventos delegados funcionan)
                 })
                 .catch(error => console.error('Error en búsqueda:', error));
+        };
+
+        // Exponer función de ordenamiento globalmente
+        window.updateSort = (column) => {
+            executeSearch(1, column);
         };
 
         // --- EVENT LISTENERS ---
