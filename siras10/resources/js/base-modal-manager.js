@@ -303,8 +303,41 @@ export default class BaseModalManager {
     }
     setModalTitle(title) { document.getElementById('modalTitle').textContent = title; }
     setButtonText(text) { document.getElementById('btnTexto').textContent = text; }
-    clearValidationErrors() { /* Tu código existente aquí es correcto */ }
-    showValidationErrors(errors) { /* Tu código existente aquí es correcto */ }
+    
+    clearValidationErrors() {
+        if (!this.form) return;
+        
+        this.form.querySelectorAll('.border-red-500').forEach(el => {
+            el.classList.remove('border-red-500');
+        });
+        
+        this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+        });
+    }
+    
+    showValidationErrors(errors) {
+        if (!this.form || !errors) return;
+        
+        this.clearValidationErrors();
+        
+        for (const field in errors) {
+            const input = this.form.querySelector(`[name="${field}"]`);
+            const errorDiv = document.getElementById(`error-${field}`);
+            const errorMessage = errors[field][0];
+
+            if (input) {
+                input.classList.add('border-red-500'); 
+            }
+
+            if (errorDiv) {
+                errorDiv.textContent = errorMessage;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+    }
+    
     async showAlert(title, text, icon) { 
         return await Swal.fire({
             title: title,

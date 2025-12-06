@@ -23,7 +23,8 @@ class CupoOfertaController extends Controller
     public function index(Request $request)
     {
         // Cargamos las relaciones para mostrar la información en la tabla
-        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica', 'tipoPractica', 'carrera'])
+        $cupoOfertas = CupoOferta::with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
+            ->withSum('cupoDistribuciones', 'cantCupos')
             ->orderBy('idCupoOferta', 'desc')
             ->paginate(10);
 
@@ -48,7 +49,7 @@ class CupoOfertaController extends Controller
             'idUnidadClinica' => 'required|exists:unidad_clinica,idUnidadClinica',
             'idTipoPractica' => 'required|exists:tipo_practica,idTipoPractica',
             'idCarrera' => 'required|exists:carrera,idCarrera',
-            'cantCupos' => 'required|integer|min:1',
+            'cantCupos' => 'required|integer|min:1|max:99',
             'fechaEntrada' => 'required|date',
             'fechaSalida' => 'required|date|after_or_equal:fechaEntrada',
             'horaEntrada' => 'required',
@@ -72,12 +73,26 @@ class CupoOfertaController extends Controller
             'idUnidadClinica' => 'required|exists:unidad_clinica,idUnidadClinica',
             'idTipoPractica' => 'required|exists:tipo_practica,idTipoPractica',
             'idCarrera' => 'required|exists:carrera,idCarrera',
-            'cantCupos' => 'required|integer|min:1',
+            'cantCupos' => 'required|integer|min:1|max:99',
             'fechaEntrada' => 'required|date',
             'fechaSalida' => 'required|date|after_or_equal:fechaEntrada',
             'horaEntrada' => 'required',
             'horaSalida' => 'required',
         ]);
+
+        // Validar que la nueva cantidad de cupos no sea menor a los cupos ya distribuidos
+        $cuposDistribuidos = $cupoOferta->cupoDistribuciones()->sum('cantCupos');
+        $nuevosCupos = $request->input('cantCupos');
+
+        if ($nuevosCupos < $cuposDistribuidos) {
+            return response()->json([
+                'success' => false,
+                'message' => "No se puede reducir la cantidad de cupos a {$nuevosCupos} porque ya hay {$cuposDistribuidos} cupos distribuidos.",
+                'errors' => [
+                    'cantCupos' => ["Ya existen {$cuposDistribuidos} cupos asignados. No puede ofertar menos cupos de los ya distribuidos."],
+                ],
+            ], 422);
+        }
 
         $cupoOferta->update($request->all());
 
