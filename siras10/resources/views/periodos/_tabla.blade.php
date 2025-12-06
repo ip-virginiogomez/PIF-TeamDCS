@@ -3,7 +3,18 @@
         <thead class="bg-gray-200">
             <tr>
                 <th class="py-2 px-4 text-left">ID</th>
-                <th class="py-2 px-4 text-left">Año</th>
+                <th class="py-2 px-4 text-left">
+                    <a href="#" onclick="event.preventDefault(); updateSort('Año')" class="flex items-center text-gray-600 hover:text-gray-900">
+                        Año
+                        @if ($sortBy === 'Año')
+                            @if ($sortDirection === 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </a>
+                </th>
                 <th class="py-2 px-4 text-left">Fecha de Inicio</th>
                 <th class="py-2 px-4 text-left">Fecha de Fin</th>
                 <th class="py-2 px-4 text-left">Acciones</th>
