@@ -56,6 +56,9 @@
             </div>
 
             @if (isset($selectedUser))
+                @php
+                    $isAdmin = $selectedUser->hasRole('Admin');
+                @endphp
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <form action="{{ route('roles.sync_permissions') }}" method="POST">
                         @csrf
@@ -64,9 +67,36 @@
                             @if (session('success'))
                                 <div class="bg-green-100 border-green-400 text-green-700 border-l-4 p-4 mb-4" role="alert"><p>{{ session('success') }}</p></div>
                             @endif
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">
-                                Permisos para: <span class="font-extrabold text-blue-600">{{ $selectedUser->nombres }} {{ $selectedUser->apellidoPaterno }}</span>
-                            </h3>
+
+                            @if ($isAdmin)
+                                <div class="bg-yellow-100 border-yellow-400 text-yellow-700 border-l-4 p-4 mb-4" role="alert">
+                                    <p class="font-medium">Este usuario tiene rol de Administrador</p>
+                                    <p class="text-sm">Los permisos del administrador no pueden ser modificados.</p>
+                                </div>
+                            @endif
+                            
+                            <!-- Título y botones en la misma línea -->
+                            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    Permisos para: <span class="font-extrabold text-blue-600">{{ $selectedUser->nombreUsuario }} {{ $selectedUser->apellidoPaterno }} {{ $selectedUser->apellidoMaterno }}</span>
+                                </h3>
+
+                                <!-- Botones para seleccionar/deseleccionar todos los permisos del menú -->
+                                <div class="flex gap-3" id="bulk-action-buttons" style="display: none;">
+                                    <button type="button" id="select-all-menu" class="inline-flex items-center px-4 py-2 text-white text-sm font-medium rounded-md transition-colors duration-150 @if($isAdmin) bg-gray-400 cursor-not-allowed @else bg-blue-600 hover:bg-blue-700 @endif" @if($isAdmin) disabled @endif>
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Seleccionar Todos los Permisos
+                                    </button>
+                                    <button type="button" id="deselect-all-menu" class="inline-flex items-center px-4 py-2 text-white text-sm font-medium rounded-md transition-colors duration-150 @if($isAdmin) bg-gray-400 cursor-not-allowed @else bg-gray-600 hover:bg-gray-700 @endif" @if($isAdmin) disabled @endif>
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Quitar Todos los Permisos
+                                    </button>
+                                </div>
+                            </div>
 
                             <div class="space-y-6">
                                 @foreach ($permissions as $resource => $permissionList)
@@ -84,8 +114,8 @@
                                                     ];
                                                     $actionData = $translations[$action] ?? ['nombre' => $action, 'descripcion' => 'Acción personalizada'];
                                                 @endphp
-                                                <label class="inline-flex items-center">
-                                                    <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" class="rounded" @if ($selectedUser->getAllPermissions()->contains('name', $permission->name)) checked @endif>
+                                                <label class="inline-flex items-center @if($isAdmin) opacity-60 @endif">
+                                                    <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" class="rounded @if($isAdmin) text-gray-400 border-gray-300 focus:ring-gray-400 @endif" @if ($selectedUser->getAllPermissions()->contains('name', $permission->name)) checked @endif @if($isAdmin) disabled @endif>
                                                     <span class="ml-2 text-sm text-gray-600">{{ $actionData['nombre'] }}</span>
                                                     <span class="ml-1 text-gray-400 cursor-help" title="{{ $actionData['descripcion'] }}">
                                                         <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 20 20">
@@ -105,7 +135,7 @@
                             </div>
                         </div>
                         <div class="px-6 pb-6 bg-white text-right">
-                            <button type="submit" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">Guardar Permisos para este Usuario</button>
+                            <button type="submit" class="text-white font-bold py-2 px-4 rounded @if($isAdmin) bg-gray-400 cursor-not-allowed @else bg-green-600 hover:bg-green-800 @endif" @if($isAdmin) disabled @endif>Guardar Permisos para este Usuario</button>
                         </div>
                     </form>
                 </div>
