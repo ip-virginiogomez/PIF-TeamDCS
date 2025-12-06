@@ -82,11 +82,11 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                {{-- Los @can internos estaban bien --}}
                                 @can('periodos.read')<x-dropdown-link :href="route('periodos.index')" wire:navigate>{{ __('Períodos') }}</x-dropdown-link>@endcan
                                 @can('cupo-ofertas.read')<x-dropdown-link :href="route('cupo-ofertas.index')" wire:navigate>{{ __('Oferta de Cupos') }}</x-dropdown-link>@endcan
-                                <x-dropdown-link :href="route('grupos.index')" wire:navigate>{{ __('Dossier') }}</x-dropdown-link>
                                 @can('tipos-practica.read')<x-dropdown-link :href="route('tipos-practica.index')" wire:navigate>{{ __('Tipos de Práctica') }}</x-dropdown-link>@endcan
+                                <div class="border-t border-gray-200"></div>
+                                <x-dropdown-link :href="route('grupos.index')" wire:navigate>{{ __('Dossier de Grupos') }}</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -156,8 +156,8 @@
             </x-responsive-nav-link>
 
             @canany(['alumnos.read', 'docentes.read', 'carreras.read', 'sede-carrera.read'])
-            <div class="border-t border-gray-200 pt-2">
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <div class="border-t border-dcs-blue-700 pt-2">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                     {{ __('Gestión Académica') }}
                 </div>
                 
@@ -186,8 +186,8 @@
 
             {{-- CAMBIO: Añadidos los permisos de sede y convenios al @canany --}}
             @canany(['centros-formadores.read', 'tipos-centro-formador.read', 'sede.read', 'convenios.read'])
-                <div class="border-t border-gray-200 pt-2">
-                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div class="border-t border-dcs-blue-700 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión CF') }}
                     </div>
                     @can('centros-formadores.read')
@@ -215,9 +215,9 @@
 
             {{-- CAMBIO: Añadido @canany y @can individuales --}}
             @canany(['centro-salud.read', 'unidad-clinicas.read'])
-            <div class="border-t border-gray-200 pt-2">
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    {{ __('Gestión de Salud') }}
+            <div class="border-t border-dcs-blue-700 pt-2">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
+                    {{ __('Gestión CS') }}
                 </div>
                 @can('centro-salud.read')
                 <x-responsive-nav-link :href="route('centro-salud.index')" :active="request()->routeIs('centro-salud.*')" class="pl-6" wire:navigate>
@@ -234,8 +234,8 @@
 
             {{-- CAMBIO: Añadido @canany --}}
             @canany(['periodos.read', 'cupo-ofertas.read', 'tipos-practica.read'])
-                <div class="border-t border-gray-200 pt-2">
-                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div class="border-t border-dcs-blue-700 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión de Prácticas') }}
                     </div>
                     @can('periodos.read')
@@ -253,12 +253,15 @@
                         {{ __('Tipos de Práctica') }}
                     </x-responsive-nav-link>
                     @endcan
+                    <x-responsive-nav-link :href="route('grupos.index')" :active="request()->routeIs('grupos.*')" class="pl-6" wire:navigate>
+                        {{ __('Dossier de Grupos') }}
+                    </x-responsive-nav-link>
                 </div>
             @endcanany
 
             @canany(['usuarios.read', 'roles.read'])
-                <div class="border-t border-gray-200 pt-2">
-                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div class="border-t border-dcs-blue-700 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión de Usuarios') }}
                     </div>
                     @can('usuarios.read')
