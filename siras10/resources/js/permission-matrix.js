@@ -54,8 +54,11 @@ document.addEventListener('DOMContentLoaded', function() {
         submenuSelect.innerHTML = '<option value="">Cargando...</option>';
         submenuSelect.disabled = true; // Sigue deshabilitado (y oculto)
 
+        const bulkButtons = document.getElementById('bulk-action-buttons');
+
         if (!menuId) {
             submenuSelect.innerHTML = '<option value="">-- Selecciona un menú --</option>';
+            bulkButtons.style.display = 'none'; // Ocultar botones si no hay menú
             return;
         }
 
@@ -79,6 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 4. Si encontramos al menos un permiso, ocultamos el mensaje de "vacío".
                 if (permissionsFound) {
                     noPermissionsMessage.style.display = 'none';
+                    bulkButtons.style.display = 'flex'; // Mostrar botones si hay permisos
+                } else {
+                    bulkButtons.style.display = 'none'; // Ocultar botones si no hay permisos
                 }
                 
                 // (Ya no es necesario habilitar el select de submenú)
@@ -108,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 users.forEach(user => {
                     const option = document.createElement('option');
                     option.value = user.runUsuario;
-                    option.textContent = `${user.nombreUsuario} ${user.apellidoPaterno}`;
+                    option.textContent = `${user.nombreUsuario} ${user.apellidoPaterno} ${user.apellidoMaterno}`;
                     if (user.runUsuario === selectedUserRun) {
                         option.selected = true;
                     }
@@ -123,4 +129,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     populateUsersOnLoad();
+
+    // --- FUNCIONALIDAD DE SELECCIONAR/DESELECCIONAR TODOS LOS PERMISOS DEL MENÚ ---
+    const selectAllBtn = document.getElementById('select-all-menu');
+    const deselectAllBtn = document.getElementById('deselect-all-menu');
+
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            // Seleccionar todos los checkboxes visibles
+            document.querySelectorAll('.permission-group').forEach(group => {
+                if (group.style.display !== 'none') {
+                    group.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = true;
+                    });
+                }
+            });
+        });
+    }
+
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function() {
+            // Deseleccionar todos los checkboxes visibles
+            document.querySelectorAll('.permission-group').forEach(group => {
+                if (group.style.display !== 'none') {
+                    group.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                }
+            });
+        });
+    }
 });

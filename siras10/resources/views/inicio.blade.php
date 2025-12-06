@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SIRAS</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700&display=swap" rel="stylesheet" />
@@ -16,28 +19,28 @@
 
     <!-- ===== INICIO: BARRA DE NAVEGACIÓN ===== -->
 <header class="absolute top-0 left-0 w-full z-30">
-    <nav class="bg-dcs-blue-900 backdrop-blur-sm shadow-lg py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
+    <nav class="bg-dcs-blue-900 backdrop-blur-sm shadow-lg py-3 sm:py-4">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center gap-4">
                 <!-- Logos a la izquierda -->
-                <div class="flex items-center gap-x-6 sm:gap-x-8">
+                <div class="flex items-center gap-x-3 sm:gap-x-6 lg:gap-x-8 flex-1">
                     <a href="https://admision.virginiogomez.cl/" target="_blank" rel="noopener noreferrer" title="Instituto Profesional Virginio Gómez">
-                        <img class="h-12 sm:h-14 object-contain transition-transform duration-200 hover:scale-105" 
+                        <img class="h-10 sm:h-12 lg:h-14 object-contain transition-transform duration-200 hover:scale-105" 
                             src="{{ asset('images/ipvg.png') }}" 
                             alt="Logo Instituto Profesional Virginio Gómez">
                     </a>
                     <a href="https://dcslosangeles.cl/" target="_blank" rel="noopener noreferrer" title="Dirección Comunal de Salud Los Ángeles">
-                        <img class="h-14 sm:h-16 object-contain transition-transform duration-200 hover:scale-105" 
+                        <img class="h-12 sm:h-14 lg:h-16 object-contain transition-transform duration-200 hover:scale-105" 
                             src="{{ asset('images/dcs.jpg') }}" 
                             alt="Logo Dirección Comunal de Salud Los Ángeles">
                     </a>
                 </div>
 
                 <!-- Botón de Iniciar Sesión a la derecha -->
-                <div>
+                <div class="flex-shrink-0">
                     <a href="{{ route('login') }}" 
-                    class="rounded-md bg-yellow-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-yellow-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500 transition-all duration-150">
-                        Iniciar Sesión
+                    class="inline-block rounded-md bg-yellow-500 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold !text-white shadow-lg hover:bg-yellow-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500 transition-all duration-150 whitespace-nowrap">
+                        <span class="text-white">Iniciar Sesión</span>
                     </a>
                 </div>
             </div>
