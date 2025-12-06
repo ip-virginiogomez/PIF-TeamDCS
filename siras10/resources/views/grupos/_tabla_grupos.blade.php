@@ -3,8 +3,30 @@
         {{-- HEADERS --}}
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
             <tr>
-                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">Nombre del Grupo</th>
-                <th scope="col" class="px-6 py-3 font-semibold text-gray-600">Asignatura</th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 cursor-pointer hover:bg-gray-100" onclick="toggleGroupSort('nombre_grupo')">
+                    <div class="flex items-center justify-between">
+                        Nombre del Grupo
+                        @if(request('sort') == 'nombre_grupo')
+                            @if(request('direction') == 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </div>
+                </th>
+                <th scope="col" class="px-6 py-3 font-semibold text-gray-600 cursor-pointer hover:bg-gray-100" onclick="toggleGroupSort('asignatura')">
+                    <div class="flex items-center justify-between">
+                        Asignatura
+                        @if(request('sort') == 'asignatura')
+                            @if(request('direction') == 'asc')
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            @else
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            @endif
+                        @endif
+                    </div>
+                </th>
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600">Docente Encargado</th>
                 {{-- NUEVA COLUMNA: FECHAS --}}
                 <th scope="col" class="px-6 py-3 font-semibold text-gray-600 text-center">Período</th>

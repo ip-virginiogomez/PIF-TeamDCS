@@ -20,6 +20,22 @@ class GrupoManager extends BaseModalManager {
         });
 
         this.currentEditId = null;
+        this.currentDistId = null;
+        this.groupSort = '';
+        this.groupDirection = 'asc';
+
+        // Exponer función global para el ordenamiento de grupos
+        window.toggleGroupSort = (column) => {
+            if (this.groupSort === column) {
+                this.groupDirection = this.groupDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.groupSort = column;
+                this.groupDirection = 'asc';
+            }
+            if (this.currentDistId) {
+                this.cargarTablaGrupos(this.currentDistId);
+            }
+        };
 
         // Inicializamos todos los módulos
         this.initDistribucionSelector();
@@ -305,6 +321,9 @@ class GrupoManager extends BaseModalManager {
 
             if (btnNuevoGrupo) btnNuevoGrupo.dataset.distribucionId = distribucionId;
 
+            // Resetear ordenamiento al cambiar de distribución
+            this.groupSort = '';
+            this.groupDirection = 'asc';
             this.cargarTablaGrupos(distribucionId);
         });
 
@@ -327,6 +346,14 @@ class GrupoManager extends BaseModalManager {
         if (!container) return;
 
         container.addEventListener('click', (e) => {
+            // Paginación
+            const link = e.target.closest('.pagination a');
+            if (link) {
+                e.preventDefault();
+                this.cargarTablaGrupos(this.currentDistId, link.href);
+                return;
+            }
+
             const btnEdit = e.target.closest('button[data-action="edit"]');
             if (btnEdit) {
                 this.cargarDatosGrupo(btnEdit.dataset.id);
@@ -340,15 +367,28 @@ class GrupoManager extends BaseModalManager {
         });
     }
 
-    async cargarTablaGrupos(distId) {
+    async cargarTablaGrupos(distId, url = null) {
         const container = document.getElementById('tabla-grupos-container');
         const seccion = document.getElementById('seccion-grupos');
         if (!container) return;
 
+        this.currentDistId = distId;
+
         container.innerHTML = '<div class="flex justify-center p-4"><i class="fas fa-spinner fa-spin fa-2x text-green-600"></i></div>';
 
         try {
-            const response = await fetch(`/grupos/por-distribucion/${distId}`);
+            let targetUrl = url;
+            if (!targetUrl) {
+                targetUrl = `/grupos/por-distribucion/${distId}`;
+                const params = new URLSearchParams();
+                if (this.groupSort) {
+                    params.set('sort', this.groupSort);
+                    params.set('direction', this.groupDirection);
+                }
+                if (params.toString()) targetUrl += `?${params.toString()}`;
+            }
+
+            const response = await fetch(targetUrl);
             if (!response.ok) throw new Error('Error HTTP');
             const html = await response.text();
             container.innerHTML = html;

@@ -168,11 +168,38 @@ class GrupoController extends Controller
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);
     }
 
-    public function getGruposByDistribucion($idDistribucion)
+    public function getGruposByDistribucion(Request $request, $idDistribucion)
     {
-        $grupos = Grupo::with(['docenteCarrera.docente', 'asignatura'])
-            ->where('idCupoDistribucion', $idDistribucion)
-            ->paginate(5);
+        $sort = $request->input('sort');
+        $direction = $request->input('direction', 'asc');
+
+        $query = Grupo::with(['docenteCarrera.docente', 'asignatura'])
+            ->where('idCupoDistribucion', $idDistribucion);
+
+        if ($sort) {
+            switch ($sort) {
+                case 'nombre_grupo':
+                    $query->orderBy('nombreGrupo', $direction);
+                    break;
+                case 'asignatura':
+                    $query->join('asignatura', 'grupo.idAsignatura', '=', 'asignatura.idAsignatura')
+                          ->orderBy('asignatura.nombreAsignatura', $direction)
+                          ->select('grupo.*');
+                    break;
+                default:
+                    $query->orderBy('idGrupo', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('idGrupo', 'desc');
+        }
+
+        $grupos = $query->paginate(5);
+
+        $grupos->appends([
+            'sort' => $sort,
+            'direction' => $direction
+        ]);
 
         $distribucion = CupoDistribucion::with([
             'sedeCarrera.sede',
