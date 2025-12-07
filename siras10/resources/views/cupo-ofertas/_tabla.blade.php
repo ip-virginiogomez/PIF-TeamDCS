@@ -28,8 +28,8 @@
                 <th class="py-2 px-4 text-left">
                     {!! $getSortLink('carrera.nombreCarrera', 'Carrera') !!}
                 </th>
-                <th class="py-2 px-4 text-left">Cupos Ofertados</th>
-                <th class="py-2 px-4 text-left">Cupos Asignados</th>
+                <th class="py-2 px-4 text-center">Cupos Ofertados</th>
+                <th class="py-2 px-4 text-center">Cupos Asignados</th>
                 <th class="py-2 px-4 text-center">Fechas</th>
                 <th class="py-2 px-4 text-center">Acciones</th>
             </tr>
