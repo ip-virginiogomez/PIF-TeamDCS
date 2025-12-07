@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             EstadoVacunaSeeder::class,
             TipoVacunaSeeder::class,
             CupoOfertaSeeder::class,
+            CupoOfertaHorarioSeeder::class,
             DocenteCarreraSeeder::class,
             AsignaturaSeeder::class,
             CupoDistribucionSeeder::class,

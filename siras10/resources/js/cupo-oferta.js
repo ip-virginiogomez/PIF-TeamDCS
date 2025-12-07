@@ -16,11 +16,143 @@ class CupoOfertaManager extends BaseModalManager {
             tableContainerId: 'tabla-container',
             fields: [
                 'idPeriodo', 'idUnidadClinica', 'idTipoPractica', 'idCarrera',
-                'cantCupos', 'fechaEntrada', 'fechaSalida', 'horaEntrada', 'horaSalida'
+                'cantCupos', 'fechaEntrada', 'fechaSalida'
             ]
         });
 
         this.initSearch();
+        this.initHorarios();
+    }
+
+    initHorarios() {
+        const btnAdd = document.getElementById('btn-add-horario');
+        const container = document.getElementById('horarios-container');
+
+        if (btnAdd && container) {
+            btnAdd.addEventListener('click', () => {
+                this.addHorarioRow(container);
+            });
+        }
+    }
+
+    async editarRegistro(id) {
+        const data = await super.editarRegistro(id);
+        if (data) {
+            this.populateHorarios(data);
+        }
+    }
+
+    populateHorarios(data) {
+        const container = document.getElementById('horarios-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (data.horarios && data.horarios.length > 0) {
+            const groups = data.horarios.reduce((acc, h) => {
+                const key = `${h.horaEntrada}-${h.horaSalida}`;
+                if (!acc[key]) {
+                    acc[key] = {
+                        entrada: h.horaEntrada,
+                        salida: h.horaSalida,
+                        dias: []
+                    };
+                }
+                acc[key].dias.push(h.diaSemana);
+                return acc;
+            }, {});
+
+            Object.values(groups).forEach(group => this.addHorarioRow(container, group));
+        } else {
+            this.addHorarioRow(container);
+        }
+    }
+
+    validate() {
+        const container = document.getElementById('horarios-container');
+        if (!container) return true;
+
+        // Remove old hidden inputs
+        this.form.querySelectorAll('.hidden-horario-input').forEach(el => el.remove());
+
+        const rows = container.querySelectorAll('.horario-row');
+        let hasHorarios = false;
+
+        rows.forEach((row, index) => {
+            const dias = Array.from(row.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+            const entrada = row.querySelector('.hora-entrada').value;
+            const salida = row.querySelector('.hora-salida').value;
+
+            if (dias.length > 0 && entrada && salida) {
+                hasHorarios = true;
+                dias.forEach((dia, diaIndex) => {
+                    this.addHiddenInput(`horarios[${index}][dias][${diaIndex}]`, dia);
+                });
+                this.addHiddenInput(`horarios[${index}][entrada]`, entrada);
+                this.addHiddenInput(`horarios[${index}][salida]`, salida);
+            }
+        });
+
+        return true;
+    }
+
+    addHiddenInput(name, value) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        input.className = 'hidden-horario-input';
+        this.form.appendChild(input);
+    }
+
+    addHorarioRow(container, data = null) {
+        const row = document.createElement('div');
+        row.className = 'horario-row bg-gray-50 p-3 rounded border border-gray-200 relative';
+
+        const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+        let checkboxesHtml = '<div class="flex flex-wrap gap-2 mb-2">';
+        dias.forEach(dia => {
+            const checked = data && data.dias.includes(dia) ? 'checked' : '';
+            checkboxesHtml += `
+                <label class="inline-flex items-center">
+                    <input type="checkbox" value="${dia}" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" ${checked}>
+                    <span class="ml-1 text-sm text-gray-700">${dia.substring(0, 3)}</span>
+                </label>
+            `;
+        });
+        checkboxesHtml += '</div>';
+
+        const entradaVal = data ? data.entrada : '';
+        const salidaVal = data ? data.salida : '';
+
+        row.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <span class="text-xs font-bold text-gray-500 uppercase block mb-1">Días</span>
+                    ${checkboxesHtml}
+                </div>
+                <button type="button" class="text-red-500 hover:text-red-700 btn-remove-horario ml-2" title="Eliminar horario">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-gray-700">Entrada</label>
+                    <input type="time" class="hora-entrada mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm" value="${entradaVal}" required>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-gray-700">Salida</label>
+                    <input type="time" class="hora-salida mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm" value="${salidaVal}" required>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(row);
+
+        row.querySelector('.btn-remove-horario').addEventListener('click', () => {
+            row.remove();
+        });
     }
 
     initSearch() {

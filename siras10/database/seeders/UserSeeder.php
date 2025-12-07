@@ -10,19 +10,21 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = Usuario::create([
-            'runUsuario' => '1-1',
-            'nombreUsuario' => 'admin',
-            'apellidoPaterno' => 'Villouta',
-            'apellidoMaterno' => 'Urra',
-            'correo' => 'admin@siras.com',
-            'contrasenia' => Hash::make('admin'),
-            'fechaCreacion' => now(),
-        ]);
+        $admin = Usuario::firstOrCreate(
+            ['runUsuario' => '1-1'],
+            [
+                'nombreUsuario' => 'admin',
+                'apellidoPaterno' => 'Villouta',
+                'apellidoMaterno' => 'Urra',
+                'correo' => 'admin@siras.com',
+                'contrasenia' => Hash::make('admin'),
+                'fechaCreacion' => now(),
+            ]
+        );
 
         $admin->assignRole('Admin');
 
-        $user = [
+        $users = [
             [
                 'runUsuario' => '2-2',
                 'nombreUsuario' => 'ipvg',
@@ -79,8 +81,11 @@ class UserSeeder extends Seeder
             ],
         ];
 
-        foreach ($user as $usuarioData) {
-            $user = Usuario::create($usuarioData);
+        foreach ($users as $usuarioData) {
+            $user = Usuario::firstOrCreate(
+                ['runUsuario' => $usuarioData['runUsuario']],
+                $usuarioData
+            );
 
             if ($user->idTipoPersonalSalud == 1) {
                 $user->assignRole('Técnico RAD');

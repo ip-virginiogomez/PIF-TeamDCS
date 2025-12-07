@@ -23,8 +23,6 @@ class CupoOferta extends Model
         'cantCupos',
         'fechaEntrada',
         'fechaSalida',
-        'horaEntrada',
-        'horaSalida',
         'fechaCreacion',
     ];
 
@@ -56,5 +54,11 @@ class CupoOferta extends Model
     public function cupoDistribuciones()
     {
         return $this->hasMany(CupoDistribucion::class, 'idCupoOferta', 'idCupoOferta');
+    }
+
+    // Relación uno a muchos con Horarios
+    public function horarios()
+    {
+        return $this->hasMany(CupoOfertaHorario::class, 'idCupoOferta', 'idCupoOferta');
     }
 }
