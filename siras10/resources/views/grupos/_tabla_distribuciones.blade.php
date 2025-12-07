@@ -87,16 +87,19 @@
                     </td>
                     {{-- Horario --}}
                     <td class="px-6 py-4 text-center whitespace-nowrap">
-                        @if($oferta)
-                            <div class="flex flex-col items-center justify-center space-y-1">
-                                <span class="inline-flex items-center text-green-700 bg-green-50 px-2 py-0.5 rounded text-xs">
-                                    <i class="fas fa-sign-in-alt mr-1"></i> {{ \Carbon\Carbon::parse($oferta->horaEntrada)->format('H:i') }}
-                                </span>
-                                <span class="inline-flex items-center text-red-700 bg-red-50 px-2 py-0.5 rounded text-xs">
-                                    <i class="fas fa-sign-out-alt mr-1"></i> {{ \Carbon\Carbon::parse($oferta->horaSalida)->format('H:i') }}
-                                </span>
-                            </div>
-                        @else - @endif
+                        @if($oferta && $oferta->horarios->count() > 0)
+                            <button 
+                                type="button"
+                                onclick='verHorario(@json($oferta->horarios))'
+                                title="Ver Horario"
+                                class="inline-flex items-center justify-center w-8 h-8 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors duration-150">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        @else
+                            <span class="text-gray-400 text-xs">Sin horario</span>
+                        @endif
                     </td>
                     {{-- Botón Acción --}}
                     <td class="px-6 py-4 text-center">

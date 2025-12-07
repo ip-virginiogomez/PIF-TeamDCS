@@ -236,13 +236,11 @@
             }
             
             modal.classList.remove('hidden');
-            modal.setAttribute('aria-hidden', 'false');
         }
 
         function cerrarModalVerHorario() {
             const modal = document.getElementById('verHorarioModal');
             modal.classList.add('hidden');
-            modal.setAttribute('aria-hidden', 'true');
         }
     </script>
 

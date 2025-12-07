@@ -42,6 +42,7 @@ class GrupoController extends Controller
             ->with([
                 'sedeCarrera.sede.centroFormador',
                 'cupoOferta.unidadClinica.centroSalud',
+                'cupoOferta.horarios',
             ]);
 
         if ($search) {
