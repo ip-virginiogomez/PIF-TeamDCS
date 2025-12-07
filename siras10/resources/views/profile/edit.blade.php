@@ -22,12 +22,12 @@
                 </div>
             </div>
 
-            {{-- Eliminar Cuenta --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            {{-- Eliminar Cuenta - DESHABILITADO: Los usuarios no pueden eliminarse a sí mismos --}}
+            {{-- <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     @include('profile.partials.delete-user-form')
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </x-app-layout>
