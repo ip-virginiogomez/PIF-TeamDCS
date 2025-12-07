@@ -36,7 +36,7 @@ class AsignacionController extends Controller
     {
         // Obtener los centros asignados con los datos de la tabla pivote
         $asignados = $usuario->centrosFormadores;
-        
+
         $idsAsignados = $asignados->pluck('idCentroFormador');
         $disponibles = CentroFormador::whereNotIn('idCentroFormador', $idsAsignados)->get();
 

@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -12,6 +11,7 @@ class DossierRechazado extends Notification
     use Queueable;
 
     public $grupo;
+
     public $motivo;
 
     /**
@@ -39,9 +39,9 @@ class DossierRechazado extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -58,11 +58,11 @@ class DossierRechazado extends Notification
         $fechaFin = $this->grupo->fechaFin ? \Carbon\Carbon::parse($this->grupo->fechaFin)->format('d/m/Y') : 'N/A';
 
         return [
-            'mensaje' => "El dossier del grupo \"{$this->grupo->nombreGrupo}\" ha sido rechazado.\n" .
-                         "Centro de Salud: {$centroSalud}\n" .
-                         "Tipo de Práctica: {$tipoPractica}\n" .
-                         "Asignatura: {$asignatura}\n" .
-                         "Periodo: {$fechaInicio} - {$fechaFin}\n" .
+            'mensaje' => "El dossier del grupo \"{$this->grupo->nombreGrupo}\" ha sido rechazado.\n".
+                         "Centro de Salud: {$centroSalud}\n".
+                         "Tipo de Práctica: {$tipoPractica}\n".
+                         "Asignatura: {$asignatura}\n".
+                         "Periodo: {$fechaInicio} - {$fechaFin}\n".
                          "Motivo: {$this->motivo}",
             'idGrupo' => $this->grupo->idGrupo,
             'motivo' => $this->motivo,

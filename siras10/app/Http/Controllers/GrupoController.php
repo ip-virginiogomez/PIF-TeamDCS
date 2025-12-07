@@ -239,12 +239,12 @@ class GrupoController extends Controller
 
         // Notificar al Coordinador de Campo Clínico
         $grupo->load('cupoDistribucion.sedeCarrera.sede');
-        
+
         if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
             $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
-            
+
             $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
-            
+
             foreach ($coordinadores as $coord) {
                 if ($coord->usuario) {
                     $coord->usuario->notify(new \App\Notifications\DossierValidado($grupo));
@@ -276,12 +276,12 @@ class GrupoController extends Controller
 
         // Notificar al Coordinador de Campo Clínico
         $grupo->load('cupoDistribucion.sedeCarrera.sede');
-        
+
         if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
             $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
-            
+
             $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
-            
+
             foreach ($coordinadores as $coord) {
                 if ($coord->usuario) {
                     $coord->usuario->notify(new \App\Notifications\DossierRechazado($grupo, $request->input('motivo')));

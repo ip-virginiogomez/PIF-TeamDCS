@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -37,9 +36,9 @@ class DossierValidado extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -56,10 +55,10 @@ class DossierValidado extends Notification
         $fechaFin = $this->grupo->fechaFin ? \Carbon\Carbon::parse($this->grupo->fechaFin)->format('d/m/Y') : 'N/A';
 
         return [
-            'mensaje' => "El dossier del grupo \"{$this->grupo->nombreGrupo}\" ha sido validado.\n" .
-                        "Centro de Salud: {$centroSalud}\n" .
-                        "Tipo de Práctica: {$tipoPractica}\n" .
-                        "Asignatura: {$asignatura}\n" .
+            'mensaje' => "El dossier del grupo \"{$this->grupo->nombreGrupo}\" ha sido validado.\n".
+                        "Centro de Salud: {$centroSalud}\n".
+                        "Tipo de Práctica: {$tipoPractica}\n".
+                        "Asignatura: {$asignatura}\n".
                         "Periodo: {$fechaInicio} - {$fechaFin}",
             'idGrupo' => $this->grupo->idGrupo,
             'fecha' => now(),

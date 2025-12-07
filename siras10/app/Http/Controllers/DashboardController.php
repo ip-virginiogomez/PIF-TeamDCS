@@ -320,6 +320,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $notificaciones = $user->unreadNotifications()->paginate(3);
+
         return view('dashboard.partials.notifications', compact('notificaciones'));
     }
 }

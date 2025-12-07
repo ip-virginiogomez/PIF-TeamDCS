@@ -128,6 +128,7 @@ class CupoOfertaController extends Controller
     public function edit(CupoOferta $cupoOferta)
     {
         $cupoOferta->load('horarios');
+
         return response()->json($cupoOferta);
     }
 

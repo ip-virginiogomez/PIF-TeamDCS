@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\CupoOferta;
-use App\Models\CupoOfertaHorario;
 use Illuminate\Database\Seeder;
 
 class CupoOfertaHorarioSeeder extends Seeder
@@ -12,7 +11,7 @@ class CupoOfertaHorarioSeeder extends Seeder
     {
         // Definir los horarios asociados a las ofertas específicas
         // Usamos los mismos criterios que en CupoOfertaSeeder para encontrar la oferta
-        
+
         $horariosData = [
             [
                 'criteria' => [
@@ -25,7 +24,7 @@ class CupoOfertaHorarioSeeder extends Seeder
                     ['diaSemana' => 'Lunes', 'horaEntrada' => '08:30:00', 'horaSalida' => '16:30:00'],
                     ['diaSemana' => 'Miércoles', 'horaEntrada' => '08:30:00', 'horaSalida' => '16:30:00'],
                     ['diaSemana' => 'Viernes', 'horaEntrada' => '08:30:00', 'horaSalida' => '13:30:00'],
-                ]
+                ],
             ],
             [
                 'criteria' => [
@@ -38,7 +37,7 @@ class CupoOfertaHorarioSeeder extends Seeder
                 'horarios' => [
                     ['diaSemana' => 'Martes', 'horaEntrada' => '10:00:00', 'horaSalida' => '18:00:00'],
                     ['diaSemana' => 'Jueves', 'horaEntrada' => '10:00:00', 'horaSalida' => '18:00:00'],
-                ]
+                ],
             ],
             [
                 'criteria' => [
@@ -53,7 +52,7 @@ class CupoOfertaHorarioSeeder extends Seeder
                     ['diaSemana' => 'Miércoles', 'horaEntrada' => '11:00:00', 'horaSalida' => '19:00:00'],
                     ['diaSemana' => 'Jueves', 'horaEntrada' => '11:00:00', 'horaSalida' => '19:00:00'],
                     ['diaSemana' => 'Viernes', 'horaEntrada' => '11:00:00', 'horaSalida' => '19:00:00'],
-                ]
+                ],
             ],
             [
                 'criteria' => [
@@ -65,7 +64,7 @@ class CupoOfertaHorarioSeeder extends Seeder
                 'horarios' => [
                     ['diaSemana' => 'Lunes', 'horaEntrada' => '09:30:00', 'horaSalida' => '17:30:00'],
                     ['diaSemana' => 'Miércoles', 'horaEntrada' => '09:30:00', 'horaSalida' => '17:30:00'],
-                ]
+                ],
             ],
             [
                 'criteria' => [
@@ -76,7 +75,7 @@ class CupoOfertaHorarioSeeder extends Seeder
                 ],
                 'horarios' => [
                     ['diaSemana' => 'Sábado', 'horaEntrada' => '07:30:00', 'horaSalida' => '15:30:00'],
-                ]
+                ],
             ],
             [
                 'criteria' => [
@@ -91,7 +90,7 @@ class CupoOfertaHorarioSeeder extends Seeder
                     ['diaSemana' => 'Miércoles', 'horaEntrada' => '08:45:00', 'horaSalida' => '16:45:00'],
                     ['diaSemana' => 'Jueves', 'horaEntrada' => '08:45:00', 'horaSalida' => '16:45:00'],
                     ['diaSemana' => 'Viernes', 'horaEntrada' => '08:45:00', 'horaSalida' => '16:45:00'],
-                ]
+                ],
             ],
         ];
 
