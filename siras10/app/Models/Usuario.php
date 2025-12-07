@@ -47,6 +47,24 @@ class Usuario extends Authenticatable
         return $this->contrasenia;
     }
 
+    // Método para obtener el email usado en el reset de contraseña
+    public function getEmailForPasswordReset()
+    {
+        return $this->correo;
+    }
+
+    // Accessor para que Laravel trate 'correo' como 'email'
+    public function getEmailAttribute()
+    {
+        return $this->correo;
+    }
+
+    // Sobrescribir el método de envío de notificación de reset
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
+
     // Relación inversa con TipoPersonalSalud
     public function tipoPersonalSalud()
     {

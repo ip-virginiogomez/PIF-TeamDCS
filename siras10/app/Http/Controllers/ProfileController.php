@@ -37,11 +37,6 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Si el correo cambió, marcar como no verificado
-        if ($user->correo !== $validated['correo']) {
-            $user->email_verified_at = null;
-        }
-
         // Manejar la foto si se subió una nueva
         if ($request->hasFile('foto')) {
             // Eliminar la foto anterior si existe
