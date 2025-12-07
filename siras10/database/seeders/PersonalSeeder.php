@@ -13,10 +13,14 @@ class PersonalSeeder extends Seeder
             [
                 'runUsuario' => '4-4',
                 'idCentroSalud' => 1,
+                'fechaInicio' => '2025-01-01',
+                'fechaFin' => '2026-12-31',
             ],
             [
                 'runUsuario' => '5-5',
                 'idCentroSalud' => 3,
+                'fechaInicio' => '2025-01-01',
+                'fechaFin' => '2026-12-31',
             ],
         ];
 

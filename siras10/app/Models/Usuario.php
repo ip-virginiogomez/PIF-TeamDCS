@@ -87,7 +87,7 @@ class Usuario extends Authenticatable
             'coordinador_campo_clinico',
             'runUsuario',
             'idCentroFormador'
-        );
+        )->withPivot(['fechaInicio', 'fechaFin']);
     }
 
     public function centroSalud()
@@ -97,6 +97,6 @@ class Usuario extends Authenticatable
             'personal',
             'runUsuario',
             'idCentroSalud'
-        );
+        )->withPivot(['fechaInicio', 'fechaFin']);
     }
 }

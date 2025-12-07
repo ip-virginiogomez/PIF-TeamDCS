@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    
+
     const listaCoordinadores = document.getElementById('lista-coordinadores');
     if (!listaCoordinadores) return;
 
@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const panelContenido = document.getElementById('panel-contenido');
     const nombreCoordinadorSpan = document.getElementById('nombre-coordinador');
     const selectDisponibles = document.getElementById('select-centros-disponibles');
+    const fechaInicioInput = document.getElementById('fecha-inicio');
+    const fechaFinInput = document.getElementById('fecha-fin');
     const listaAsignados = document.getElementById('lista-asignaciones-actuales');
     const btnAsignar = document.getElementById('btn-asignar');
     const sinAsignacionesMsg = document.getElementById('sin-asignaciones');
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!item || !item.dataset.id) {
             return;
         }
-        
+
         runUsuarioSeleccionado = item.dataset.id;
         nombreUsuarioSeleccionado = item.dataset.nombre;
 
@@ -48,6 +50,11 @@ document.addEventListener('DOMContentLoaded', function () {
         panelContenido.classList.add('hidden');
         panelCarga.classList.remove('hidden');
 
+        // Limpiar inputs
+        fechaInicioInput.value = '';
+        fechaFinInput.value = '';
+        errorAsignacion.classList.add('hidden');
+
         cargarDatosAsignacion(runUsuarioSeleccionado);
     });
 
@@ -57,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Accept': 'application/json' }
             });
             if (!response.ok) throw new Error('Error al cargar datos');
-            
+
             const data = await response.json();
 
             claves.id = data.idKey;
@@ -78,11 +85,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btnAsignar.addEventListener('click', async function () {
         const centroId = selectDisponibles.value;
+        const fechaInicio = fechaInicioInput.value;
+        const fechaFin = fechaFinInput.value;
+
         if (!centroId || !runUsuarioSeleccionado) return;
+
+        if (!fechaInicio || !fechaFin) {
+            errorAsignacion.textContent = "Debe seleccionar fecha de inicio y fin.";
+            errorAsignacion.classList.remove('hidden');
+            return;
+        }
+
+        if (fechaFin <= fechaInicio) {
+            errorAsignacion.textContent = "La fecha de fin debe ser mayor que la fecha de inicio.";
+            errorAsignacion.classList.remove('hidden');
+            return;
+        }
 
         errorAsignacion.classList.add('hidden');
         btnAsignar.disabled = true;
-        
+
         try {
             const response = await fetch(`${BASE_URL}/${runUsuarioSeleccionado}/centros`, {
                 method: 'POST',
@@ -91,14 +113,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify({ centro_id: centroId })
+                body: JSON.stringify({
+                    centro_id: centroId,
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                })
             });
 
             if (!response.ok) {
                 const errData = await response.json();
                 throw new Error(errData.message || 'Error al asignar');
             }
-            
+
+            // Limpiar inputs tras éxito
+            fechaInicioInput.value = '';
+            fechaFinInput.value = '';
+
             cargarDatosAsignacion(runUsuarioSeleccionado);
 
         } catch (error) {
@@ -144,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const errData = await response.json();
                 throw new Error(errData.message || 'No se pudo quitar la asignación');
             }
-            
+
             // 4. (Opcional) Mostramos un toast de éxito
             Swal.fire({
                 title: '¡Eliminado!',
@@ -153,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 timer: 1500, // Se cierra solo después de 1.5s
                 showConfirmButton: false
             });
-            
+
             cargarDatosAsignacion(runUsuarioSeleccionado);
 
         } catch (error) {
@@ -173,13 +203,13 @@ document.addEventListener('DOMContentLoaded', function () {
             btnAsignar.disabled = true;
             return;
         }
-        
+
         btnAsignar.disabled = false;
         selectDisponibles.innerHTML = '<option value="">Seleccione un centro...</option>';
         disponibles.forEach(centro => {
             const option = document.createElement('option');
             option.value = centro[claves.id];
-            option.textContent = centro[claves.nombre]; 
+            option.textContent = centro[claves.nombre];
             selectDisponibles.appendChild(option);
         });
     }
@@ -190,13 +220,24 @@ document.addEventListener('DOMContentLoaded', function () {
             sinAsignacionesMsg.classList.remove('hidden');
             return;
         }
-        
+
         sinAsignacionesMsg.classList.add('hidden');
         asignados.forEach(centro => {
+            const pivot = centro.pivot || {};
+            // Formatear fechas si existen
+            const fInicio = pivot.fechaInicio ? new Date(pivot.fechaInicio + 'T00:00:00').toLocaleDateString() : 'N/A';
+            const fFin = pivot.fechaFin ? new Date(pivot.fechaFin + 'T00:00:00').toLocaleDateString() : 'N/A';
+
             const li = document.createElement('li');
             li.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-md border';
             li.innerHTML = `
-                <span class="font-medium">${centro[claves.nombre]}</span>
+                <div>
+                    <div class="font-medium">${centro[claves.nombre]}</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Desde: ${fInicio}</span>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded ml-1">Hasta: ${fFin}</span>
+                    </div>
+                </div>
                 <button data-action="quitar" data-id="${centro[claves.id]}" 
                         class="text-red-500 hover:text-red-700 font-semibold text-sm"
                         title="Quitar asignación">

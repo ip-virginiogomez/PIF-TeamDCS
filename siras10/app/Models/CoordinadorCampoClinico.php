@@ -19,6 +19,8 @@ class CoordinadorCampoClinico extends Model
         'idCentroFormador',
         'runUsuario',
         'fechaCreacion',
+        'fechaInicio',
+        'fechaFin',
     ];
 
     // Relación inversa con CentroFormador
