@@ -36,11 +36,13 @@ class GrupoController extends Controller
             ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
             ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
             ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+            ->join('tipo_practica', 'cupo_oferta.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
             ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
             ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
             ->with([
                 'sedeCarrera.sede.centroFormador',
                 'cupoOferta.unidadClinica.centroSalud',
+                'cupoOferta.horarios',
             ]);
 
         if ($search) {
@@ -74,6 +76,9 @@ class GrupoController extends Controller
                     break;
                 case 'unidad_clinica':
                     $query->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
+                    break;
+                case 'tipo_practica':
+                    $query->orderBy('tipo_practica.nombrePractica', $sortDirection);
                     break;
                 default:
                     $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
@@ -225,5 +230,65 @@ class GrupoController extends Controller
         ])->findOrFail($idGrupo);
 
         return view('grupos.dossier', compact('grupo'));
+    }
+
+    public function validarDossier(Grupo $grupo)
+    {
+        $grupo->estadoDossier = 'Validado';
+        $grupo->save();
+
+        // Notificar al Coordinador de Campo Clínico
+        $grupo->load('cupoDistribucion.sedeCarrera.sede');
+
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
+
+            $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
+
+            foreach ($coordinadores as $coord) {
+                if ($coord->usuario) {
+                    $coord->usuario->notify(new \App\Notifications\DossierValidado($grupo));
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Dossier validado correctamente.');
+    }
+
+    public function revertirDossier(Grupo $grupo)
+    {
+        $grupo->estadoDossier = 'Pendiente';
+        $grupo->motivoRechazo = null; // Limpiar motivo si se revierte
+        $grupo->save();
+
+        return redirect()->back()->with('success', 'Validación del dossier revertida correctamente.');
+    }
+
+    public function rechazarDossier(Request $request, Grupo $grupo)
+    {
+        $request->validate([
+            'motivo' => 'required|string|max:1000',
+        ]);
+
+        $grupo->estadoDossier = 'Rechazado';
+        $grupo->motivoRechazo = $request->input('motivo');
+        $grupo->save();
+
+        // Notificar al Coordinador de Campo Clínico
+        $grupo->load('cupoDistribucion.sedeCarrera.sede');
+
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
+
+            $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
+
+            foreach ($coordinadores as $coord) {
+                if ($coord->usuario) {
+                    $coord->usuario->notify(new \App\Notifications\DossierRechazado($grupo, $request->input('motivo')));
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Dossier rechazado correctamente.');
     }
 }

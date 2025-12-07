@@ -62,10 +62,10 @@ class InitialSetupSeeder extends Seeder
         }
 
         // 3. Crear Roles
-        $rolCoordinador = Role::create(['name' => 'Coordinador Campo Clínico']);
-        $rolEncargado = Role::create(['name' => 'Encargado Campo Clínico']);
-        $rolTecnicoRAD = Role::create(['name' => 'Técnico RAD']);
-        $rolAdmin = Role::create(['name' => 'Admin']);
+        $rolCoordinador = Role::firstOrCreate(['name' => 'Coordinador Campo Clínico']);
+        $rolEncargado = Role::firstOrCreate(['name' => 'Encargado Campo Clínico']);
+        $rolTecnicoRAD = Role::firstOrCreate(['name' => 'Técnico RAD']);
+        $rolAdmin = Role::firstOrCreate(['name' => 'Admin']);
 
         // 4. Asignar todos los permisos existentes al rol de Admin
         $rolAdmin->givePermissionTo(Permission::all());

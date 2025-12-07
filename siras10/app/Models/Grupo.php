@@ -23,6 +23,8 @@ class Grupo extends Model
         'nombreGrupo',
         'fechaInicio',
         'fechaFin',
+        'estadoDossier',
+        'motivoRechazo',
     ];
 
     protected $casts = [

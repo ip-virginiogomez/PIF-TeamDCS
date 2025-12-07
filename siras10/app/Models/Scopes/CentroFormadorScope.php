@@ -22,7 +22,13 @@ class CentroFormadorScope implements Scope
         }
 
         if ($user->esCoordinador()) {
-            $centroIds = $user->centrosFormadores()->pluck('centro_formador.idCentroFormador')->toArray();
+            // Filtrar por fechas de vigencia
+            $centroIds = $user->centrosFormadores()
+                ->wherePivot('fechaInicio', '<=', now()->toDateString())
+                ->wherePivot('fechaFin', '>=', now()->toDateString())
+                ->pluck('centro_formador.idCentroFormador')
+                ->toArray();
+
             if (empty($centroIds)) {
                 $builder->whereRaw('1 = 0');
 

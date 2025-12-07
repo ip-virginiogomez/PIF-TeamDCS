@@ -9,7 +9,7 @@
                         $url = route('grupos.index', $params);
                         $icon = '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
                         if ($sortBy === $column) {
-                             $icon = $sortDirection === 'asc' 
+                            $icon = $sortDirection === 'asc' 
                                 ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
                                 : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
                         }
@@ -27,6 +27,9 @@
                 </th>
                 <th scope="col" class="px-6 py-3">
                     {!! $getSortLink('unidad_clinica', 'Unidad Clínica') !!}
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    {!! $getSortLink('tipo_practica', 'Tipo de Práctica') !!}
                 </th>
                 <th scope="col" class="px-6 py-3 text-center">Cupos</th>
                 <th scope="col" class="px-6 py-3 text-center">Fechas</th>
@@ -61,6 +64,12 @@
                     <td class="px-6 py-4 font-medium text-gray-900">
                         {{ $oferta->unidadClinica->nombreUnidad ?? 'N/A' }}
                     </td>
+                    {{-- Tipo de Práctica --}}
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            {{ $oferta->tipoPractica->nombrePractica ?? 'N/A' }}
+                        </span>
+                    </td>
                     {{-- Cupos --}}
                     <td class="px-6 py-4 text-center">
                         <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400">
@@ -78,16 +87,19 @@
                     </td>
                     {{-- Horario --}}
                     <td class="px-6 py-4 text-center whitespace-nowrap">
-                        @if($oferta)
-                            <div class="flex flex-col items-center justify-center space-y-1">
-                                <span class="inline-flex items-center text-green-700 bg-green-50 px-2 py-0.5 rounded text-xs">
-                                    <i class="fas fa-sign-in-alt mr-1"></i> {{ \Carbon\Carbon::parse($oferta->horaEntrada)->format('H:i') }}
-                                </span>
-                                <span class="inline-flex items-center text-red-700 bg-red-50 px-2 py-0.5 rounded text-xs">
-                                    <i class="fas fa-sign-out-alt mr-1"></i> {{ \Carbon\Carbon::parse($oferta->horaSalida)->format('H:i') }}
-                                </span>
-                            </div>
-                        @else - @endif
+                        @if($oferta && $oferta->horarios->count() > 0)
+                            <button 
+                                type="button"
+                                onclick='verHorario(@json($oferta->horarios))'
+                                title="Ver Horario"
+                                class="inline-flex items-center justify-center w-8 h-8 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors duration-150">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        @else
+                            <span class="text-gray-400 text-xs">Sin horario</span>
+                        @endif
                     </td>
                     {{-- Botón Acción --}}
                     <td class="px-6 py-4 text-center">

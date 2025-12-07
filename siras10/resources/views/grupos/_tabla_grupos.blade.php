@@ -116,9 +116,6 @@
                     {{-- Ajuste colspan a 6 porque agregamos 2 columnas nuevas --}}
                     <td colspan="6" class="px-6 py-10 text-center text-gray-500 bg-white">
                         <div class="flex flex-col items-center justify-center space-y-2">
-                            <div class="p-3 bg-gray-100 rounded-full">
-                                <i class="fas fa-layer-group text-gray-400 text-2xl"></i>
-                            </div>
                             <p class="text-base font-medium text-gray-600">No hay grupos creados</p>
                             <p class="text-sm text-gray-400">Selecciona una distribución arriba y agrega un grupo.</p>
                         </div>

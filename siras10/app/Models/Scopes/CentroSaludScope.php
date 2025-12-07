@@ -22,7 +22,13 @@ class CentroSaludScope implements Scope
         }
 
         if ($user->esTecnicoRAD()) {
-            $centroIds = $user->centroSalud->pluck('centro_salud.idCentroSalud')->toArray();
+            // Filtrar por fechas de vigencia
+            $centroIds = $user->centroSalud()
+                ->wherePivot('fechaInicio', '<=', now()->toDateString())
+                ->wherePivot('fechaFin', '>=', now()->toDateString())
+                ->pluck('centro_salud.idCentroSalud')
+                ->toArray();
+
             if (empty($centroIds)) {
                 $builder->whereRaw('1 = 0');
 

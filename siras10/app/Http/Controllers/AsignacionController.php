@@ -34,8 +34,10 @@ class AsignacionController extends Controller
 
     public function getCentrosCampoClinico(Usuario $usuario)
     {
-        $idsAsignados = $usuario->centrosFormadores()->pluck('centro_formador.idCentroFormador');
-        $asignados = CentroFormador::whereIn('idCentroFormador', $idsAsignados)->get();
+        // Obtener los centros asignados con los datos de la tabla pivote
+        $asignados = $usuario->centrosFormadores;
+
+        $idsAsignados = $asignados->pluck('idCentroFormador');
         $disponibles = CentroFormador::whereNotIn('idCentroFormador', $idsAsignados)->get();
 
         return response()->json([
@@ -48,15 +50,25 @@ class AsignacionController extends Controller
 
     public function asignarCentroCampoClinico(Request $request, Usuario $usuario)
     {
-        $request->validate(['centro_id' => 'required|integer']);
+        $request->validate([
+            'centro_id' => 'required|integer',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after:fecha_inicio',
+        ]);
 
         $centroId = $request->input('centro_id');
+        $fechaInicio = $request->input('fecha_inicio');
+        $fechaFin = $request->input('fecha_fin');
 
         if ($usuario->centrosFormadores()->find($centroId)) {
             return response()->json(['success' => false, 'message' => 'Este centro ya está asignado.'], 409);
         }
 
-        $usuario->centrosFormadores()->attach($centroId);
+        $usuario->centrosFormadores()->attach($centroId, [
+            'fechaInicio' => $fechaInicio,
+            'fechaFin' => $fechaFin,
+            'fechaCreacion' => now(),
+        ]);
 
         return response()->json(['success' => true]);
     }
@@ -70,8 +82,10 @@ class AsignacionController extends Controller
 
     public function getCentrosRad(Usuario $usuario)
     {
-        $idsAsignados = $usuario->centroSalud()->pluck('centro_salud.idCentroSalud');
-        $asignados = CentroSalud::whereIn('idCentroSalud', $idsAsignados)->get();
+        // Obtener los centros asignados con los datos de la tabla pivote
+        $asignados = $usuario->centroSalud;
+
+        $idsAsignados = $asignados->pluck('idCentroSalud');
         $disponibles = CentroSalud::whereNotIn('idCentroSalud', $idsAsignados)->get();
 
         return response()->json([
@@ -84,15 +98,25 @@ class AsignacionController extends Controller
 
     public function asignarCentroRad(Request $request, Usuario $usuario)
     {
-        $request->validate(['centro_id' => 'required|integer']);
+        $request->validate([
+            'centro_id' => 'required|integer',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after:fecha_inicio',
+        ]);
 
         $centroId = $request->input('centro_id');
+        $fechaInicio = $request->input('fecha_inicio');
+        $fechaFin = $request->input('fecha_fin');
 
         if ($usuario->centroSalud()->find($centroId)) {
             return response()->json(['success' => false, 'message' => 'Este centro ya está asignado.'], 409);
         }
 
-        $usuario->centroSalud()->attach($centroId);
+        $usuario->centroSalud()->attach($centroId, [
+            'fechaInicio' => $fechaInicio,
+            'fechaFin' => $fechaFin,
+            'fechaCreacion' => now(),
+        ]);
 
         return response()->json(['success' => true]);
     }

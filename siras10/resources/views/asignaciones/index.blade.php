@@ -64,12 +64,27 @@
 
                             <div class="bg-gray-50 p-4 rounded-lg border">
                                 <h3 class="font-semibold mb-2">Asignar Nuevo Centro</h3>
-                                <div class="flex space-x-2">
-                                    <select id="select-centros-disponibles" class="block w-full rounded-md border-gray-300 shadow-sm">
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label for="select-centros-disponibles" class="block text-sm font-medium text-gray-700">Centro</label>
+                                        <select id="select-centros-disponibles" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                         </select>
-                                    <button id="btn-asignar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                        <i class="fas fa-plus"></i> Asignar
-                                    </button>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="fecha-inicio" class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
+                                            <input type="date" id="fecha-inicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        </div>
+                                        <div>
+                                            <label for="fecha-fin" class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+                                            <input type="date" id="fecha-fin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end">
+                                        <button id="btn-asignar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                            <i class="fas fa-plus"></i> Asignar
+                                        </button>
+                                    </div>
                                 </div>
                                 <div id="error-asignacion" class="text-red-500 text-sm mt-2 hidden"></div>
                             </div>

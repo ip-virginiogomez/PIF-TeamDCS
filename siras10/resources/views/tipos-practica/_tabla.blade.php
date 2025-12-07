@@ -17,9 +17,6 @@
                     };
                 @endphp
                 <th class="py-2 px-4 text-left">
-                    {!! $getSortLink('idTipoPractica', 'ID') !!}
-                </th>
-                <th class="py-2 px-4 text-left">
                     {!! $getSortLink('nombrePractica', 'Nombre de la Práctica') !!}
                 </th>
                 <th class="py-2 px-4 text-left">Acciones</th>
@@ -28,9 +25,6 @@
         <tbody>
             @forelse ($tiposPractica as $tipo)
             <tr class="border-b" id="tipo-{{ $tipo->idTipoPractica }}">
-                <td class="py-2 px-4">
-                    <span>{{ $tipo->idTipoPractica }}</span>
-                </td>
                 <td class="py-2 px-4">
                     <span>{{ $tipo->nombrePractica }}</span>
                 </td>

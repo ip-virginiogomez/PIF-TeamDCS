@@ -28,8 +28,8 @@
                 <th class="py-2 px-4 text-left">
                     {!! $getSortLink('carrera.nombreCarrera', 'Carrera') !!}
                 </th>
-                <th class="py-2 px-4 text-left">Cupos Ofertados</th>
-                <th class="py-2 px-4 text-left">Cupos Asignados</th>
+                <th class="py-2 px-4 text-center">Cupos Ofertados</th>
+                <th class="py-2 px-4 text-center">Cupos Asignados</th>
                 <th class="py-2 px-4 text-center">Fechas</th>
                 <th class="py-2 px-4 text-center">Acciones</th>
             </tr>
@@ -78,14 +78,16 @@
                         {{ $cuposAsignados }} / {{ $oferta->cantCupos }}
                     </span>
                 </td>
-                <td class="py-2 px-4 text-sm">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {{ \Carbon\Carbon::parse($oferta->fechaEntrada)->format('d/m/Y') }}
-                    </span>
-                    <span class="text-gray-500"> - </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        {{ \Carbon\Carbon::parse($oferta->fechaSalida)->format('d/m/Y') }}
-                    </span>
+                <td class="py-2 px-4 text-center text-sm">
+                    <div class="flex flex-col items-center">
+                        <span class="text-gray-900">
+                            {{ \Carbon\Carbon::parse($oferta->fechaEntrada)->format('d/m/Y') }}
+                        </span>
+                        <div class="text-xs text-gray-400">hasta</div>
+                        <span class="text-gray-900">
+                            {{ \Carbon\Carbon::parse($oferta->fechaSalida)->format('d/m/Y') }}
+                        </span>
+                    </div>
                 </td>
                 <td class="py-2 px-4">
                     <div class="flex space-x-2">
@@ -97,6 +99,11 @@
                         <button data-action="delete" data-id="{{ $oferta->idCupoOferta }}" title="Eliminar" class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="verHorario({{ json_encode($oferta->horarios) }})" title="Ver Horario" class="inline-flex items-center justify-center w-8 h-8 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors duration-150">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                         </button>
                         <a href="{{ route('cupo-distribuciones.index', ['oferta_id' => $oferta->idCupoOferta]) }}" class="inline-flex items-center px-3 h-8 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors duration-150">

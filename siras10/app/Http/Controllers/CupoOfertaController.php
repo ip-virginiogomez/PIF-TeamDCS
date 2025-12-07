@@ -32,7 +32,7 @@ class CupoOfertaController extends Controller
 
         // Cargamos las relaciones para mostrar la información en la tabla
         $query = CupoOferta::select('cupo_oferta.*')
-            ->with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera'])
+            ->with(['periodo', 'unidadClinica.centroSalud', 'tipoPractica', 'carrera', 'horarios'])
             ->withSum('cupoDistribuciones', 'cantCupos');
 
         if ($search) {
@@ -99,17 +99,36 @@ class CupoOfertaController extends Controller
             'cantCupos' => 'required|integer|min:1|max:99',
             'fechaEntrada' => 'required|date',
             'fechaSalida' => 'required|date|after_or_equal:fechaEntrada',
-            'horaEntrada' => 'required',
-            'horaSalida' => 'required',
+            'horarios' => 'required|array|min:1',
+            'horarios.*.dias' => 'required|array|min:1',
+            'horarios.*.entrada' => 'required',
+            'horarios.*.salida' => 'required',
         ]);
 
-        CupoOferta::create($request->all());
+        // Create CupoOferta (without legacy time fields if possible, or with defaults)
+        // We'll use the first schedule as "default" for legacy fields if needed, or just empty
+        $data = $request->except('horarios');
+
+        $cupoOferta = CupoOferta::create($data);
+
+        // Create Schedules
+        foreach ($request->input('horarios') as $schedule) {
+            foreach ($schedule['dias'] as $dia) {
+                $cupoOferta->horarios()->create([
+                    'diaSemana' => $dia,
+                    'horaEntrada' => $schedule['entrada'],
+                    'horaSalida' => $schedule['salida'],
+                ]);
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Oferta de cupo creada exitosamente.']);
     }
 
     public function edit(CupoOferta $cupoOferta)
     {
+        $cupoOferta->load('horarios');
+
         return response()->json($cupoOferta);
     }
 
@@ -123,8 +142,10 @@ class CupoOfertaController extends Controller
             'cantCupos' => 'required|integer|min:1|max:99',
             'fechaEntrada' => 'required|date',
             'fechaSalida' => 'required|date|after_or_equal:fechaEntrada',
-            'horaEntrada' => 'required',
-            'horaSalida' => 'required',
+            'horarios' => 'required|array|min:1',
+            'horarios.*.dias' => 'required|array|min:1',
+            'horarios.*.entrada' => 'required',
+            'horarios.*.salida' => 'required',
         ]);
 
         // Validar que la nueva cantidad de cupos no sea menor a los cupos ya distribuidos
@@ -141,7 +162,21 @@ class CupoOfertaController extends Controller
             ], 422);
         }
 
-        $cupoOferta->update($request->all());
+        $data = $request->except('horarios');
+
+        $cupoOferta->update($data);
+
+        // Sync Schedules
+        $cupoOferta->horarios()->delete();
+        foreach ($request->input('horarios') as $schedule) {
+            foreach ($schedule['dias'] as $dia) {
+                $cupoOferta->horarios()->create([
+                    'diaSemana' => $dia,
+                    'horaEntrada' => $schedule['entrada'],
+                    'horaSalida' => $schedule['salida'],
+                ]);
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Oferta de cupo actualizada exitosamente.']);
     }

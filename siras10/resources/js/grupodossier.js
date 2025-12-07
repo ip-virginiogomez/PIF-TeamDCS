@@ -6,7 +6,37 @@ document.addEventListener('DOMContentLoaded', () => {
     try { initRemoveAlumno(); } catch (e) { console.error('Error initRemoveAlumno:', e); }
     try { initAlumnoDocsModal(); } catch (e) { console.error('Error initAlumnoDocsModal:', e); }
     try { initAsignaturaModal(); } catch (e) { console.error('Error initAsignaturaModal:', e); }
+    try { initFichaAlumnoModal(); } catch (e) { console.error('Error initFichaAlumnoModal:', e); }
+    try { initRechazoModal(); } catch (e) { console.error('Error initRechazoModal:', e); }
 });
+
+/**
+ * 8. MODAL RECHAZO
+ */
+function initRechazoModal() {
+    const modal = document.getElementById('modalRechazo');
+    if (!modal) return;
+
+    const btnOpen = document.getElementById('btn-open-rechazo');
+    const backdrop = document.getElementById('modal-rechazo-backdrop');
+    const btnClose = document.getElementById('btn-close-rechazo');
+    const btnCancel = document.getElementById('btn-cancel-rechazo');
+
+    const toggle = (show) => {
+        if (show) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        } else {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    };
+
+    if (btnOpen) btnOpen.addEventListener('click', (e) => { e.preventDefault(); toggle(true); });
+    if (backdrop) backdrop.addEventListener('click', () => toggle(false));
+    if (btnClose) btnClose.addEventListener('click', () => toggle(false));
+    if (btnCancel) btnCancel.addEventListener('click', () => toggle(false));
+}
 
 /**
  * 1. FICHA DOCENTE
@@ -42,25 +72,25 @@ function initDocenteModal() {
 function initDocumentosModal() {
     const modalDocs = document.getElementById('modalDocs');
     const modalFicha = document.getElementById('modalDocente');
-    
+
     if (!modalDocs) return;
 
     const btnOpen = document.getElementById('btn-open-docs');
     const btnInternal = document.getElementById('btn-view-docs-internal');
-    
+
     const btnClose = document.getElementById('btn-close-docs');
     const btnBack = document.getElementById('btn-back-docs');
     const backdrop = document.getElementById('modal-docs-backdrop');
-    
+
     const listaPanel = document.getElementById('lista-docs-panel');
     const iframe = document.getElementById('doc-iframe');
     const emptyState = document.getElementById('empty-state');
 
     // Función Abrir
     const openDocs = (e) => {
-        if(e) e.preventDefault();
+        if (e) e.preventDefault();
         // Cerrar ficha si está abierta
-        if(modalFicha && !modalFicha.classList.contains('hidden')) {
+        if (modalFicha && !modalFicha.classList.contains('hidden')) {
             modalFicha.classList.add('hidden');
         }
         modalDocs.classList.remove('hidden');
@@ -74,10 +104,10 @@ function initDocumentosModal() {
     const closeModal = () => {
         modalDocs.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-        if(iframe) {
+        if (iframe) {
             iframe.src = '';
             iframe.classList.add('hidden');
-            if(emptyState) emptyState.classList.remove('hidden');
+            if (emptyState) emptyState.classList.remove('hidden');
         }
     };
 
@@ -89,14 +119,14 @@ function initDocumentosModal() {
     if (listaPanel) {
         // Buscamos las filas generadas por Blade (que suelen ser div.flex...)
         // Vamos a asumir que tu partial _documentos_lista genera divs con botones dentro.
-        
+
         // 1. Preparamos las filas: Ocultamos el botón "ojo" original y preparamos el click
         const filas = listaPanel.querySelectorAll('div.flex.items-center.justify-between');
-        
+
         filas.forEach(fila => {
             // Estilos para que parezca botón
             fila.classList.add('cursor-pointer', 'hover:bg-sky-50', 'transition', 'p-2', 'rounded-lg');
-            
+
             // Buscar botón de previsualización (ojo) y ocultarlo (ya no se necesita, el clic es en la fila)
             const btnPreview = fila.querySelector('button[data-action="preview-doc"]');
             if (btnPreview) {
@@ -115,16 +145,16 @@ function initDocumentosModal() {
         listaPanel.addEventListener('click', (e) => {
             // Buscamos la fila más cercana al clic
             const fila = e.target.closest('div[data-preview-url]');
-            
+
             if (fila) {
                 const url = fila.dataset.previewUrl;
-                
+
                 // Resaltar activo
                 filas.forEach(f => f.classList.remove('bg-sky-100', 'border-sky-300', 'ring-1', 'ring-sky-300'));
                 fila.classList.add('bg-sky-100', 'border-sky-300', 'ring-1', 'ring-sky-300');
 
                 // Cargar Iframe
-                if(iframe && emptyState) {
+                if (iframe && emptyState) {
                     iframe.src = url;
                     iframe.classList.remove('hidden');
                     emptyState.classList.add('hidden');
@@ -149,33 +179,33 @@ function initAddAlumnoModal() {
     const noResults = document.getElementById('no-results');
     const grupoIdInput = document.getElementById('grupo-id-actual');
 
-    if(!grupoIdInput) return;
+    if (!grupoIdInput) return;
     const grupoId = grupoIdInput.value;
     let debounceTimer;
 
     const toggle = (show) => {
-        if(show) {
+        if (show) {
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
-            if(inputSearch) inputSearch.focus();
+            if (inputSearch) inputSearch.focus();
         } else {
             modal.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
-            if(inputSearch) inputSearch.value = '';
-            if(resultsContainer) { resultsContainer.innerHTML = ''; resultsContainer.classList.add('hidden'); }
-            if(noResults) noResults.classList.add('hidden');
+            if (inputSearch) inputSearch.value = '';
+            if (resultsContainer) { resultsContainer.innerHTML = ''; resultsContainer.classList.add('hidden'); }
+            if (noResults) noResults.classList.add('hidden');
         }
     };
 
-    if(btnOpen) btnOpen.addEventListener('click', () => toggle(true));
-    if(btnClose) btnClose.addEventListener('click', () => toggle(false));
-    if(backdrop) backdrop.addEventListener('click', () => toggle(false));
+    if (btnOpen) btnOpen.addEventListener('click', () => toggle(true));
+    if (btnClose) btnClose.addEventListener('click', () => toggle(false));
+    if (backdrop) backdrop.addEventListener('click', () => toggle(false));
 
-    if(inputSearch) {
+    if (inputSearch) {
         inputSearch.addEventListener('input', (e) => {
             const term = e.target.value.trim();
             clearTimeout(debounceTimer);
-            
+
             if (term.length < 2) {
                 resultsContainer.classList.add('hidden');
                 noResults.classList.add('hidden');
@@ -244,7 +274,7 @@ function initRemoveAlumno() {
         if (btn) {
             btn.disabled = true;
             const runAlumno = btn.dataset.run;
-            
+
             let confirmado = false;
             if (typeof Swal !== 'undefined') {
                 const result = await Swal.fire({
@@ -295,7 +325,7 @@ function initAlumnoDocsModal() {
     const btnClose = document.getElementById('btn-close-docs-alumno');
     const btnBack = document.getElementById('btn-back-docs-alumno');
     const backdrop = document.getElementById('modal-docs-alumno-backdrop');
-    
+
     const listaContainer = document.getElementById('lista-docs-alumno');
     const nombreLabel = document.getElementById('alumno-docs-nombre');
     const iframe = document.getElementById('doc-iframe-alumno');
@@ -306,14 +336,14 @@ function initAlumnoDocsModal() {
         if (!btn) return;
 
         const nombre = btn.dataset.nombre;
-        const docs = JSON.parse(btn.dataset.docs); 
+        const docs = JSON.parse(btn.dataset.docs);
 
         nombreLabel.textContent = nombre;
         renderLista(docs);
 
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
-        
+
         iframe.src = '';
         iframe.classList.add('hidden');
         emptyState.classList.remove('hidden');
@@ -336,11 +366,11 @@ function initAlumnoDocsModal() {
         docs.forEach(doc => {
             if (doc.file) {
                 hayDocs = true;
-                const url = `/storage/${doc.file}`; 
-                
+                const url = `/storage/${doc.file}`;
+
                 const item = document.createElement('div');
                 item.className = 'group flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-sky-50 transition cursor-pointer mb-2';
-                
+
                 item.innerHTML = `
                     <div class="flex items-center overflow-hidden">
                         <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
@@ -355,7 +385,7 @@ function initAlumnoDocsModal() {
                     iframe.src = url;
                     iframe.classList.remove('hidden');
                     emptyState.classList.add('hidden');
-                    
+
                     listaContainer.querySelectorAll('div.group').forEach(d => {
                         d.classList.remove('bg-sky-50', 'border-sky-300', 'ring-1', 'ring-sky-300');
                         d.classList.add('border-gray-200');
@@ -375,27 +405,143 @@ function initAlumnoDocsModal() {
 }
 
 /**
- * 6. ASIGNATURA
+ * 7. FICHA ALUMNO (DINÁMICA)
  */
+function initFichaAlumnoModal() {
+    const modal = document.getElementById('modalFichaAlumno');
+    if (!modal) return;
+
+    const btnCloseX = document.getElementById('btn-close-ficha-alumno');
+    const btnCloseBottom = document.getElementById('btn-close-ficha-alumno-bottom');
+    const backdrop = document.getElementById('modal-ficha-alumno-backdrop');
+
+    // Elementos a rellenar
+    const imgFoto = document.getElementById('ficha-alumno-foto');
+    const txtNombre = document.getElementById('ficha-alumno-nombre');
+    const txtRun = document.getElementById('ficha-alumno-run');
+    const txtCorreo = document.getElementById('ficha-alumno-correo');
+    const txtNacimiento = document.getElementById('ficha-alumno-nacimiento');
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action="view-alumno-ficha"]');
+        if (!btn) return;
+
+        const alumno = JSON.parse(btn.dataset.alumno);
+
+        // Rellenar datos
+        txtNombre.textContent = `${alumno.nombres} ${alumno.apellidoPaterno} ${alumno.apellidoMaterno || ''}`;
+        txtRun.textContent = alumno.runAlumno;
+        txtCorreo.textContent = alumno.correo || 'No registrado';
+
+        // Formatear fecha (simple)
+        if (alumno.fechaNacto) {
+            const date = new Date(alumno.fechaNacto);
+            // Ajuste zona horaria o usar string directo si viene YYYY-MM-DD
+            const day = String(date.getDate() + 1).padStart(2, '0'); // +1 por tema de zona horaria al parsear YYYY-MM-DD
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            // Mejor usar split si viene como string YYYY-MM-DD para evitar lios de timezone
+            const parts = alumno.fechaNacto.split('-');
+            if (parts.length === 3) {
+                txtNacimiento.textContent = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            } else {
+                txtNacimiento.textContent = alumno.fechaNacto;
+            }
+        } else {
+            txtNacimiento.textContent = 'No registrado';
+        }
+
+        // Foto
+        if (alumno.foto) {
+            imgFoto.src = `/storage/${alumno.foto}`;
+        } else {
+            imgFoto.src = `https://ui-avatars.com/api/?name=${alumno.nombres}+${alumno.apellidoPaterno}&background=bae6fd&color=0369a1&size=128`;
+        }
+
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    });
+
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    };
+
+    if (btnCloseX) btnCloseX.addEventListener('click', closeModal);
+    if (btnCloseBottom) btnCloseBottom.addEventListener('click', closeModal);
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+}
 function initAsignaturaModal() {
     const modal = document.getElementById('modalAsignatura');
     if (!modal) return;
 
-    const btnOpen = document.getElementById('btn-open-asignatura');
+    const btns = document.querySelectorAll('.btn-open-asignatura-docs');
     const btnClose = document.getElementById('btn-close-asignatura');
+    const btnBack = document.getElementById('btn-back-asignatura');
     const backdrop = document.getElementById('modal-asignatura-backdrop');
+
     const iframe = document.getElementById('iframe-asignatura');
     const title = document.getElementById('asignatura-modal-nombre');
+    const listaContainer = document.getElementById('lista-docs-asignatura');
+    const emptyState = document.getElementById('empty-state-asignatura');
 
-    if (btnOpen) {
-        btnOpen.addEventListener('click', (e) => {
+    btns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
             e.preventDefault();
-            iframe.src = btnOpen.dataset.url;
-            title.textContent = btnOpen.dataset.nombre;
+            const button = e.currentTarget;
+            const docs = JSON.parse(button.dataset.docs || '[]');
+            const nombreAsignatura = button.dataset.nombre;
+
+            title.textContent = nombreAsignatura;
+
+            // Render list
+            listaContainer.innerHTML = '';
+            if (docs.length === 0) {
+                listaContainer.innerHTML = '<p class="text-gray-500 text-sm text-center">No hay documentos disponibles.</p>';
+            } else {
+                docs.forEach(doc => {
+                    const item = document.createElement('button');
+                    item.className = 'w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-sky-50 hover:border-sky-200 transition-colors group focus:outline-none focus:ring-2 focus:ring-sky-500';
+                    item.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-sky-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-sky-700">${doc.nombre}</span>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-300 group-hover:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    `;
+                    item.onclick = () => {
+                        // Reset active state
+                        listaContainer.querySelectorAll('button').forEach(b => {
+                            b.classList.remove('bg-sky-100', 'border-sky-300');
+                            b.classList.add('border-gray-200');
+                        });
+                        item.classList.remove('border-gray-200');
+                        item.classList.add('bg-sky-100', 'border-sky-300');
+
+                        // Show iframe
+                        emptyState.classList.add('hidden');
+                        iframe.classList.remove('hidden');
+                        iframe.src = doc.url;
+                    };
+                    listaContainer.appendChild(item);
+                });
+            }
+
+            // Reset view
+            emptyState.classList.remove('hidden');
+            iframe.classList.add('hidden');
+            iframe.src = '';
+
             modal.classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
         });
-    }
+    });
 
     const close = () => {
         modal.classList.add('hidden');
@@ -404,5 +550,6 @@ function initAsignaturaModal() {
     };
 
     if (btnClose) btnClose.addEventListener('click', close);
+    if (btnBack) btnBack.addEventListener('click', close);
     if (backdrop) backdrop.addEventListener('click', close);
 }

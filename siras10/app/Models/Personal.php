@@ -19,6 +19,8 @@ class Personal extends Model
         'idCentroSalud',
         'runUsuario',
         'fechaCreacion',
+        'fechaInicio',
+        'fechaFin',
     ];
 
     // Relación inversa con CentroSalud

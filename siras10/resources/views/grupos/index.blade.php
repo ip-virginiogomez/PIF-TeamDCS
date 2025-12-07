@@ -143,5 +143,88 @@
             </select>
         </div>
     </x-crud-modal>
+    {{-- Modal para Ver Horario --}}
+    <div id="verHorarioModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 z-50 hidden flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+        <div class="relative w-full max-w-2xl max-h-full p-4">
+            <!-- Modal content -->
+            <div class="relative bg-white rounded-lg shadow-xl">
+                <!-- Modal header -->
+                <div class="flex items-start justify-between p-4 border-b rounded-t">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                        Horario Detallado
+                    </h3>
+                    <button type="button" onclick="cerrarModalVerHorario()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span class="sr-only">Cerrar modal</span>
+                    </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-6 space-y-6" id="verHorarioContent">
+                    {{-- Contenido dinámico --}}
+                </div>
+                <!-- Modal footer -->
+                <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                    <button onclick="cerrarModalVerHorario()" type="button" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function verHorario(horarios) {
+            const modal = document.getElementById('verHorarioModal');
+            const content = document.getElementById('verHorarioContent');
+            
+            if (!horarios || horarios.length === 0) {
+                content.innerHTML = '<p class="text-gray-500">No hay horarios definidos para esta oferta.</p>';
+            } else {
+                // Agrupar por hora de entrada y salida
+                const grupos = {};
+                
+                horarios.forEach(h => {
+                    const key = `${h.horaEntrada}-${h.horaSalida}`;
+                    if (!grupos[key]) {
+                        grupos[key] = {
+                            entrada: h.horaEntrada,
+                            salida: h.horaSalida,
+                            dias: []
+                        };
+                    }
+                    grupos[key].dias.push(h.diaSemana);
+                });
+
+                let html = '<div class="relative overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">Días</th><th scope="col" class="px-6 py-3">Hora Inicio</th><th scope="col" class="px-6 py-3">Hora Fin</th></tr></thead><tbody>';
+                
+                Object.values(grupos).forEach(g => {
+                    // Capitalizar días
+                    const diasStr = g.dias.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ');
+                    // Formatear horas (quitar segundos si es necesario, pero vienen como H:i:s)
+                    const entrada = g.entrada ? g.entrada.substring(0, 5) : 'N/A';
+                    const salida = g.salida ? g.salida.substring(0, 5) : 'N/A';
+
+                    html += `<tr class="bg-white border-b">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${diasStr}</td>
+                        <td class="px-6 py-4">${entrada}</td>
+                        <td class="px-6 py-4">${salida}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+                content.innerHTML = html;
+            }
+            
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function cerrarModalVerHorario() {
+            const modal = document.getElementById('verHorarioModal');
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+    </script>
+
     @vite(['resources/js/app.js']) 
 </x-app-layout>

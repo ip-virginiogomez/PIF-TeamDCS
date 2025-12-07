@@ -17,9 +17,6 @@
                     };
                 @endphp
                 <th class="py-2 px-4 text-left">
-                    {!! $getSortLink('idUnidadClinica', 'ID') !!}
-                </th>
-                <th class="py-2 px-4 text-left">
                     {!! $getSortLink('nombreUnidad', 'Nombre de la Unidad') !!}
                 </th>
                 <th class="py-2 px-4 text-left">
@@ -31,9 +28,6 @@
         <tbody>
             @forelse ($unidadesClinicas as $unidad)
             <tr class="border-b" id="unidad-{{ $unidad->idUnidadClinica }}">
-                <td class="py-2 px-4">
-                    <span>{{ $unidad->idUnidadClinica }}</span>
-                </td>
                 <td class="py-2 px-4">
                     <span>{{ $unidad->nombreUnidad }}</span>
                 </td>
