@@ -7,7 +7,36 @@ document.addEventListener('DOMContentLoaded', () => {
     try { initAlumnoDocsModal(); } catch (e) { console.error('Error initAlumnoDocsModal:', e); }
     try { initAsignaturaModal(); } catch (e) { console.error('Error initAsignaturaModal:', e); }
     try { initFichaAlumnoModal(); } catch (e) { console.error('Error initFichaAlumnoModal:', e); }
+    try { initRechazoModal(); } catch (e) { console.error('Error initRechazoModal:', e); }
 });
+
+/**
+ * 8. MODAL RECHAZO
+ */
+function initRechazoModal() {
+    const modal = document.getElementById('modalRechazo');
+    if (!modal) return;
+
+    const btnOpen = document.getElementById('btn-open-rechazo');
+    const backdrop = document.getElementById('modal-rechazo-backdrop');
+    const btnClose = document.getElementById('btn-close-rechazo');
+    const btnCancel = document.getElementById('btn-cancel-rechazo');
+
+    const toggle = (show) => {
+        if (show) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        } else {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    };
+
+    if (btnOpen) btnOpen.addEventListener('click', (e) => { e.preventDefault(); toggle(true); });
+    if (backdrop) backdrop.addEventListener('click', () => toggle(false));
+    if (btnClose) btnClose.addEventListener('click', () => toggle(false));
+    if (btnCancel) btnCancel.addEventListener('click', () => toggle(false));
+}
 
 /**
  * 1. FICHA DOCENTE

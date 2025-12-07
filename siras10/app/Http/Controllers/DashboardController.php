@@ -99,6 +99,10 @@ class DashboardController extends Controller
                     $q->where('idCentroFormador', $idCentroFormador);
                 })->count();
 
+                // Notificaciones
+                $dashboardData['notificaciones'] = $user->unreadNotifications()->paginate(3);
+                $dashboardData['notificaciones']->withPath(route('dashboard.notifications'));
+
                 // 5. Alumnos Pendientes
                 // Calculado como: Total CF - (En Practica + Finalizados)
                 // Nota: Esto asume que un alumno no puede estar en ambas listas (activo y finalizado) en el mismo periodo,
@@ -310,5 +314,12 @@ class DashboardController extends Controller
             'cuposPorCarreraData' => $cuposPorCarreraData,
             'dashboardVariant' => $variant,
         ], $dashboardData));
+    }
+
+    public function notifications()
+    {
+        $user = Auth::user();
+        $notificaciones = $user->unreadNotifications()->paginate(3);
+        return view('dashboard.partials.notifications', compact('notificaciones'));
     }
 }

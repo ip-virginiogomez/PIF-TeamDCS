@@ -230,4 +230,64 @@ class GrupoController extends Controller
 
         return view('grupos.dossier', compact('grupo'));
     }
+
+    public function validarDossier(Grupo $grupo)
+    {
+        $grupo->estadoDossier = 'Validado';
+        $grupo->save();
+
+        // Notificar al Coordinador de Campo Clínico
+        $grupo->load('cupoDistribucion.sedeCarrera.sede');
+        
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
+            
+            $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
+            
+            foreach ($coordinadores as $coord) {
+                if ($coord->usuario) {
+                    $coord->usuario->notify(new \App\Notifications\DossierValidado($grupo));
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Dossier validado correctamente.');
+    }
+
+    public function revertirDossier(Grupo $grupo)
+    {
+        $grupo->estadoDossier = 'Pendiente';
+        $grupo->motivoRechazo = null; // Limpiar motivo si se revierte
+        $grupo->save();
+
+        return redirect()->back()->with('success', 'Validación del dossier revertida correctamente.');
+    }
+
+    public function rechazarDossier(Request $request, Grupo $grupo)
+    {
+        $request->validate([
+            'motivo' => 'required|string|max:1000',
+        ]);
+
+        $grupo->estadoDossier = 'Rechazado';
+        $grupo->motivoRechazo = $request->input('motivo');
+        $grupo->save();
+
+        // Notificar al Coordinador de Campo Clínico
+        $grupo->load('cupoDistribucion.sedeCarrera.sede');
+        
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
+            
+            $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
+            
+            foreach ($coordinadores as $coord) {
+                if ($coord->usuario) {
+                    $coord->usuario->notify(new \App\Notifications\DossierRechazado($grupo, $request->input('motivo')));
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Dossier rechazado correctamente.');
+    }
 }

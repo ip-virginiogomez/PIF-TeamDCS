@@ -39,6 +39,57 @@
                             <h3 class="text-lg font-bold text-white">Detalle del Dossier</h3>
                             <p class="text-sky-200 text-sm">{{ $grupo->nombreGrupo }}</p>
                         </div>
+                        <div class="flex items-center gap-3">
+                            {{-- Estado Badge --}}
+                            @if($grupo->estadoDossier === 'Validado')
+                                <span class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm border border-green-600">
+                                    Validado
+                                </span>
+                            @elseif($grupo->estadoDossier === 'Rechazado')
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm border border-red-600">
+                                    Rechazado
+                                </span>
+                            @else
+                                <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm border border-yellow-600">
+                                    Pendiente
+                                </span>
+                            @endif
+
+                            {{-- Botones de Acción --}}
+                            @hasanyrole('Admin|Encargado Campo Clínico')
+                                @if($grupo->estadoDossier === 'Pendiente')
+                                    {{-- Validar --}}
+                                    <form id="form-validar" action="{{ route('grupos.validarDossier', $grupo->idGrupo) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm transition shadow-md flex items-center border border-green-800">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            Validar
+                                        </button>
+                                    </form>
+                                    {{-- Rechazar --}}
+                                    <button type="button" id="btn-open-rechazo" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm transition shadow-md flex items-center border border-red-800">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        Rechazar
+                                    </button>
+                                @elseif($grupo->estadoDossier === 'Validado')
+                                    <form id="form-revertir-validado" action="{{ route('grupos.revertirDossier', $grupo->idGrupo) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded text-sm transition shadow-md flex items-center border border-orange-700">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                            Revertir Validación
+                                        </button>
+                                    </form>
+                                @elseif($grupo->estadoDossier === 'Rechazado')
+                                    <form id="form-revertir-rechazado" action="{{ route('grupos.revertirDossier', $grupo->idGrupo) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded text-sm transition shadow-md flex items-center border border-orange-700">
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                            Revertir Rechazo
+                                        </button>
+                                    </form>
+                                @endif
+                            @endhasanyrole
+                        </div>
                     </div>
                 </div>
 
@@ -600,6 +651,134 @@
             </div>
         </div>
     </div>
+
+    {{-- 7. MODAL RECHAZO DOSSIER --}}
+    <div id="modalRechazo" class="relative z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div id="modal-rechazo-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40 cursor-pointer backdrop-blur-sm"></div>
+        <div class="fixed inset-0 z-50 w-screen overflow-y-auto pointer-events-none">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 pointer-events-auto">
+                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <form id="form-rechazar" action="{{ route('grupos.rechazarDossier', $grupo->idGrupo) }}" method="POST">
+                        @csrf
+                        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-100">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold leading-6 text-red-600 flex items-center">
+                                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    Rechazar Dossier
+                                </h3>
+                                <button type="button" id="btn-close-rechazo" class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-4 py-5 sm:p-6">
+                            <p class="text-sm text-gray-500 mb-4">Por favor, indica el motivo por el cual se rechaza este dossier. Esta información será enviada al Coordinador de Campo Clínico.</p>
+                            <div>
+                                <label for="motivo" class="block text-sm font-medium text-gray-700 mb-1">Motivo del Rechazo</label>
+                                <textarea id="motivo" name="motivo" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm" placeholder="Ej: Faltan documentos de vacunas..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button type="submit" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto">Rechazar Dossier</button>
+                            <button type="button" id="btn-cancel-rechazo" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validar
+            const formValidar = document.getElementById('form-validar');
+            if (formValidar) {
+                formValidar.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Validar Dossier?',
+                        text: "Se notificará al Coordinador de Campo Clínico.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#16a34a', // green-600
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, validar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            formValidar.submit();
+                        }
+                    });
+                });
+            }
+
+            // Revertir (Generic handler for both revert forms if I use a class, or specific IDs)
+            const formRevertirValidado = document.getElementById('form-revertir-validado');
+            if (formRevertirValidado) {
+                formRevertirValidado.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Revertir Validación?',
+                        text: "El estado volverá a Pendiente.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f97316', // orange-500
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, revertir',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            formRevertirValidado.submit();
+                        }
+                    });
+                });
+            }
+
+            const formRevertirRechazado = document.getElementById('form-revertir-rechazado');
+            if (formRevertirRechazado) {
+                formRevertirRechazado.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Revertir Rechazo?',
+                        text: "El estado volverá a Pendiente.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f97316', // orange-500
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, revertir',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            formRevertirRechazado.submit();
+                        }
+                    });
+                });
+            }
+
+            // Rechazar
+            const formRechazar = document.getElementById('form-rechazar');
+            if (formRechazar) {
+                formRechazar.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Rechazar Dossier?',
+                        text: "Se enviará el motivo al Coordinador.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626', // red-600
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, rechazar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            formRechazar.submit();
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 
     @vite(['resources/js/app.js'])
 </x-app-layout>

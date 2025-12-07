@@ -10,6 +10,47 @@
         </p>
     </div>
 
+    {{-- Notificaciones --}}
+    <div id="notifications-container">
+        @include('dashboard.partials.notifications')
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('notifications-container');
+            
+            if (container) {
+                container.addEventListener('click', function(e) {
+                    // Check if the clicked element or its parent is a pagination link
+                    const link = e.target.closest('.pagination a') || e.target.closest('nav[role="navigation"] a');
+                    
+                    if (link) {
+                        e.preventDefault();
+                        const url = link.href;
+                        
+                        // Add opacity to indicate loading
+                        container.style.opacity = '0.5';
+                        
+                        fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                            container.style.opacity = '1';
+                        })
+                        .catch(error => {
+                            console.error('Error loading notifications:', error);
+                            container.style.opacity = '1';
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
         <!-- Semana de Rotación -->
         <div class="bg-white shadow rounded-lg p-4 border-l-4 border-blue-500">

@@ -42,6 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/notifications', [DashboardController::class, 'notifications'])->name('dashboard.notifications');
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
@@ -183,6 +184,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- GESTIÓN DE GRUPOS ---
     Route::resource('grupos', GrupoController::class);
+    Route::post('/grupos/{grupo}/validar-dossier', [GrupoController::class, 'validarDossier'])->name('grupos.validarDossier');
+    Route::post('/grupos/{grupo}/revertir-dossier', [GrupoController::class, 'revertirDossier'])->name('grupos.revertirDossier');
+    Route::post('/grupos/{grupo}/rechazar-dossier', [GrupoController::class, 'rechazarDossier'])->name('grupos.rechazarDossier');
     Route::get('/grupos/por-distribucion/{idDistribucion}', [GrupoController::class, 'getGruposByDistribucion'])
         ->name('grupos.by-distribucion');
 
