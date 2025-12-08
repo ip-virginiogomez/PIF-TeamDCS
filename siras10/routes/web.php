@@ -8,6 +8,7 @@ use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
+use App\Http\Controllers\CupoDemandaController;
 use App\Http\Controllers\CupoDistribucionController;
 use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DashboardController;
@@ -115,6 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('tipos-practica', TipoPracticaController::class);
 
     // --- GESTIÓN DE CUPOS ---
+    Route::resource('cupo-demandas', CupoDemandaController::class);
     Route::resource('cupo-ofertas', CupoOfertaController::class);
     Route::resource('cupo-distribuciones', CupoDistribucionController::class);
 
