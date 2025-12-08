@@ -17,8 +17,12 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-xs">
-                                {{ substr($log->causer ? ($log->causer->nombreUsuario ?? 'S') : 'S', 0, 2) }}
+                            <div class="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold text-xs overflow-hidden">
+                                @if($log->causer && $log->causer->foto)
+                                    <img src="{{ asset('storage/' . $log->causer->foto) }}" alt="{{ $log->causer->nombreUsuario }}" class="h-full w-full object-cover">
+                                @else
+                                    {{ substr($log->causer ? ($log->causer->nombreUsuario ?? 'S') : 'S', 0, 2) }}
+                                @endif
                             </div>
                             <div class="ml-3">
                                 <div class="text-sm font-medium text-gray-900">
@@ -50,7 +54,7 @@
                         <span class="text-xs text-gray-400 ml-1">#{{ $log->subject_id }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button onclick="toggleDetails('{{ $log->id }}')" class="text-indigo-600 hover:text-indigo-900 focus:outline-none">
+                        <button onclick="toggleDetails('{{ $log->id }}')" class="w-full px-4 py-2 rounded-md text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 focus:outline-none transition-colors duration-150 font-medium">
                             Ver cambios
                         </button>
                     </td>

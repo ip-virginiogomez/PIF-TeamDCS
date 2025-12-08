@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class TipoPersonalSalud extends Model
 {
@@ -24,6 +24,12 @@ class TipoPersonalSalud extends Model
     ];
 
     // Relación uno a muchos con Usuario
+    public function usuarios()
+    {
+        return $this->hasMany(Usuario::class, 'idTipoPersonalSalud', 'idTipoPersonalSalud');
+    }
+
+    // Relación uno a muchos con Personal
     public function personal()
     {
         return $this->hasMany(Personal::class, 'idTipoPersonalSalud', 'idTipoPersonalSalud');
