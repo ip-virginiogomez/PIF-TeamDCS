@@ -493,26 +493,30 @@ class DashboardController extends Controller
                     $record = $modelClass::withTrashed()->find($activity->subject_id);
                     if ($record && $record->trashed()) {
                         $record->restore();
+
                         return back()->with('success', 'Registro restaurado exitosamente.');
                     }
                 }
+
                 return back()->with('error', 'No se pudo restaurar el registro (ya existe o no soporta restauración).');
             } elseif ($activity->event === 'updated') {
                 $modelClass = $activity->subject_type;
                 $record = $modelClass::find($activity->subject_id);
-                
+
                 if ($record) {
                     $oldAttributes = $activity->properties['old'] ?? [];
-                    if (!empty($oldAttributes)) {
+                    if (! empty($oldAttributes)) {
                         $record->fill($oldAttributes);
                         $record->save();
+
                         return back()->with('success', 'Cambios revertidos exitosamente.');
                     }
                 }
+
                 return back()->with('error', 'No se pudo revertir los cambios (registro no encontrado o sin datos previos).');
             }
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al restaurar: ' . $e->getMessage());
+            return back()->with('error', 'Error al restaurar: '.$e->getMessage());
         }
 
         return back()->with('error', 'Acción no soportada para este tipo de evento.');

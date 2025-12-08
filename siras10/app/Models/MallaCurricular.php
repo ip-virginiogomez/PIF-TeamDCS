@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class MallaCurricular extends Model
 {
     use SoftDeletes;
+
     protected $table = 'malla_curricular';
 
     protected $primaryKey = 'idMallaCurricular';
