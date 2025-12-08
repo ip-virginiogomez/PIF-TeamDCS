@@ -65,6 +65,16 @@ class Docente extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($docente) {
+            $docente->docenteCarreras()->each(function ($docenteCarrera) {
+                $docenteCarrera->delete();
+            });
+
+            $docente->docenteVacunas()->each(function ($docenteVacuna) {
+                $docenteVacuna->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

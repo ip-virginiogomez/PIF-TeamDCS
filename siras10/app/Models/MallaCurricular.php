@@ -23,6 +23,23 @@ class MallaCurricular extends Model
         return $this->hasMany(Asignatura::class, 'idMalla', 'idMalla');
     }
 
+    public function mallaSedeCarreras()
+    {
+        return $this->hasMany(MallaSedeCarrera::class, 'idMallaCurricular', 'idMallaCurricular');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($mallaCurricular) {
+            $mallaCurricular->asignaturas()->each(function ($asignatura) {
+                $asignatura->delete();
+            });
+            $mallaCurricular->mallaSedeCarreras()->each(function ($mallaSedeCarrera) {
+                $mallaSedeCarrera->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

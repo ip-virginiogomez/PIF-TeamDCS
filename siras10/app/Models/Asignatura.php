@@ -58,6 +58,18 @@ class Asignatura extends Model
         return $this->hasMany(Grupo::class, 'idAsignatura', 'idAsignatura');
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($asignatura) {
+            $asignatura->programas()->each(function ($programa) {
+                $programa->delete();
+            });
+            $asignatura->grupos()->each(function ($grupo) {
+                $grupo->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

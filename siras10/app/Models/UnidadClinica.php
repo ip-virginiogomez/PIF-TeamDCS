@@ -36,6 +36,15 @@ class UnidadClinica extends Model
         return $this->hasMany(CupoOferta::class, 'idUnidadClinica', 'idUnidadClinica');
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($unidadClinica) {
+            $unidadClinica->cupoOfertas()->each(function ($cupoOferta) {
+                $cupoOferta->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

@@ -48,6 +48,23 @@ class CentroFormador extends Model
         return $this->hasMany(Convenio::class, 'idCentroFormador', 'idCentroFormador');
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($centroFormador) {
+            $centroFormador->sedes()->each(function ($sede) {
+                $sede->delete();
+            });
+
+            $centroFormador->convenios()->each(function ($convenio) {
+                $convenio->delete();
+            });
+
+            $centroFormador->coordinadorCampoClinicos()->each(function ($coordinador) {
+                $coordinador->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

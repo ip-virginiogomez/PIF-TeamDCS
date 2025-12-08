@@ -35,6 +35,19 @@ class Carrera extends Model
         return $this->hasMany(CupoOferta::class, 'idCarrera', 'idCarrera');
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($carrera) {
+            $carrera->sedeCarreras()->each(function ($sedeCarrera) {
+                $sedeCarrera->delete();
+            });
+
+            $carrera->cupoOfertas()->each(function ($cupoOferta) {
+                $cupoOferta->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

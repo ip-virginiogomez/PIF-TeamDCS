@@ -86,6 +86,26 @@ class Usuario extends Authenticatable
         return $this->hasMany(Personal::class, 'runUsuario', 'runUsuario');
     }
 
+    public function rolUsuarios()
+    {
+        return $this->hasMany(RolUsuario::class, 'runUsuario', 'runUsuario');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($usuario) {
+            $usuario->coordinadorCampoClinicos()->each(function ($coordinador) {
+                $coordinador->delete();
+            });
+            $usuario->personales()->each(function ($personal) {
+                $personal->delete();
+            });
+            $usuario->rolUsuarios()->each(function ($rolUsuario) {
+                $rolUsuario->delete();
+            });
+        });
+    }
+
     public function esAdmin()
     {
         return $this->hasRole('Admin');

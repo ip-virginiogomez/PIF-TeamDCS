@@ -69,6 +69,15 @@ class Grupo extends Model
         );
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($grupo) {
+            $grupo->dossierGrupos()->each(function ($dossierGrupo) {
+                $dossierGrupo->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

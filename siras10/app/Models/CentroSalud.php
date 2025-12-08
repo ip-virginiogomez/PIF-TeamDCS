@@ -51,6 +51,19 @@ class CentroSalud extends Model
         return $this->hasMany(UnidadClinica::class, 'idCentroSalud', 'idCentroSalud');
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($centroSalud) {
+            $centroSalud->personal()->each(function ($personal) {
+                $personal->delete();
+            });
+
+            $centroSalud->unidadClinicas()->each(function ($unidadClinica) {
+                $unidadClinica->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

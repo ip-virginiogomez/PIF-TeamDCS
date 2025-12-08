@@ -65,6 +65,18 @@ class CupoOferta extends Model
         return $this->hasMany(CupoOfertaHorario::class, 'idCupoOferta', 'idCupoOferta');
     }
 
+    protected static function booted()
+    {
+        static::deleted(function ($cupoOferta) {
+            $cupoOferta->cupoDistribuciones()->each(function ($cupoDistribucion) {
+                $cupoDistribucion->delete();
+            });
+            $cupoOferta->horarios()->each(function ($horario) {
+                $horario->delete();
+            });
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

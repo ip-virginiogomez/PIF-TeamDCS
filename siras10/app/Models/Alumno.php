@@ -76,6 +76,21 @@ class Alumno extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($alumno) {
+            // Borrado en cascada de relaciones
+            $alumno->vacunas()->each(function ($vacuna) {
+                $vacuna->delete();
+            });
+
+            $alumno->alumnoCarreras()->each(function ($alumnoCarrera) {
+                $alumnoCarrera->delete();
+            });
+
+            $alumno->dossierGrupos()->each(function ($dossierGrupo) {
+                $dossierGrupo->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

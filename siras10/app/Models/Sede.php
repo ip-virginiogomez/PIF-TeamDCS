@@ -50,6 +50,12 @@ class Sede extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($sede) {
+            $sede->sedeCarreras()->each(function ($sedeCarrera) {
+                $sedeCarrera->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

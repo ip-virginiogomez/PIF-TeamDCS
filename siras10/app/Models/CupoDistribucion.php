@@ -47,6 +47,12 @@ class CupoDistribucion extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($cupoDistribucion) {
+            $cupoDistribucion->grupos()->each(function ($grupo) {
+                $grupo->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions
