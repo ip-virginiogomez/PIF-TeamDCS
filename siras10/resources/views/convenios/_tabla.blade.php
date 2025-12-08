@@ -47,7 +47,7 @@
                                         <tr class="border-b" id="convenio-{{ $convenio->idConvenio }}">
                         <td class="py-2 px-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                /* Lines 54-55 omitted */
+                                {{ $convenio->centroFormador->nombreCentroFormador ?? 'N/A' }}
                             </span>
                         </td>
                         <td class="py-2 px-4">

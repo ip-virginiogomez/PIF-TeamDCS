@@ -8,6 +8,7 @@ use App\Models\CupoOferta;
 use App\Models\Docente;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
@@ -27,6 +28,8 @@ class DashboardController extends Controller
         $cuposPorCarreraLabels = $cuposPorCarrera->pluck('nombreCarrera');
         $cuposPorCarreraData = $cuposPorCarrera->pluck('total_cupos');
 
+        $dashboardData = [];
+
         // determine dashboard variant based on user role / tipo personal salud
         $user = Auth::user();
         $variant = 'default';
@@ -34,6 +37,15 @@ class DashboardController extends Controller
         if ($user) {
             if ($user->hasRole('Admin') || (method_exists($user, 'esAdmin') && $user->esAdmin())) {
                 $variant = 'admin';
+                $logs = Activity::with('causer')
+                    ->latest()
+                    ->paginate(10, ['*'], 'logs_page');
+
+                if (request()->ajax() && request()->has('logs_page')) {
+                    return view('dashboard.partials.logs_table', ['logs' => $logs])->render();
+                }
+
+                $dashboardData['logs'] = $logs;
             } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
                 $variant = 'coordinador_campo';
             } elseif ($user->hasRole('Técnico RAD') || (method_exists($user, 'esTecnicoRAD') && $user->esTecnicoRAD())) {
@@ -52,8 +64,6 @@ class DashboardController extends Controller
                 }
             }
         }
-
-        $dashboardData = [];
 
         if ($variant === 'coordinador_campo') {
             $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)->first();
