@@ -425,4 +425,21 @@
             activeContent.classList.add('hidden');
         }
     }
+
+    function confirmRestore(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Se intentará restaurar el registro a su estado anterior.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10B981',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Sí, restaurar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('restore-form-' + id).submit();
+            }
+        });
+    }
 </script>

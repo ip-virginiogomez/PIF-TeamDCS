@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -13,7 +14,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Usuario extends Authenticatable
 {
-    use HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable, SoftDeletes;
 
     protected $table = 'usuarios';
 
@@ -83,6 +84,26 @@ class Usuario extends Authenticatable
     public function personales()
     {
         return $this->hasMany(Personal::class, 'runUsuario', 'runUsuario');
+    }
+
+    public function rolUsuarios()
+    {
+        return $this->hasMany(RolUsuario::class, 'runUsuario', 'runUsuario');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($usuario) {
+            $usuario->coordinadorCampoClinicos()->each(function ($coordinador) {
+                $coordinador->delete();
+            });
+            $usuario->personales()->each(function ($personal) {
+                $personal->delete();
+            });
+            $usuario->rolUsuarios()->each(function ($rolUsuario) {
+                $rolUsuario->delete();
+            });
+        });
     }
 
     public function esAdmin()

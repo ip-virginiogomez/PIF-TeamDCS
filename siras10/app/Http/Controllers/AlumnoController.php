@@ -105,12 +105,18 @@ class AlumnoController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'runAlumno' => 'required|string|max:10|unique:Alumno,runAlumno',
+            'runAlumno' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::unique('alumno', 'runAlumno')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
             'correo' => [
-                'required', 'email', 'max:50', 'unique:Alumno,correo',
+                'required', 'email', 'max:50',
+                Rule::unique('alumno', 'correo')->whereNull('deleted_at'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'nullable|date',
@@ -140,10 +146,21 @@ class AlumnoController extends Controller
                 $alumnoData['acuerdo'] = $request->file('acuerdo')->store('acuerdos', 'public');
             }
 
-            $alumno = Alumno::create($alumnoData);
+            // Verificar si existe un alumno eliminado (Soft Delete)
+            $alumno = Alumno::withTrashed()->where('runAlumno', $alumnoData['runAlumno'])->first();
+
+            if ($alumno) {
+                if ($alumno->trashed()) {
+                    $alumno->restore();
+                }
+                $alumno->update($alumnoData);
+            } else {
+                $alumno = Alumno::create($alumnoData);
+            }
 
             if ($sedeCarreraId) {
-                $alumno->sedesCarreras()->attach($sedeCarreraId);
+                // Usamos sync para asegurar que tenga la carrera seleccionada (limpiando anteriores si fue restaurado)
+                $alumno->sedesCarreras()->sync([$sedeCarreraId]);
             }
 
             return response()->json([
@@ -172,13 +189,18 @@ class AlumnoController extends Controller
     public function update(Request $request, Alumno $alumno)
     {
         $validator = Validator::make($request->all(), [
-            'runAlumno' => 'required|string|max:10|unique:Alumno,runAlumno,'.$alumno->runAlumno.',runAlumno',
+            'runAlumno' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::unique('alumno', 'runAlumno')->ignore($alumno->runAlumno, 'runAlumno')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
             'correo' => [
                 'required', 'email', 'max:50',
-                Rule::unique('Alumno', 'correo')->ignore($alumno->runAlumno, 'runAlumno'),
+                Rule::unique('alumno', 'correo')->ignore($alumno->runAlumno, 'runAlumno')->whereNull('deleted_at'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'nullable|date',

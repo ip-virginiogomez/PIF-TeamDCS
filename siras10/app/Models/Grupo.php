@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Grupo extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'grupo';
 
@@ -66,6 +67,15 @@ class Grupo extends Model
             'idGrupo',
             'runAlumno'
         );
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($grupo) {
+            $grupo->dossierGrupos()->each(function ($dossierGrupo) {
+                $dossierGrupo->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

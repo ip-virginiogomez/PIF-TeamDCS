@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class UnidadClinica extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'unidad_clinica';
 
@@ -33,6 +34,15 @@ class UnidadClinica extends Model
     public function cupoOfertas()
     {
         return $this->hasMany(CupoOferta::class, 'idUnidadClinica', 'idUnidadClinica');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($unidadClinica) {
+            $unidadClinica->cupoOfertas()->each(function ($cupoOferta) {
+                $cupoOferta->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

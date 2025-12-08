@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Docente extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'docente';
 
@@ -64,6 +65,16 @@ class Docente extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($docente) {
+            $docente->docenteCarreras()->each(function ($docenteCarrera) {
+                $docenteCarrera->delete();
+            });
+
+            $docente->docenteVacunas()->each(function ($docenteVacuna) {
+                $docenteVacuna->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions

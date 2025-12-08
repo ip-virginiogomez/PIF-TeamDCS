@@ -54,9 +54,21 @@
                         <span class="text-xs text-gray-400 ml-1">#{{ $log->subject_id }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button onclick="toggleDetails('{{ $log->id }}')" class="w-full px-4 py-2 rounded-md text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 focus:outline-none transition-colors duration-150 font-medium">
-                            Ver cambios
-                        </button>
+                        <div class="flex space-x-2">
+                            <button onclick="toggleDetails('{{ $log->id }}')" class="px-4 py-2 rounded-md text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 focus:outline-none transition-colors duration-150 font-medium">
+                                Ver cambios
+                            </button>
+                            @if(in_array($log->event, ['deleted', 'updated']))
+                                <form id="restore-form-{{ $log->id }}" action="{{ route('dashboard.activity.restore', $log->id) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    <button type="button" onclick="confirmRestore('{{ $log->id }}')" class="px-4 py-2 rounded-md text-green-600 hover:text-green-900 hover:bg-green-50 focus:outline-none transition-colors duration-150 font-medium" title="Restaurar estado">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 <tr id="details-{{ $log->id }}" class="hidden bg-gray-50">

@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class TipoPractica extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'tipo_practica';
 
@@ -39,5 +40,17 @@ class TipoPractica extends Model
     public function cupoOfertas()
     {
         return $this->hasMany(CupoOferta::class, 'idTipoPractica', 'idTipoPractica');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($tipoPractica) {
+            $tipoPractica->asignaturas()->each(function ($asignatura) {
+                $asignatura->delete();
+            });
+            $tipoPractica->cupoOfertas()->each(function ($cupoOferta) {
+                $cupoOferta->delete();
+            });
+        });
     }
 }

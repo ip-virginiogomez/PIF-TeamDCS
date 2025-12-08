@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class SedeCarrera extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'sede_carrera';
 
@@ -78,5 +79,23 @@ class SedeCarrera extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($sedeCarrera) {
+            $sedeCarrera->asignaturas()->each(function ($asignatura) {
+                $asignatura->delete();
+            });
+            $sedeCarrera->cupoDistribuciones()->each(function ($cupoDistribucion) {
+                $cupoDistribucion->delete();
+            });
+            $sedeCarrera->docenteCarreras()->each(function ($docenteCarrera) {
+                $docenteCarrera->delete();
+            });
+            $sedeCarrera->alumnoCarreras()->each(function ($alumnoCarrera) {
+                $alumnoCarrera->delete();
+            });
+            $sedeCarrera->mallaSedeCarreras()->each(function ($mallaSedeCarrera) {
+                $mallaSedeCarrera->delete();
+            });
+        });
     }
 }

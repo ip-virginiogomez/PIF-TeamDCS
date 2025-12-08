@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Submenu extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'submenu';
 
@@ -32,6 +33,15 @@ class Submenu extends Model
     public function permisos()
     {
         return $this->hasMany(Permisos::class, 'idSubmenu', 'idSubmenu');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($submenu) {
+            $submenu->permisos()->each(function ($permiso) {
+                $permiso->delete();
+            });
+        });
     }
 
     public function getActivitylogOptions(): LogOptions
