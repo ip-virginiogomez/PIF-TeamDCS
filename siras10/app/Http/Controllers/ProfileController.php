@@ -30,7 +30,13 @@ class ProfileController extends Controller
             'nombreUsuario' => ['required', 'string', 'max:255'],
             'apellidoPaterno' => ['required', 'string', 'max:255'],
             'apellidoMaterno' => ['required', 'string', 'max:255'],
-            'correo' => ['required', 'string', 'email', 'max:255', 'unique:usuarios,correo,'.$request->user()->runUsuario.',runUsuario'],
+            'correo' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('usuarios', 'correo')->ignore($request->user()->runUsuario, 'runUsuario')->whereNull('deleted_at'),
+            ],
             'telefono' => ['nullable', 'string', 'max:20'],
             'foto' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);

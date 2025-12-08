@@ -60,7 +60,12 @@ class CarreraController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera',
+            'nombreCarrera' => [
+                'required',
+                'string',
+                'max:45',
+                \Illuminate\Validation\Rule::unique('carrera', 'nombreCarrera')->whereNull('deleted_at'),
+            ],
         ], [
             'nombreCarrera.required' => 'El nombre de la carrera es obligatorio.',
             'nombreCarrera.string' => 'El nombre de la carrera debe ser una cadena de texto.',
@@ -78,7 +83,18 @@ class CarreraController extends Controller
             if (empty($data['fechaCreacion'])) {
                 $data['fechaCreacion'] = now();
             }
-            $carrera = Carrera::create($data);
+
+            // Verificar si existe una carrera eliminada (Soft Delete)
+            $carrera = Carrera::withTrashed()->where('nombreCarrera', $data['nombreCarrera'])->first();
+
+            if ($carrera) {
+                if ($carrera->trashed()) {
+                    $carrera->restore();
+                }
+                $carrera->update($data);
+            } else {
+                $carrera = Carrera::create($data);
+            }
 
             return response()->json([
                 'success' => true,
@@ -102,7 +118,12 @@ class CarreraController extends Controller
     public function update(Request $request, Carrera $carrera)
     {
         $validator = Validator::make($request->all(), [
-            'nombreCarrera' => 'required|string|max:45|unique:carrera,nombreCarrera,'.$carrera->idCarrera.',idCarrera',
+            'nombreCarrera' => [
+                'required',
+                'string',
+                'max:45',
+                \Illuminate\Validation\Rule::unique('carrera', 'nombreCarrera')->ignore($carrera->idCarrera, 'idCarrera')->whereNull('deleted_at'),
+            ],
         ], [
             'nombreCarrera.required' => 'El nombre de la carrera es obligatorio.',
             'nombreCarrera.string' => 'El nombre de la carrera debe ser una cadena de texto.',

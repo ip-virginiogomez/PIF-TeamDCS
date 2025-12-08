@@ -104,7 +104,12 @@ class DocentesController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
-            'runDocente' => 'required|string|max:12|unique:docente,runDocente',
+            'runDocente' => [
+                'required',
+                'string',
+                'max:12',
+                \Illuminate\Validation\Rule::unique('docente', 'runDocente')->whereNull('deleted_at'),
+            ],
             'nombresDocente' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
@@ -112,7 +117,7 @@ class DocentesController extends Controller
                 'required',
                 'email',
                 'max:50',
-                'unique:Docente,correo',
+                \Illuminate\Validation\Rule::unique('docente', 'correo')->whereNull('deleted_at'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'required|date',
@@ -194,10 +199,20 @@ class DocentesController extends Controller
                 $data['acuerdo'] = $rutaAcuerdo;
             }
 
-            $docente = Docente::create($data);
+            // Verificar si existe un docente eliminado (Soft Delete)
+            $docente = Docente::withTrashed()->where('runDocente', $data['runDocente'])->first();
+
+            if ($docente) {
+                if ($docente->trashed()) {
+                    $docente->restore();
+                }
+                $docente->update($data);
+            } else {
+                $docente = Docente::create($data);
+            }
 
             if ($sedeCarreraId) {
-                $docente->sedesCarreras()->attach($sedeCarreraId);
+                $docente->sedesCarreras()->sync([$sedeCarreraId]);
             }
 
             return response()->json([
@@ -228,7 +243,12 @@ class DocentesController extends Controller
     public function update(Request $request, Docente $docente)
     {
         $validator = Validator::make($request->all(), [
-            'runDocente' => 'required|string|max:12|unique:docente,runDocente,'.$docente->runDocente.',runDocente',
+            'runDocente' => [
+                'required',
+                'string',
+                'max:12',
+                \Illuminate\Validation\Rule::unique('docente', 'runDocente')->ignore($docente->runDocente, 'runDocente')->whereNull('deleted_at'),
+            ],
             'nombresDocente' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
@@ -236,7 +256,7 @@ class DocentesController extends Controller
                 'required',
                 'email',
                 'max:50',
-                Rule::unique('Docente', 'correo')->ignore($docente->runDocente, 'runDocente'),
+                \Illuminate\Validation\Rule::unique('docente', 'correo')->ignore($docente->runDocente, 'runDocente')->whereNull('deleted_at'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'required|date',
