@@ -8,9 +8,46 @@ use App\Models\CupoOferta;
 use App\Models\Docente;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
+    private function getFolderSize($path)
+    {
+        $totalSize = 0;
+        if (! file_exists($path)) {
+            return 0;
+        }
+        if (is_file($path)) {
+            return filesize($path);
+        }
+
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                $totalSize += $file->getSize();
+            }
+        } catch (\Exception $e) {
+            return 0;
+        }
+
+        return $totalSize;
+    }
+
+    private function formatBytes($bytes, $precision = 2)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= pow(1024, $pow);
+
+        return round($bytes, $precision).' '.$units[$pow];
+    }
+
     public function index()
     {
         $totalAlumnos = Alumno::count();
@@ -27,6 +64,8 @@ class DashboardController extends Controller
         $cuposPorCarreraLabels = $cuposPorCarrera->pluck('nombreCarrera');
         $cuposPorCarreraData = $cuposPorCarrera->pluck('total_cupos');
 
+        $dashboardData = [];
+
         // determine dashboard variant based on user role / tipo personal salud
         $user = Auth::user();
         $variant = 'default';
@@ -34,6 +73,126 @@ class DashboardController extends Controller
         if ($user) {
             if ($user->hasRole('Admin') || (method_exists($user, 'esAdmin') && $user->esAdmin())) {
                 $variant = 'admin';
+
+                $query = Activity::with('causer')->latest();
+
+                if (request()->has('search') && ! empty(request('search'))) {
+                    $search = request('search');
+                    $query->where(function ($q) use ($search) {
+                        // 1. Búsqueda directa en descripción y tipo de entidad
+                        $q->where('description', 'like', "%{$search}%")
+                            ->orWhere('subject_type', 'like', "%{$search}%");
+
+                        // 2. Búsqueda por Evento (traducción ES -> EN)
+                        $lowerSearch = strtolower($search);
+                        $eventMap = [
+                            'creado' => 'created',
+                            'actualizado' => 'updated',
+                            'eliminado' => 'deleted',
+                        ];
+
+                        // Si busca "creado", busca "created"
+                        foreach ($eventMap as $es => $en) {
+                            if (str_contains($es, $lowerSearch)) {
+                                $q->orWhere('event', $en);
+                            }
+                        }
+                        // También permitir búsqueda directa en inglés
+                        $q->orWhere('event', 'like', "%{$search}%");
+
+                        // 3. Búsqueda por Fecha
+                        // Intentar convertir formato d/m/Y a Y-m-d
+                        try {
+                            if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}/', $search)) {
+                                $date = \Carbon\Carbon::createFromFormat('d/m/Y', $search)->format('Y-m-d');
+                                $q->orWhereDate('created_at', $date);
+                            } else {
+                                $q->orWhere('created_at', 'like', "%{$search}%");
+                            }
+                        } catch (\Exception $e) {
+                            // Si falla el formato, búsqueda simple
+                            $q->orWhere('created_at', 'like', "%{$search}%");
+                        }
+
+                        // 4. Búsqueda por Usuario (Relación Polimórfica Manual)
+                        // Buscamos los IDs de usuarios que coincidan con el nombre/correo
+                        $userIds = \App\Models\Usuario::where('nombreUsuario', 'like', "%{$search}%")
+                            ->orWhere('apellidoPaterno', 'like', "%{$search}%")
+                            ->orWhere('apellidoMaterno', 'like', "%{$search}%")
+                            ->orWhere('correo', 'like', "%{$search}%")
+                            ->pluck('runUsuario');
+
+                        if ($userIds->isNotEmpty()) {
+                            $q->orWhere(function ($sub) use ($userIds) {
+                                $sub->where('causer_type', 'App\Models\Usuario')
+                                    ->whereIn('causer_id', $userIds);
+                            });
+                        }
+                    });
+                }
+
+                $logs = $query->paginate(10, ['*'], 'logs_page');
+
+                if (request()->ajax() && (request()->has('logs_page') || request()->has('search'))) {
+                    return view('dashboard.partials.logs_table', ['logs' => $logs])->render();
+                }
+
+                $dashboardData['logs'] = $logs;
+
+                // Storage Logic
+                $storagePath = storage_path('app/public');
+
+                $vacunasSize = $this->getFolderSize($storagePath.'/vacunas_alumnos') +
+                               $this->getFolderSize($storagePath.'/vacunas_docentes');
+                $acuerdosSize = $this->getFolderSize($storagePath.'/acuerdos');
+                $fotosSize = $this->getFolderSize($storagePath.'/fotos');
+                $docentesSize = $this->getFolderSize($storagePath.'/docentes');
+                $conveniosSize = $this->getFolderSize($storagePath.'/convenios');
+                $mallasSize = $this->getFolderSize($storagePath.'/mallas-curriculares');
+                $programasSize = $this->getFolderSize($storagePath.'/programas');
+                $pautasSize = $this->getFolderSize($storagePath.'/pautas-evaluacion');
+
+                $dashboardData['storage'] = [
+                    'vacunas' => $this->formatBytes($vacunasSize),
+                    'acuerdos' => $this->formatBytes($acuerdosSize),
+                    'fotos' => $this->formatBytes($fotosSize),
+                    'docentes' => $this->formatBytes($docentesSize),
+                    'convenios' => $this->formatBytes($conveniosSize),
+                    'mallas' => $this->formatBytes($mallasSize),
+                    'programas' => $this->formatBytes($programasSize),
+                    'pautas' => $this->formatBytes($pautasSize),
+                ];
+
+                // User Stats
+                $totalUsers = Usuario::count();
+
+                // Active vs Inactive Users (Last 30 days activity)
+                $thirtyDaysAgo = now()->subDays(30);
+                $activeUserIds = Activity::where('causer_type', 'App\Models\Usuario')
+                    ->where('created_at', '>=', $thirtyDaysAgo)
+                    ->distinct()
+                    ->pluck('causer_id');
+
+                $activeUsersCount = $activeUserIds->count();
+                $inactiveUsersCount = max(0, $totalUsers - $activeUsersCount);
+
+                $dashboardData['userStats'] = [
+                    'total' => $totalUsers,
+                    'by_role' => \Spatie\Permission\Models\Role::withCount('users')->get(),
+                    'assigned_cf' => Usuario::has('centrosFormadores')->count(),
+                    'assigned_cs' => Usuario::has('centroSalud')->count(),
+                    'activity' => [
+                        'active' => $activeUsersCount,
+                        'inactive' => $inactiveUsersCount,
+                        'details' => [
+                            'active' => Usuario::whereIn('runUsuario', $activeUserIds)->select('runUsuario', 'nombreUsuario', 'apellidoPaterno', 'apellidoMaterno')->get(),
+                            'inactive' => Usuario::whereNotIn('runUsuario', $activeUserIds)->select('runUsuario', 'nombreUsuario', 'apellidoPaterno', 'apellidoMaterno')->get(),
+                        ],
+                    ],
+                ];
+
+            } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
+
             } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
                 $variant = 'coordinador_campo';
             } elseif ($user->hasRole('Técnico RAD') || (method_exists($user, 'esTecnicoRAD') && $user->esTecnicoRAD())) {
@@ -52,8 +211,6 @@ class DashboardController extends Controller
                 }
             }
         }
-
-        $dashboardData = [];
 
         if ($variant === 'coordinador_campo') {
             $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)->first();

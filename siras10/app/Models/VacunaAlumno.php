@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class VacunaAlumno extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'alumno_vacuna';
 
@@ -27,6 +29,13 @@ class VacunaAlumno extends Model
     public function estadoVacuna()
     {
         return $this->belongsTo(EstadoVacuna::class, 'idEstadoVacuna', 'idEstadoVacuna');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     // Relación inversa con Alumno

@@ -16,9 +16,16 @@ class MallaCurricular extends Model
     ];
 
     // Relación con las mallas específicas por sede
-    public function mallasSedeCarrera()
+    public function asignaturas()
     {
-        return $this->hasMany(MallaSedeCarrera::class, 'idMallaCurricular', 'idMallaCurricular');
+        return $this->hasMany(Asignatura::class, 'idMalla', 'idMalla');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     // Método estático para obtener o crear un año
