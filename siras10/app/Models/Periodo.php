@@ -31,11 +31,20 @@ class Periodo extends Model
         return $this->hasMany(CupoOferta::class, 'idPeriodo', 'idPeriodo');
     }
 
+    // Relación uno a muchos con CupoDemanda
+    public function cupoDemandas()
+    {
+        return $this->hasMany(CupoDemanda::class, 'idPeriodo', 'idPeriodo');
+    }
+
     protected static function booted()
     {
         static::deleted(function ($periodo) {
             $periodo->cuposOferta()->each(function ($cupoOferta) {
                 $cupoOferta->delete();
+            });
+            $periodo->cupoDemandas()->each(function ($cupoDemanda) {
+                $cupoDemanda->delete();
             });
         });
     }

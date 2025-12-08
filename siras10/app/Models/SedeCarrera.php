@@ -70,10 +70,10 @@ class SedeCarrera extends Model
         return $this->hasMany(Asignatura::class, 'idSedeCarrera', 'idSedeCarrera');
     }
 
-    // Relación uno a muchos con CupoDistribucion
-    public function cupoDistribuciones()
+    // Relación uno a muchos con CupoDemanda
+    public function cupoDemandas()
     {
-        return $this->hasMany(CupoDistribucion::class, 'idSedeCarrera', 'idSedeCarrera');
+        return $this->hasMany(CupoDemanda::class, 'idSedeCarrera', 'idSedeCarrera');
     }
 
     protected static function booted()
@@ -84,8 +84,8 @@ class SedeCarrera extends Model
             $sedeCarrera->asignaturas()->each(function ($asignatura) {
                 $asignatura->delete();
             });
-            $sedeCarrera->cupoDistribuciones()->each(function ($cupoDistribucion) {
-                $cupoDistribucion->delete();
+            $sedeCarrera->cupoDemandas()->each(function ($cupoDemanda) {
+                $cupoDemanda->delete();
             });
             $sedeCarrera->docenteCarreras()->each(function ($docenteCarrera) {
                 $docenteCarrera->delete();
