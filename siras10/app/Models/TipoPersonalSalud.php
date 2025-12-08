@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class TipoPersonalSalud extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'tipo_personal_salud';
 
@@ -22,8 +24,15 @@ class TipoPersonalSalud extends Model
     ];
 
     // Relación uno a muchos con Usuario
-    public function usuarios()
+    public function personal()
     {
-        return $this->hasMany(Usuario::class, 'idTipoPersonalSalud', 'idTipoPersonalSalud');
+        return $this->hasMany(Personal::class, 'idTipoPersonalSalud', 'idTipoPersonalSalud');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

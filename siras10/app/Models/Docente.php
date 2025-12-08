@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Docente extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'docente';
 
@@ -62,5 +64,12 @@ class Docente extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

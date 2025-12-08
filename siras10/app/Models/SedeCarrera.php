@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class SedeCarrera extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'sede_carrera';
 
@@ -34,6 +36,13 @@ class SedeCarrera extends Model
     public function carrera()
     {
         return $this->belongsTo(Carrera::class, 'idCarrera', 'idCarrera');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     // Relación uno a muchos con MallaSedeCarrera

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class MallaSedeCarrera extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'malla_sede_carrera';
 
@@ -31,6 +33,13 @@ class MallaSedeCarrera extends Model
     public function mallaCurricular()
     {
         return $this->belongsTo(MallaCurricular::class, 'idMallaCurricular', 'idMallaCurricular');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     // Relación inversa con SedeCarrera

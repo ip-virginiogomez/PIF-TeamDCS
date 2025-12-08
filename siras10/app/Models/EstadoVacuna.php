@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class EstadoVacuna extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'estado_vacuna';
 
@@ -31,5 +33,12 @@ class EstadoVacuna extends Model
     public function docenteVacunas()
     {
         return $this->hasMany(DocenteVacuna::class, 'idEstadoVacuna', 'idEstadoVacuna');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }
