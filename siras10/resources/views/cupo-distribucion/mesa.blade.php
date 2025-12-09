@@ -126,6 +126,39 @@
         </div>
     </div>
 
+    {{-- MODAL DE HORARIOS --}}
+    <div id="modalHorario" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Horario Detallado</h3>
+                <button onclick="cerrarModalHorario()" class="text-gray-400 hover:text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Día</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entrada</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-horarios-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Contenido dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="cerrarModalHorario()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let demandaSeleccionadaId = null;
         let demandaPendienteQty = 0;
@@ -365,6 +398,90 @@
                         container.innerHTML = html;
                     });
             }, 300);
+        }
+
+        function verHorario(horarios) {
+            const modal = document.getElementById('modalHorario');
+            const tbody = document.getElementById('tabla-horarios-body');
+            tbody.innerHTML = '';
+
+            if (horarios && horarios.length > 0) {
+                horarios.forEach(h => {
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${h.diaSemana}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${h.horaEntrada}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${h.horaSalida}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">No hay horarios definidos</td></tr>';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function cerrarModalHorario() {
+            document.getElementById('modalHorario').classList.add('hidden');
+        }
+
+        // Event delegation para el botón de eliminar
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action="delete-distribucion"]');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción eliminará la asignación de cupos y devolverá la cantidad a la oferta original.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    eliminarDistribucion(id);
+                }
+            });
+        });
+
+        async function eliminarDistribucion(id) {
+            try {
+                const response = await fetch(`/cupo-distribuciones/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error al eliminar');
+                }
+
+                Swal.fire(
+                    '¡Eliminado!',
+                    data.message || 'El registro ha sido eliminado.',
+                    'success'
+                ).then(() => {
+                    window.location.reload();
+                });
+
+            } catch (error) {
+                Swal.fire(
+                    'Error',
+                    error.message,
+                    'error'
+                );
+            }
         }
     </script>
     
