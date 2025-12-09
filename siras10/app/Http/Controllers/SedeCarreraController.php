@@ -126,7 +126,12 @@ class SedeCarreraController extends Controller
         try {
             $request->validate([
                 'idSede' => 'required|exists:sede,idSede',
-                'idCarrera' => 'required|exists:carrera,idCarrera',
+                'idCarrera' => [
+                    'required',
+                    'exists:carrera,idCarrera',
+                    Rule::unique('sede_carrera', 'idCarrera')
+                        ->where('idSede', $request->idSede),
+                ],
                 'codigoCarrera' => [
                     'required',
                     'string',
@@ -140,6 +145,7 @@ class SedeCarreraController extends Controller
                 'idSede.exists' => 'La sede seleccionada no existe.',
                 'idCarrera.required' => 'Debe seleccionar un perfil de carrera.',
                 'idCarrera.exists' => 'El perfil seleccionado no existe.',
+                'idCarrera.unique' => 'Esta carrera ya está asignada a la sede seleccionada.',
                 'codigoCarrera.required' => 'El código de la carrera es obligatorio.',
                 'codigoCarrera.max' => 'El código no puede exceder los 50 caracteres.',
                 'codigoCarrera.unique' => 'Ya existe una carrera con este código en la sede seleccionada.',
@@ -202,7 +208,13 @@ class SedeCarreraController extends Controller
         try {
             $validated = $request->validate([
                 'idSede' => 'required|exists:sede,idSede',
-                'idCarrera' => 'required|exists:carrera,idCarrera',
+                'idCarrera' => [
+                    'required',
+                    'exists:carrera,idCarrera',
+                    Rule::unique('sede_carrera', 'idCarrera')
+                        ->where('idSede', $request->idSede)
+                        ->ignore($sedeCarrera->idSedeCarrera, 'idSedeCarrera'),
+                ],
                 'codigoCarrera' => [
                     'required',
                     'string',
@@ -217,6 +229,7 @@ class SedeCarreraController extends Controller
                 'idSede.exists' => 'La sede seleccionada no existe.',
                 'idCarrera.required' => 'Debe seleccionar un perfil de carrera.',
                 'idCarrera.exists' => 'El perfil seleccionado no existe.',
+                'idCarrera.unique' => 'Esta carrera ya está asignada a la sede seleccionada.',
                 'codigoCarrera.required' => 'El código de la carrera es obligatorio.',
                 'codigoCarrera.max' => 'El código no puede exceder los 50 caracteres.',
                 'codigoCarrera.unique' => 'Ya existe otra carrera con este código en la sede seleccionada.',
