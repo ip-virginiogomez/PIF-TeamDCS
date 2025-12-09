@@ -6,6 +6,9 @@ use App\Models\CupoDistribucion;
 use App\Models\CupoOferta;
 use App\Models\CupoDemanda;
 use App\Models\SedeCarrera;
+use App\Models\Carrera;
+use App\Models\Periodo;
+use App\Models\TipoPractica;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -21,72 +24,56 @@ class CupoDistribucionController extends Controller
 
     public function index(Request $request)
     {
-        $ofertaId = $request->query('oferta_id');
-        if (! $ofertaId) {
-            return redirect()->route('cupo-ofertas.index')->with('error', 'Debe seleccionar una oferta.');
+        // 1. Obtener Periodo Activo (o el más reciente)
+        $periodoId = $request->get('periodo_id');
+        $periodos = Periodo::orderBy('Año', 'desc')->get();
+        
+        if (!$periodoId) {
+            $currentYear = date('Y');
+            $periodoActual = $periodos->firstWhere('Año', $currentYear) ?? $periodos->first();
+            $periodoId = $periodoActual->idPeriodo;
+        } else {
+            $periodoActual = $periodos->find($periodoId);
         }
 
-        $oferta = CupoOferta::findOrFail($ofertaId);
-        $oferta->load('periodo', 'unidadClinica.centroSalud', 'carrera', 'tipoPractica');
+        // 2. Cargar Demandas con sus relaciones y cálculo de pendiente
+        $demandas = CupoDemanda::where('idPeriodo', $periodoId)
+            ->with(['sedeCarrera.sede', 'sedeCarrera.carrera', 'cupoDistribuciones'])
+            ->leftJoin('asignatura', function($join) {
+                $join->on('cupo_demanda.idSedeCarrera', '=', 'asignatura.idSedeCarrera')
+                     ->on('cupo_demanda.asignatura', '=', 'asignatura.nombreAsignatura')
+                     ->whereNull('asignatura.deleted_at');
+            })
+            ->leftJoin('tipo_practica', function($join) {
+                $join->on('asignatura.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
+                     ->whereNull('tipo_practica.deleted_at');
+            })
+            ->select('cupo_demanda.*', 'tipo_practica.nombrePractica as nombreTipoPractica', 'tipo_practica.idTipoPractica')
+            ->get()
+            ->map(function ($demanda) {
+                // Calculamos cuánto ya se le asignó
+                $asignado = $demanda->cupoDistribuciones->sum('cantCupos');
+                $demanda->pendiente = $demanda->cuposSolicitados - $asignado;
+                return $demanda;
+            })
+            ->filter(function ($demanda) {
+                return $demanda->pendiente > 0; // Mostrar solo lo que falta
+            });
 
-        // Capturar parámetros de ordenamiento
-        $sortBy = $request->query('sort_by', 'idCupoDistribucion');
-        $sortDirection = $request->query('sort_direction', 'desc');
+        // 3. Cargar Ofertas con cálculo de disponibilidad
+        $ofertas = CupoOferta::where('idPeriodo', $periodoId)
+            ->with(['unidadClinica.centroSalud', 'carrera', 'tipoPractica', 'cupoDistribuciones'])
+            ->get()
+            ->map(function ($oferta) {
+                $ocupado = $oferta->cupoDistribuciones->sum('cantCupos');
+                $oferta->disponible = $oferta->cantCupos - $ocupado;
+                return $oferta;
+            })
+            ->filter(function ($oferta) {
+                return $oferta->disponible > 0; // Mostrar solo donde hay espacio
+            });
 
-        // Aplicar ordenamiento
-        $query = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
-            ->with([
-                'cupoDemanda.sedeCarrera.sede.centroFormador',
-                'cupoDemanda.sedeCarrera.carrera',
-            ]);
-
-        // Ordenar según la columna seleccionada
-        switch ($sortBy) {
-            case 'sedeCarrera.sede.centroFormador.nombreCentroFormador':
-                $query->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
-                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
-                    ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
-                    ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
-                    ->orderBy('centro_formador.nombreCentroFormador', $sortDirection)
-                    ->select('cupo_distribucion.*');
-                break;
-            case 'sedeCarrera.carrera.nombreCarrera':
-                $query->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
-                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
-                    ->join('carrera', 'sede_carrera.idCarrera', '=', 'carrera.idCarrera')
-                    ->orderBy('carrera.nombreCarrera', $sortDirection)
-                    ->select('cupo_distribucion.*');
-                break;
-            default:
-                $query->orderBy($sortBy, $sortDirection);
-                break;
-        }
-
-        $distribuciones = $query->get();
-
-        $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
-
-        // Obtener todas las SedeCarreras que coincidan con la Carrera de la Oferta
-        // Esto permite distribuir a cualquier sede que imparta la carrera, tenga o no demanda previa.
-        // Cargamos la demanda del periodo actual si existe, para mostrar info en el select.
-        $sedeCarreras = SedeCarrera::with(['sede.centroFormador', 'carrera', 'cupoDemandas' => function ($q) use ($oferta) {
-                $q->where('idPeriodo', $oferta->idPeriodo);
-            }])
-            ->where('idCarrera', $oferta->idCarrera)
-            ->get();
-
-        if ($request->ajax()) {
-            return view('cupo-distribucion._tabla', compact('distribuciones', 'oferta', 'sortBy', 'sortDirection'));
-        }
-
-        return view('cupo-distribucion.index', compact(
-            'oferta',
-            'distribuciones',
-            'cuposRestantes',
-            'sedeCarreras',
-            'sortBy',
-            'sortDirection'
-        ));
+        return view('cupo-distribucion.mesa', compact('demandas', 'ofertas', 'periodoActual', 'periodos'));
     }
 
     public function store(Request $request)
@@ -94,27 +81,43 @@ class CupoDistribucionController extends Controller
         $oferta = CupoOferta::findOrFail($request->idCupoOferta);
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
-        $request->validate([
-            'idCupoOferta' => 'required|exists:cupo_oferta,idCupoOferta',
-            'idSedeCarrera' => 'required|exists:sede_carrera,idSedeCarrera',
-            'cantCupos' => [
-                'required', 'integer', 'min:1', 'max:'.$cuposRestantes,
-            ],
-        ], [
-            'cantCupos.max' => 'La cantidad no puede superar los cupos restantes (:max).',
-        ]);
+        // Validar si viene idDemandaCupo (Nuevo flujo) o idSedeCarrera (Flujo antiguo)
+        if ($request->has('idDemandaCupo')) {
+            $request->validate([
+                'idCupoOferta' => 'required|exists:cupo_oferta,idCupoOferta',
+                'idDemandaCupo' => 'required|exists:cupo_demanda,idDemandaCupo',
+                'cantCupos' => [
+                    'required', 'integer', 'min:1', 'max:'.$cuposRestantes,
+                ],
+            ], [
+                'cantCupos.max' => 'La cantidad no puede superar los cupos restantes (:max).',
+            ]);
 
-        // Buscar o Crear la demanda correspondiente para esta Sede/Carrera y Periodo
-        // Si no existe demanda, se crea una con 0 solicitados para permitir la distribución.
-        $demanda = CupoDemanda::firstOrCreate(
-            [
-                'idSedeCarrera' => $request->idSedeCarrera,
-                'idPeriodo' => $oferta->idPeriodo
-            ],
-            [
-                'cuposSolicitados' => 0
-            ]
-        );
+            $demanda = CupoDemanda::findOrFail($request->idDemandaCupo);
+
+        } else {
+            // Flujo antiguo (por si acaso)
+            $request->validate([
+                'idCupoOferta' => 'required|exists:cupo_oferta,idCupoOferta',
+                'idSedeCarrera' => 'required|exists:sede_carrera,idSedeCarrera',
+                'cantCupos' => [
+                    'required', 'integer', 'min:1', 'max:'.$cuposRestantes,
+                ],
+            ], [
+                'cantCupos.max' => 'La cantidad no puede superar los cupos restantes (:max).',
+            ]);
+
+            // Buscar o Crear la demanda correspondiente para esta Sede/Carrera y Periodo
+            $demanda = CupoDemanda::firstOrCreate(
+                [
+                    'idSedeCarrera' => $request->idSedeCarrera,
+                    'idPeriodo' => $oferta->idPeriodo
+                ],
+                [
+                    'cuposSolicitados' => 0
+                ]
+            );
+        }
 
         // Validar unicidad: que no exista ya una distribución para esta oferta y esta demanda
         $existe = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
@@ -122,7 +125,7 @@ class CupoDistribucionController extends Controller
             ->exists();
 
         if ($existe) {
-            return response()->json(['errors' => ['idSedeCarrera' => ['Esta Sede/Carrera ya tiene cupos asignados en esta oferta.']]], 422);
+            return response()->json(['errors' => ['general' => ['Esta Sede/Carrera ya tiene cupos asignados en esta oferta.']]], 422);
         }
 
         CupoDistribucion::create([

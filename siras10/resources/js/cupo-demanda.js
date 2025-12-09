@@ -22,7 +22,16 @@ class CupoDemandaManager extends BaseModalManager {
         const periodoFilter = document.getElementById('periodo_filter');
         if (periodoFilter) {
             periodoFilter.addEventListener('change', function () {
-                window.location.href = `?periodo_id=${this.value}`;
+                const params = new URLSearchParams(window.location.search);
+                if (this.value) {
+                    params.set('periodo_id', this.value);
+                } else {
+                    params.delete('periodo_id');
+                }
+                // Reset page for demands if it exists (assuming 'page_demandas' or just 'page' if it was the main table)
+                // But here we don't know the page param name for sure. 
+                // Safest is to just update the URL.
+                window.location.href = `${window.location.pathname}?${params.toString()}`;
             });
         }
     } initBulkCreate() {
