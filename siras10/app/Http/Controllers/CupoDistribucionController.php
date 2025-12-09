@@ -213,13 +213,13 @@ class CupoDistribucionController extends Controller
             $q->where('idPeriodo', $periodoId);
         })
             ->with([
-            'cupoDemanda.sedeCarrera.sede.centroFormador',
-            'cupoDemanda.sedeCarrera.carrera',
-            'cupoOferta.unidadClinica.centroSalud',
-            'cupoOferta.unidadClinica',
-            'cupoOferta.tipoPractica',
-            'cupoOferta.horarios',
-        ])
+                'cupoDemanda.sedeCarrera.sede.centroFormador',
+                'cupoDemanda.sedeCarrera.carrera',
+                'cupoOferta.unidadClinica.centroSalud',
+                'cupoOferta.unidadClinica',
+                'cupoOferta.tipoPractica',
+                'cupoOferta.horarios',
+            ])
             ->orderBy('idCupoDistribucion', 'desc')
             ->paginate(10, ['*'], 'dist_page');
 
