@@ -34,7 +34,9 @@ class CupoDemandaController extends Controller
         $sortBy = $request->get('sort_by');
         $sortDirection = $request->get('sort_direction', 'asc');
 
-        $query = CupoDemanda::with(['periodo', 'sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera'])
+        $query = CupoDemanda::select('cupo_demanda.*', 'tipo_practica.nombrePractica as nombreTipoPractica')
+            ->with(['periodo', 'sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera'])
+            ->withSum('cupoDistribuciones', 'cantCupos')
             ->leftJoin('asignatura', function($join) {
                 $join->on('cupo_demanda.idSedeCarrera', '=', 'asignatura.idSedeCarrera')
                      ->on('cupo_demanda.asignatura', '=', 'asignatura.nombreAsignatura')
@@ -43,8 +45,7 @@ class CupoDemandaController extends Controller
             ->leftJoin('tipo_practica', function($join) {
                 $join->on('asignatura.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
                      ->whereNull('tipo_practica.deleted_at');
-            })
-            ->select('cupo_demanda.*', 'tipo_practica.nombrePractica as nombreTipoPractica');
+            });
 
         if ($periodoId) {
             $query->where('cupo_demanda.idPeriodo', $periodoId);

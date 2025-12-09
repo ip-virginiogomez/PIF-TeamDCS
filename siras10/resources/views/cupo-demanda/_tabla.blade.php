@@ -38,6 +38,7 @@
                 <th class="py-2 px-4 text-center whitespace-nowrap">
                     {!! $getSortLink('cupos', 'Cupos Solicitados', true) !!}
                 </th>
+                <th class="py-2 px-4 text-center whitespace-nowrap">Cupos Asignados</th>
                 <th class="py-2 px-4 text-center whitespace-nowrap">Acciones</th>
             </tr>
         </thead>
@@ -58,6 +59,17 @@
                     </td>
                     <td class="py-2 px-4 whitespace-nowrap text-center">
                         {{ $demanda->cuposSolicitados }}
+                    </td>
+                    <td class="py-2 px-4 text-center whitespace-nowrap">
+                        @php
+                            $cuposAsignados = $demanda->cupo_distribuciones_sum_cant_cupos ?? 0;
+                            $porcentaje = $demanda->cuposSolicitados > 0 ? ($cuposAsignados / $demanda->cuposSolicitados) * 100 : 0;
+                            $colorClase = $cuposAsignados == 0 ? 'bg-gray-100 text-gray-800' : 
+                                        ($porcentaje >= 100 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800');
+                        @endphp
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClase }}">
+                            {{ $cuposAsignados }} / {{ $demanda->cuposSolicitados }}
+                        </span>
                     </td>
                     <td class="py-2 px-4 text-center">
                         <div class="flex justify-center space-x-2">

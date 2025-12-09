@@ -5,48 +5,46 @@
         </h2>
     </x-slot>
 
-    <div class="h-[calc(100vh-65px)] flex flex-col">
+    <div class="h-[calc(100vh-65px)] flex flex-col overflow-y-auto">
         {{-- Header Info --}}
         <div class="bg-white border-b p-4 shadow-sm z-10 flex justify-between items-center">
-            <div>
-                <p class="text-sm text-gray-500">Periodo Actual: <strong>{{ $periodoActual->Año ?? 'N/A' }}</strong></p>
+            <div class="flex items-center gap-2">
+                <label for="periodo_selector" class="text-sm font-medium text-gray-700">Periodo:</label>
+                <select id="periodo_selector" onchange="cambiarPeriodo(this.value)" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm py-1 pl-2 pr-8">
+                    @foreach($periodos as $periodo)
+                        <option value="{{ $periodo->idPeriodo }}" {{ $periodo->idPeriodo == $periodoActual->idPeriodo ? 'selected' : '' }}>
+                            {{ $periodo->Año }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
         {{-- Contenedor Principal --}}
-        <div class="flex-1 flex overflow-hidden bg-gray-100">
+        <div class="flex-none h-[60vh] min-h-[500px] flex bg-gray-100 border-b border-gray-300">
             
             {{-- COLUMNA IZQUIERDA: DEMANDA (Quién pide) --}}
             <div class="w-1/2 p-4 overflow-y-auto border-r border-gray-300 custom-scrollbar">
-                <h3 class="font-bold mb-3 text-red-600 flex items-center sticky top-0 bg-gray-100 py-2 z-10">
-                    <span class="bg-red-100 p-1 rounded mr-2"></span> Demandas Pendientes
-                </h3>
-                
-                <div class="space-y-3">
-                    @forelse($demandas as $demanda)
-                    <div onclick="seleccionarDemanda(this, {{ $demanda->idDemandaCupo }}, '{{ $demanda->idTipoPractica }}', '{{ $demanda->sedeCarrera->idCarrera }}', {{ $demanda->pendiente }})" 
-                        class="card-demanda cursor-pointer bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500 hover:shadow-md transition group focus:ring-2 focus:ring-blue-500 relative"
-                        tabindex="0">
-                        
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-gray-800">{{ $demanda->nombreTipoPractica ?? 'Práctica General' }}</h4>
-                                <p class="text-sm text-gray-600 font-semibold">{{ $demanda->sedeCarrera->carrera->nombreCarrera }}</p>
-                                <p class="text-sm text-gray-500">{{ $demanda->sedeCarrera->sede->nombreSede }}</p>
-                                <p class="text-xs text-gray-400 mt-1">{{ $demanda->asignatura }}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="block text-2xl font-bold text-red-600">{{ $demanda->pendiente }}</span>
-                                <span class="text-xs text-gray-400">de {{ $demanda->cuposSolicitados }}</span>
-                            </div>
+                <div class="sticky top-0 bg-gray-100 z-10 pb-2">
+                    <h3 class="font-bold mb-3 text-red-600 flex items-center">
+                        <span class="bg-red-100 p-1 rounded mr-2"></span> Demandas Pendientes
+                    </h3>
+                    <div class="relative">
+                        <input type="text" 
+                                id="search-demanda" 
+                                placeholder="Buscar por centro, carrera, práctica..." 
+                                class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onkeyup="filtrarDemandas()">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
                         </div>
-                        <div class="absolute inset-0 border-2 border-blue-500 rounded-lg opacity-0 pointer-events-none transition-opacity duration-200 selection-ring"></div>
                     </div>
-                    @empty
-                    <div class="text-center py-10 text-gray-400">
-                        <p>No hay demandas pendientes para este periodo.</p>
-                    </div>
-                    @endforelse
+                </div>
+                
+                <div class="space-y-3" id="lista-demandas">
+                    @include('cupo-distribucion._lista_demandas')
                 </div>
             </div>
 
@@ -57,53 +55,30 @@
                 </h3>
 
                 <div id="lista-ofertas" class="space-y-3">
-                    @foreach($ofertas as $oferta)
-                    {{-- Data attributes para filtrar con JS --}}
-                    <div class="card-oferta hidden bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-green-500 transition"
-                         data-tipo-practica="{{ $oferta->idTipoPractica }}"
-                         data-carrera="{{ $oferta->idCarrera }}"
-                         data-id="{{ $oferta->idCupoOferta }}"
-                         data-centro="{{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'Centro' }}"
-                         data-unidad="{{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad' }}"
-                         data-disponible="{{ $oferta->disponible }}">
-                        
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center flex-1">
-                                <div class="bg-green-100 text-green-700 font-bold p-2 rounded mr-3 h-10 w-10 flex items-center justify-center">
-                                    {{ substr($oferta->unidadClinica->centroSalud->nombreCentro ?? 'C', 0, 2) }}
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-800">{{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'Centro Desconocido' }}</h4>
-                                    <p class="text-sm text-gray-600">{{ $oferta->unidadClinica->nombreUnidad }}</p>
-                                    <p class="text-xs text-gray-400">{{ $oferta->tipoPractica->nombrePractica }} - {{ $oferta->carrera->nombreCarrera }}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="text-right pl-4">
-                                <span class="text-xl font-bold text-green-600">{{ $oferta->disponible }}</span>
-                                <span class="text-xs block text-gray-400">libres</span>
-                                
-                                <button onclick="abrirModalAsignacion({{ $oferta->idCupoOferta }}, '{{ $oferta->unidadClinica->centroSalud->nombreCentro }}', '{{ $oferta->unidadClinica->nombreUnidad }}', {{ $oferta->disponible }})"
-                                        class="mt-2 bg-green-600 text-white text-xs px-3 py-1 rounded hover:bg-green-700 transition shadow-sm">
-                                    Asignar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                    
-                    <div id="empty-state-oferta" class="text-center py-20 text-gray-400 flex flex-col items-center justify-center h-full">
-                        <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        <p class="text-lg">Selecciona una demanda a la izquierda</p>
-                        <p class="text-sm">para ver los centros de salud compatibles.</p>
-                    </div>
-                    
-                    <div id="no-match-state" class="hidden text-center py-20 text-gray-400 flex flex-col items-center justify-center">
-                        <svg class="w-16 h-16 mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <p class="text-lg text-gray-600">No hay ofertas compatibles</p>
-                        <p class="text-sm">No se encontraron cupos disponibles para esta práctica y carrera.</p>
+                    @include('cupo-distribucion._lista_ofertas', ['waitingSelection' => true])
+                </div>
+            </div>
+        </div>
+
+        {{-- Tabla de Distribuciones --}}
+        <div class="p-4 bg-gray-50">
+            <div class="mb-4 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Cupos Distribuidos</h3>
+                <div class="relative w-64">
+                    <input type="text" 
+                           id="search-distribucion" 
+                           placeholder="Buscar..." 
+                           class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           onkeyup="filtrarDistribuciones()">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
                     </div>
                 </div>
+            </div>
+            <div id="lista-distribuciones">
+                @include('cupo-distribucion._lista_distribuciones')
             </div>
         </div>
     </div>
@@ -154,10 +129,69 @@
     <script>
         let demandaSeleccionadaId = null;
         let demandaPendienteQty = 0;
+        let currentTipoPractica = null;
+        let currentCarrera = null;
+
+        // Inicializar paginación AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            initPagination('lista-demandas');
+            initPagination('lista-ofertas');
+            initPagination('lista-distribuciones');
+        });
+
+        function initPagination(containerId) {
+            const container = document.getElementById(containerId);
+            container.addEventListener('click', function(e) {
+                // Detectar enlaces de paginación (Laravel usa nav > a o .pagination > a)
+                const link = e.target.closest('nav[role="navigation"] a') || e.target.closest('.pagination a');
+                
+                if (link) {
+                    e.preventDefault();
+                    const url = link.href;
+                    
+                    // Añadir parámetros extra si es necesario
+                    const finalUrl = new URL(url);
+                    if (containerId === 'lista-demandas') {
+                        finalUrl.searchParams.set('type', 'demandas');
+                        const search = document.getElementById('search-demanda').value;
+                        if (search) finalUrl.searchParams.set('search', search);
+                    } else if (containerId === 'lista-ofertas') {
+                        finalUrl.searchParams.set('type', 'ofertas');
+                        if (currentTipoPractica) finalUrl.searchParams.set('tipo_practica_id', currentTipoPractica);
+                        if (currentCarrera) finalUrl.searchParams.set('carrera_id', currentCarrera);
+                    } else if (containerId === 'lista-distribuciones') {
+                        finalUrl.searchParams.set('type', 'distribuciones');
+                        const search = document.getElementById('search-distribucion').value;
+                        if (search) finalUrl.searchParams.set('search', search);
+                    }
+
+                    fetch(finalUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                        .then(response => response.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                        });
+                }
+            });
+        }
+
+        function cambiarPeriodo(periodoId) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('periodo_id', periodoId);
+            // Resetear paginación al cambiar de periodo
+            url.searchParams.delete('page'); 
+            url.searchParams.delete('dist_page');
+            window.location.href = url.toString();
+        }
 
         function seleccionarDemanda(element, id, tipoPracticaId, carreraId, pendiente) {
             demandaSeleccionadaId = id;
             demandaPendienteQty = pendiente;
+            currentTipoPractica = tipoPracticaId;
+            currentCarrera = carreraId;
 
             // 1. Visual: Resaltar la tarjeta seleccionada
             document.querySelectorAll('.card-demanda').forEach(el => {
@@ -170,34 +204,29 @@
             element.classList.add('bg-blue-50', 'border-blue-500');
             element.querySelector('.selection-ring').classList.add('opacity-100');
 
-            // 2. Filtrar Ofertas (Match por Tipo Práctica y Carrera)
-            const ofertas = document.querySelectorAll('.card-oferta');
-            let encontradas = 0;
+            // 2. Cargar Ofertas AJAX
+            cargarOfertas(tipoPracticaId, carreraId);
+        }
 
-            ofertas.forEach(card => {
-                const ofertaTipo = card.dataset.tipoPractica;
-                const ofertaCarrera = card.dataset.carrera;
+        function cargarOfertas(tipoPracticaId, carreraId) {
+            const container = document.getElementById('lista-ofertas');
+            container.innerHTML = '<div class="text-center py-10"><svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
 
-                // Comparación laxa (==) por si vienen como string/number
-                if (ofertaTipo == tipoPracticaId && ofertaCarrera == carreraId) {
-                    card.classList.remove('hidden');
-                    encontradas++;
-                } else {
-                    card.classList.add('hidden');
+            const url = new URL(window.location.href);
+            url.searchParams.set('type', 'ofertas');
+            url.searchParams.set('tipo_practica_id', tipoPracticaId);
+            url.searchParams.set('carrera_id', carreraId);
+            url.searchParams.set('page', 1); // Reset page
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            });
-
-            // 3. Manejar estado vacío
-            const emptyState = document.getElementById('empty-state-oferta');
-            const noMatchState = document.getElementById('no-match-state');
-            
-            emptyState.classList.add('hidden');
-            
-            if (encontradas === 0) {
-                noMatchState.classList.remove('hidden');
-            } else {
-                noMatchState.classList.add('hidden');
-            }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    container.innerHTML = html;
+                });
         }
 
         function abrirModalAsignacion(ofertaId, nombreCentro, nombreUnidad, disponibles) {
@@ -245,6 +274,16 @@
                 const data = await response.json();
 
                 if (!response.ok) {
+                    if (response.status === 422) {
+                        let errorMessages = '';
+                        if (data.errors) {
+                            // Concatenar todos los mensajes de error
+                            errorMessages = Object.values(data.errors).flat().join('\n');
+                        } else {
+                            errorMessages = data.message || 'Error de validación.';
+                        }
+                        throw new Error(errorMessages);
+                    }
                     throw new Error(data.message || 'Error al guardar');
                 }
 
@@ -258,12 +297,74 @@
                     confirmButtonColor: '#16a34a',
                     confirmButtonText: 'Aceptar'
                 }).then(() => {
+                    // Recargar listas manteniendo estado si es posible, o reload completo
+                    // Para simplificar, recargamos la página, pero idealmente recargaríamos solo las listas
                     window.location.reload();
                 });
 
             } catch (error) {
-                alert(error.message);
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message,
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Cerrar'
+                });
             }
+        }
+
+        let searchTimeout;
+        function filtrarDemandas() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const input = document.getElementById('search-demanda');
+                const search = input.value;
+                const container = document.getElementById('lista-demandas');
+                
+                container.innerHTML = '<div class="text-center py-4 text-gray-500">Buscando...</div>';
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('type', 'demandas');
+                url.searchParams.set('search', search);
+                url.searchParams.set('page', 1);
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        container.innerHTML = html;
+                    });
+            }, 300); // Debounce 300ms
+        }
+
+        let searchDistribucionTimeout;
+        function filtrarDistribuciones() {
+            clearTimeout(searchDistribucionTimeout);
+            searchDistribucionTimeout = setTimeout(() => {
+                const input = document.getElementById('search-distribucion');
+                const search = input.value;
+                const container = document.getElementById('lista-distribuciones');
+                
+                // container.innerHTML = '<div class="text-center py-4 text-gray-500">Buscando...</div>';
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('type', 'distribuciones');
+                url.searchParams.set('search', search);
+                url.searchParams.set('dist_page', 1);
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        container.innerHTML = html;
+                    });
+            }, 300);
         }
     </script>
     
