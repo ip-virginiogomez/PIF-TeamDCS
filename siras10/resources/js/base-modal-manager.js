@@ -67,7 +67,7 @@ export default class BaseModalManager {
                 if (esClicEnBotonCerrar || (esClicEnFondo && mouseDownOnBackdrop)) {
                     this.cerrarModal();
                 }
-                
+
                 // Reseteamos la bandera por seguridad
                 mouseDownOnBackdrop = false;
             });
@@ -109,7 +109,7 @@ export default class BaseModalManager {
             });
         }
     }
-    
+
     // ========================================================================
     // MÉTODOS DE MANEJO DE FORMULARIO (AJAX) - Lógica central
     // ========================================================================
@@ -118,33 +118,52 @@ export default class BaseModalManager {
         e.preventDefault();
 
         if (typeof this.validate === 'function' && !this.validate()) {
-            return; 
+            return;
         }
 
         const formData = new FormData(this.form);
         let url = this.config.baseUrl;
-        
+
         if (this.editando) {
             const entityId = formData.get(this.config.primaryKey);
             url += `/${entityId}`;
-            formData.append('_method', 'PUT'); 
+            formData.append('_method', 'PUT');
         }
 
         try {
             const response = await fetch(url, {
-                method: 'POST', 
+                method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
                 }
             });
-            const data = await response.json();
+
+            // Intentar parsear la respuesta como JSON
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                throw new Error('Error de comunicación con el servidor. Por favor, intente nuevamente.');
+            }
 
             if (!response.ok) {
-                if (response.status === 422) { 
+                if (response.status === 422) {
+                    // Errores de validación
                     this.showValidationErrors(data.errors);
+
+                    // Mostrar también un mensaje general con todos los errores
+                    const errorMessages = Object.values(data.errors).flat();
+                    if (errorMessages.length > 0) {
+                        this.showAlert(
+                            'Error de validación',
+                            errorMessages.join('\n'),
+                            'error'
+                        );
+                    }
                 } else {
+                    // Otros errores del servidor (500, 404, etc.)
                     throw new Error(data.message || 'Ocurrió un error en el servidor');
                 }
             } else {
@@ -152,7 +171,7 @@ export default class BaseModalManager {
             }
         } catch (error) {
             console.error('Error AJAX:', error);
-            this.showAlert('Error', error.message, 'error');
+            this.showAlert('Error', error.message || 'Error de conexión con el servidor', 'error');
         }
     }
 
@@ -193,7 +212,7 @@ export default class BaseModalManager {
     limpiarFormulario() {
         this.editando = false;
         if (this.form) this.form.reset();
-        
+
         const pkInput = this.form.querySelector(`[name="${this.config.primaryKey}"]`);
         // if (pkInput) pkInput.remove();
 
@@ -204,7 +223,7 @@ export default class BaseModalManager {
         this.clearValidationErrors();
         this.mostrarModal();
     }
-    
+
     async editarRegistro(id) {
         this.editando = true;
         this.clearValidationErrors();
@@ -250,7 +269,7 @@ export default class BaseModalManager {
             return undefined;
         }
     }
-    
+
     async eliminarRegistro(id) {
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -280,7 +299,7 @@ export default class BaseModalManager {
 
                 this.showAlert('¡Eliminado!', data.message, 'success');
                 this.refreshTable();
-                
+
                 return data;
 
             } catch (error) {
@@ -303,32 +322,32 @@ export default class BaseModalManager {
     }
     setModalTitle(title) { document.getElementById('modalTitle').textContent = title; }
     setButtonText(text) { document.getElementById('btnTexto').textContent = text; }
-    
+
     clearValidationErrors() {
         if (!this.form) return;
-        
+
         this.form.querySelectorAll('.border-red-500').forEach(el => {
             el.classList.remove('border-red-500');
         });
-        
+
         this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
             errorDiv.classList.add('hidden');
             errorDiv.textContent = '';
         });
     }
-    
+
     showValidationErrors(errors) {
         if (!this.form || !errors) return;
-        
+
         this.clearValidationErrors();
-        
+
         for (const field in errors) {
             const input = this.form.querySelector(`[name="${field}"]`);
             const errorDiv = document.getElementById(`error-${field}`);
             const errorMessage = errors[field][0];
 
             if (input) {
-                input.classList.add('border-red-500'); 
+                input.classList.add('border-red-500');
             }
 
             if (errorDiv) {
@@ -337,14 +356,14 @@ export default class BaseModalManager {
             }
         }
     }
-    
-    async showAlert(title, text, icon) { 
+
+    async showAlert(title, text, icon) {
         return await Swal.fire({
             title: title,
             text: text,
             icon: icon || 'info',
             confirmButtonColor: icon === 'error' ? '#d33' : '#3085d6'
-        }); 
+        });
     }
 }
 

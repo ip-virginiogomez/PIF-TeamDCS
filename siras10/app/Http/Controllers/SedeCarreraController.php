@@ -123,32 +123,57 @@ class SedeCarreraController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'idSede' => 'required|exists:sede,idSede',
-            'idCarrera' => 'required|exists:carrera,idCarrera',
-            'codigoCarrera' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('sede_carrera', 'codigoCarrera')
-                    ->where('idSede', $request->idSede),
-            ],
-            'nombreSedeCarrera' => 'nullable|string|max:255',
-        ]);
+        try {
+            $request->validate([
+                'idSede' => 'required|exists:sede,idSede',
+                'idCarrera' => 'required|exists:carrera,idCarrera',
+                'codigoCarrera' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    Rule::unique('sede_carrera', 'codigoCarrera')
+                        ->where('idSede', $request->idSede),
+                ],
+                'nombreSedeCarrera' => 'nullable|string|max:255',
+            ], [
+                'idSede.required' => 'Debe seleccionar una sede.',
+                'idSede.exists' => 'La sede seleccionada no existe.',
+                'idCarrera.required' => 'Debe seleccionar un perfil de carrera.',
+                'idCarrera.exists' => 'El perfil seleccionado no existe.',
+                'codigoCarrera.required' => 'El código de la carrera es obligatorio.',
+                'codigoCarrera.max' => 'El código no puede exceder los 50 caracteres.',
+                'codigoCarrera.unique' => 'Ya existe una carrera con este código en la sede seleccionada.',
+                'nombreSedeCarrera.max' => 'El nombre no puede exceder los 255 caracteres.',
+            ]);
 
-        $carrera = SedeCarrera::create([
-            'idSede' => $request->idSede,
-            'idCarrera' => $request->idCarrera,
-            'nombreSedeCarrera' => $request->nombreSedeCarrera,
-            'codigoCarrera' => $request->codigoCarrera,
-            'fechaCreacion' => now(),
-        ]);
+            $carrera = SedeCarrera::create([
+                'idSede' => $request->idSede,
+                'idCarrera' => $request->idCarrera,
+                'nombreSedeCarrera' => $request->nombreSedeCarrera,
+                'codigoCarrera' => $request->codigoCarrera,
+                'fechaCreacion' => now(),
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Carrera asignada correctamente',
-            'data' => $carrera,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Carrera asignada correctamente',
+                'data' => $carrera,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            \Log::error('Error en store SedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar la carrera. Por favor, intente nuevamente.',
+            ], 500);
+        }
     }
 
     /**
@@ -175,19 +200,36 @@ class SedeCarreraController extends Controller
     public function update(Request $request, SedeCarrera $sedeCarrera): JsonResponse
     {
         try {
-            $rules = $this->getValidationRules();
-            // Excluir el registro actual de la validación unique
-            $rules['codigoCarrera'] = 'required|string|max:50|unique:sede_carrera,codigoCarrera,'.$sedeCarrera->idSedeCarrera.',idSedeCarrera';
-
-            $validatedData = $request->validate($rules);
+            $validated = $request->validate([
+                'idSede' => 'required|exists:sede,idSede',
+                'idCarrera' => 'required|exists:carrera,idCarrera',
+                'codigoCarrera' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    Rule::unique('sede_carrera', 'codigoCarrera')
+                        ->where('idSede', $request->idSede)
+                        ->ignore($sedeCarrera->idSedeCarrera, 'idSedeCarrera'),
+                ],
+                'nombreSedeCarrera' => 'nullable|string|max:255',
+            ], [
+                'idSede.required' => 'Debe seleccionar una sede.',
+                'idSede.exists' => 'La sede seleccionada no existe.',
+                'idCarrera.required' => 'Debe seleccionar un perfil de carrera.',
+                'idCarrera.exists' => 'El perfil seleccionado no existe.',
+                'codigoCarrera.required' => 'El código de la carrera es obligatorio.',
+                'codigoCarrera.max' => 'El código no puede exceder los 50 caracteres.',
+                'codigoCarrera.unique' => 'Ya existe otra carrera con este código en la sede seleccionada.',
+                'nombreSedeCarrera.max' => 'El nombre no puede exceder los 255 caracteres.',
+            ]);
 
             // Si no se proporciona nombre específico, usar el de la carrera base
-            if (empty($validatedData['nombreSedeCarrera'])) {
-                $carrera = Carrera::find($validatedData['idCarrera']);
-                $validatedData['nombreSedeCarrera'] = $carrera->nombreCarrera;
+            if (empty($validated['nombreSedeCarrera'])) {
+                $carrera = Carrera::find($validated['idCarrera']);
+                $validated['nombreSedeCarrera'] = $carrera->nombreCarrera;
             }
 
-            $sedeCarrera->update($validatedData);
+            $sedeCarrera->update($validated);
 
             return response()->json([
                 'success' => true,
@@ -206,7 +248,7 @@ class SedeCarreraController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error interno del servidor',
+                'message' => 'Error al actualizar la carrera. Por favor, intente nuevamente.',
             ], 500);
         }
     }
