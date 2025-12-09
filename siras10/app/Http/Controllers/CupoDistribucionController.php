@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Carrera;
+use App\Models\CupoDemanda;
 use App\Models\CupoDistribucion;
 use App\Models\CupoOferta;
-use App\Models\CupoDemanda;
-use App\Models\SedeCarrera;
-use App\Models\Carrera;
 use App\Models\Periodo;
-use App\Models\TipoPractica;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class CupoDistribucionController extends Controller
 {
@@ -27,8 +24,8 @@ class CupoDistribucionController extends Controller
         // 1. Obtener Periodo Activo (o el más reciente)
         $periodoId = $request->get('periodo_id');
         $periodos = Periodo::orderBy('Año', 'desc')->get();
-        
-        if (!$periodoId) {
+
+        if (! $periodoId) {
             $currentYear = date('Y');
             $periodoActual = $periodos->firstWhere('Año', $currentYear) ?? $periodos->first();
             $periodoId = $periodoActual->idPeriodo;
@@ -39,23 +36,24 @@ class CupoDistribucionController extends Controller
         // AJAX: Cargar Demandas
         if ($request->ajax() && $request->get('type') === 'demandas') {
             $search = $request->get('search');
-            
+
             $demandas = CupoDemanda::where('idPeriodo', $periodoId)
                 ->with(['sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera', 'cupoDistribuciones'])
-                ->leftJoin('asignatura', function($join) {
+                ->leftJoin('asignatura', function ($join) {
                     $join->on('cupo_demanda.idSedeCarrera', '=', 'asignatura.idSedeCarrera')
-                         ->on('cupo_demanda.asignatura', '=', 'asignatura.nombreAsignatura')
-                         ->whereNull('asignatura.deleted_at');
+                        ->on('cupo_demanda.asignatura', '=', 'asignatura.nombreAsignatura')
+                        ->whereNull('asignatura.deleted_at');
                 })
-                ->leftJoin('tipo_practica', function($join) {
+                ->leftJoin('tipo_practica', function ($join) {
                     $join->on('asignatura.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
-                         ->whereNull('tipo_practica.deleted_at');
+                        ->whereNull('tipo_practica.deleted_at');
                 })
                 ->select('cupo_demanda.*', 'tipo_practica.nombrePractica as nombreTipoPractica', 'tipo_practica.idTipoPractica')
                 ->get()
                 ->map(function ($demanda) {
                     $asignado = $demanda->cupoDistribuciones->sum('cantCupos');
                     $demanda->pendiente = $demanda->cuposSolicitados - $asignado;
+
                     return $demanda;
                 })
                 ->filter(function ($demanda) {
@@ -67,12 +65,13 @@ class CupoDistribucionController extends Controller
                 $search = strtolower($search);
                 $demandas = $demandas->filter(function ($demanda) use ($search) {
                     $text = strtolower(
-                        ($demanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? '') . ' ' . 
-                        ($demanda->sedeCarrera->sede->nombreSede ?? '') . ' ' . 
-                        ($demanda->sedeCarrera->carrera->nombreCarrera ?? '') . ' ' . 
-                        ($demanda->asignatura ?? '') . ' ' . 
+                        ($demanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? '').' '.
+                        ($demanda->sedeCarrera->sede->nombreSede ?? '').' '.
+                        ($demanda->sedeCarrera->carrera->nombreCarrera ?? '').' '.
+                        ($demanda->asignatura ?? '').' '.
                         ($demanda->nombreTipoPractica ?? '')
                     );
+
                     return str_contains($text, $search);
                 });
             }
@@ -96,7 +95,7 @@ class CupoDistribucionController extends Controller
             $tipoPracticaId = $request->get('tipo_practica_id');
             $carreraId = $request->get('carrera_id');
 
-            if (!$tipoPracticaId || !$carreraId) {
+            if (! $tipoPracticaId || ! $carreraId) {
                 return view('cupo-distribucion._lista_ofertas', ['ofertas' => collect(), 'waitingSelection' => true]);
             }
 
@@ -108,6 +107,7 @@ class CupoDistribucionController extends Controller
                 ->map(function ($oferta) {
                     $ocupado = $oferta->cupoDistribuciones->sum('cantCupos');
                     $oferta->disponible = $oferta->cantCupos - $ocupado;
+
                     return $oferta;
                 })
                 ->filter(function ($oferta) {
@@ -131,36 +131,36 @@ class CupoDistribucionController extends Controller
         // AJAX: Cargar Distribuciones
         if ($request->ajax() && $request->get('type') === 'distribuciones') {
             $search = $request->get('search');
-            
-            $query = CupoDistribucion::whereHas('cupoDemanda', function($q) use ($periodoId) {
+
+            $query = CupoDistribucion::whereHas('cupoDemanda', function ($q) use ($periodoId) {
                 $q->where('idPeriodo', $periodoId);
             })
-            ->with([
-                'cupoDemanda.sedeCarrera.sede.centroFormador', 
-                'cupoDemanda.sedeCarrera.carrera', 
-                'cupoOferta.unidadClinica.centroSalud', 
-                'cupoOferta.unidadClinica',
-                'cupoOferta.tipoPractica',
-                'cupoOferta.horarios'
-            ]);
+                ->with([
+                    'cupoDemanda.sedeCarrera.sede.centroFormador',
+                    'cupoDemanda.sedeCarrera.carrera',
+                    'cupoOferta.unidadClinica.centroSalud',
+                    'cupoOferta.unidadClinica',
+                    'cupoOferta.tipoPractica',
+                    'cupoOferta.horarios',
+                ]);
 
             if ($search) {
-                $query->where(function($q) use ($search) {
-                    $q->whereHas('cupoDemanda.sedeCarrera.sede.centroFormador', function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('cupoDemanda.sedeCarrera.sede.centroFormador', function ($q) use ($search) {
                         $q->where('nombreCentroFormador', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('cupoDemanda.sedeCarrera.carrera', function($q) use ($search) {
-                        $q->where('nombreCarrera', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function($q) use ($search) {
-                        $q->where('nombreCentro', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('cupoOferta.unidadClinica', function($q) use ($search) {
-                        $q->where('nombreUnidad', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('cupoOferta.tipoPractica', function($q) use ($search) {
-                        $q->where('nombrePractica', 'like', "%{$search}%");
-                    });
+                        ->orWhereHas('cupoDemanda.sedeCarrera.carrera', function ($q) use ($search) {
+                            $q->where('nombreCarrera', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($q) use ($search) {
+                            $q->where('nombreCentro', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('cupoOferta.unidadClinica', function ($q) use ($search) {
+                            $q->where('nombreUnidad', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('cupoOferta.tipoPractica', function ($q) use ($search) {
+                            $q->where('nombrePractica', 'like', "%{$search}%");
+                        });
                 });
             }
 
@@ -174,20 +174,21 @@ class CupoDistribucionController extends Controller
         // Para optimizar, cargamos la primera página de demandas directamente
         $demandas = CupoDemanda::where('idPeriodo', $periodoId)
             ->with(['sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera', 'cupoDistribuciones'])
-            ->leftJoin('asignatura', function($join) {
+            ->leftJoin('asignatura', function ($join) {
                 $join->on('cupo_demanda.idSedeCarrera', '=', 'asignatura.idSedeCarrera')
-                     ->on('cupo_demanda.asignatura', '=', 'asignatura.nombreAsignatura')
-                     ->whereNull('asignatura.deleted_at');
+                    ->on('cupo_demanda.asignatura', '=', 'asignatura.nombreAsignatura')
+                    ->whereNull('asignatura.deleted_at');
             })
-            ->leftJoin('tipo_practica', function($join) {
+            ->leftJoin('tipo_practica', function ($join) {
                 $join->on('asignatura.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
-                     ->whereNull('tipo_practica.deleted_at');
+                    ->whereNull('tipo_practica.deleted_at');
             })
             ->select('cupo_demanda.*', 'tipo_practica.nombrePractica as nombreTipoPractica', 'tipo_practica.idTipoPractica')
             ->get()
             ->map(function ($demanda) {
                 $asignado = $demanda->cupoDistribuciones->sum('cantCupos');
                 $demanda->pendiente = $demanda->cuposSolicitados - $asignado;
+
                 return $demanda;
             })
             ->filter(function ($demanda) {
@@ -208,26 +209,26 @@ class CupoDistribucionController extends Controller
         $ofertasPaginated = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 5, 1, ['path' => $request->url()]);
 
         // Cargar Distribuciones (Asignaciones ya realizadas)
-        $distribuciones = CupoDistribucion::whereHas('cupoDemanda', function($q) use ($periodoId) {
-                $q->where('idPeriodo', $periodoId);
-            })
+        $distribuciones = CupoDistribucion::whereHas('cupoDemanda', function ($q) use ($periodoId) {
+            $q->where('idPeriodo', $periodoId);
+        })
             ->with([
-                'cupoDemanda.sedeCarrera.sede.centroFormador', 
-                'cupoDemanda.sedeCarrera.carrera', 
-                'cupoOferta.unidadClinica.centroSalud', 
-                'cupoOferta.unidadClinica',
-                'cupoOferta.tipoPractica',
-                'cupoOferta.horarios'
-            ])
+            'cupoDemanda.sedeCarrera.sede.centroFormador',
+            'cupoDemanda.sedeCarrera.carrera',
+            'cupoOferta.unidadClinica.centroSalud',
+            'cupoOferta.unidadClinica',
+            'cupoOferta.tipoPractica',
+            'cupoOferta.horarios',
+        ])
             ->orderBy('idCupoDistribucion', 'desc')
             ->paginate(10, ['*'], 'dist_page');
 
         return view('cupo-distribucion.mesa', [
-            'demandas' => $demandasPaginated, 
-            'ofertas' => $ofertasPaginated, 
-            'periodoActual' => $periodoActual, 
+            'demandas' => $demandasPaginated,
+            'ofertas' => $ofertasPaginated,
+            'periodoActual' => $periodoActual,
             'periodos' => $periodos,
-            'distribuciones' => $distribuciones
+            'distribuciones' => $distribuciones,
         ]);
     }
 
@@ -266,10 +267,10 @@ class CupoDistribucionController extends Controller
             $demanda = CupoDemanda::firstOrCreate(
                 [
                     'idSedeCarrera' => $request->idSedeCarrera,
-                    'idPeriodo' => $oferta->idPeriodo
+                    'idPeriodo' => $oferta->idPeriodo,
                 ],
                 [
-                    'cuposSolicitados' => 0
+                    'cuposSolicitados' => 0,
                 ]
             );
         }
@@ -336,10 +337,10 @@ class CupoDistribucionController extends Controller
         $demanda = CupoDemanda::firstOrCreate(
             [
                 'idSedeCarrera' => $request->idSedeCarrera,
-                'idPeriodo' => $oferta->idPeriodo
+                'idPeriodo' => $oferta->idPeriodo,
             ],
             [
-                'cuposSolicitados' => 0
+                'cuposSolicitados' => 0,
             ]
         );
 
