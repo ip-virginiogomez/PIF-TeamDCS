@@ -5,7 +5,7 @@
                 {{ __('Demanda de Cupos') }}
             </h2>
             <button data-modal-target="demandaModal"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Demanda
             </button>
         </div>
@@ -16,13 +16,13 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
-                    {{-- Filtro por Periodo --}}
+                    {{-- Filtros --}}
                     <div class="mb-4">
                         <label for="periodo_filter" class="block text-sm font-medium text-gray-700">Filtrar por Periodo</label>
-                        <select id="periodo_filter" name="periodo_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <select id="periodo_filter" name="periodo_id" class="mt-1 block w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                             @foreach($periodos as $periodo)
                                 <option value="{{ $periodo->idPeriodo }}" {{ $periodoId == $periodo->idPeriodo ? 'selected' : '' }}>
-                                    {{ $periodo->nombrePeriodo }}
+                                    {{ $periodo->Año }}
                                 </option>
                             @endforeach
                         </select>
@@ -37,51 +37,104 @@
     </div>
 
     {{-- Modal --}}
-    <div id="demandaModal" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative w-full max-w-md max-h-full">
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <button type="button" class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="demandaModal" data-action="close-modal">
-                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                    </svg>
-                    <span class="sr-only">Cerrar modal</span>
+    <x-crud-modal 
+        modalId="demandaModal" 
+        formId="demandaForm" 
+        title="Nueva Demanda"
+        primaryKey="idDemandaCupo">
+        
+        <input type="hidden" name="_method" id="method" value="POST">
+        <input type="hidden" name="idPeriodo" value="{{ $periodoId }}">
+        
+        {{-- Contenedor para campos individuales (Edición) --}}
+        <div id="single-edit-fields" class="hidden">
+            <div class="mb-4">
+                <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Sede - Carrera</label>
+                <select name="idSedeCarrera" id="idSedeCarrera" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Seleccione...</option>
+                    @foreach($sedesCarreras as $sc)
+                        <option value="{{ $sc->idSedeCarrera }}">
+                            {{ $sc->sede->centroFormador->nombreCentroFormador }} - {{ $sc->sede->nombreSede }} - {{ $sc->carrera->nombreCarrera }}
+                        </option>
+                    @endforeach
+                </select>
+                <div id="error-idSedeCarrera" class="text-red-500 text-xs mt-1 hidden"></div>
+            </div>
+
+            <div class="mb-4">
+                <label for="asignatura" class="block text-sm font-medium text-gray-700">Asignatura</label>
+                <select name="asignatura" id="asignatura" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Seleccione Sede-Carrera primero...</option>
+                </select>
+                <div id="error-asignatura" class="text-red-500 text-xs mt-1 hidden"></div>
+            </div>
+
+            <div class="mb-4">
+                <label for="cuposSolicitados" class="block text-sm font-medium text-gray-700">Cupos Solicitados</label>
+                <input type="number" name="cuposSolicitados" id="cuposSolicitados" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" min="1">
+                <div id="error-cuposSolicitados" class="text-red-500 text-xs mt-1 hidden"></div>
+            </div>
+        </div>
+
+        {{-- Contenedor para tabla dinámica (Creación masiva) --}}
+        <div id="bulk-create-fields">
+            <div class="flex justify-end mb-2">
+                <button type="button" id="addRowBtn" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1 px-2 rounded">
+                    + Agregar Fila
                 </button>
-                <div class="px-6 py-6 lg:px-8">
-                    <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white" id="modalTitle">Nueva Demanda</h3>
-                    <form id="demandaForm" action="{{ route('cupo-demandas.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="_method" id="method" value="POST">
-                        <input type="hidden" name="idPeriodo" value="{{ $periodoId }}">
-                        
-                        <div class="mb-4">
-                            <label for="idSedeCarrera" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sede - Carrera</label>
-                            <select name="idSedeCarrera" id="idSedeCarrera" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
-                                <option value="">Seleccione...</option>
-                                @foreach($sedesCarreras as $sc)
-                                    <option value="{{ $sc->idSedeCarrera }}">
-                                        {{ $sc->sede->centroFormador->nombreCentroFormador }} - {{ $sc->sede->nombreSede }} - {{ $sc->carrera->nombreCarrera }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div id="error-idSedeCarrera" class="text-red-500 text-xs mt-1 hidden"></div>
-                        </div>
+            </div>
+            <div class="overflow-x-auto mb-4">
+                <table class="min-w-full bg-white" id="demandasTable">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="px-3 py-2 text-left whitespace-nowrap text-xs font-medium text-gray-900">Sede - Carrera</th>
+                            <th class="px-3 py-2 text-left whitespace-nowrap text-xs font-medium text-gray-900">Asignatura</th>
+                            <th class="px-3 py-2 text-left whitespace-nowrap w-24 text-xs font-medium text-gray-900">Cupos</th>
+                            <th class="px-3 py-2 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{-- Filas dinámicas --}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </x-crud-modal>
 
-                        <div class="mb-4">
-                            <label for="cuposSolicitados" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cupos Solicitados</label>
-                            <input type="number" name="cuposSolicitados" id="cuposSolicitados" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required min="1">
-                            <div id="error-cuposSolicitados" class="text-red-500 text-xs mt-1 hidden"></div>
-                        </div>
-
-                        <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                            <span id="btnTexto">Guardar</span>
-                        </button>
-                    </form>
+    {{-- Template para fila de tabla --}}
+    <template id="demandaRowTemplate">
+        <tr class="border-b hover:bg-gray-50">
+            <td class="px-3 py-2">
+                <select name="demandas[INDEX][idSedeCarrera]" class="sede-carrera-select block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xs" required>
+                    <option value="">Seleccione...</option>
+                    @foreach($sedesCarreras as $sc)
+                        <option value="{{ $sc->idSedeCarrera }}">
+                            {{ $sc->sede->centroFormador->nombreCentroFormador }} - {{ $sc->sede->nombreSede }} - {{ $sc->carrera->nombreCarrera }}
+                        </option>
+                    @endforeach
+                </select>
+            </td>
+            <td class="px-3 py-2">
+                <select name="demandas[INDEX][asignatura]" class="asignatura-select block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xs" required>
+                    <option value="">Seleccione Sede-Carrera...</option>
+                </select>
+            </td>
+            <td class="px-3 py-2">
+                <input type="number" name="demandas[INDEX][cuposSolicitados]" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xs" required min="1">
+            </td>
+            <td class="px-3 py-2 text-center">
+                <button type="button" class="text-red-600 hover:text-red-900 remove-row-btn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </td>
+        </tr>
+    </template>
                 </div>
             </div>
         </div>
     </div>
 
     @push('scripts')
-        @vite(['resources/js/cupo-demanda.js'])
+        @vite(['resources/js/app.js'])
     @endpush
 </x-app-layout>

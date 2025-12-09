@@ -45,14 +45,14 @@
 
                     <td class="px-6 py-4">
                         <div class="font-medium text-gray-900">
-                            {{ $dist->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'N/A' }}
+                            {{ $dist->cupoDemanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'N/A' }}
                         </div>
                     </td>
                     
                     {{-- Sede y Carrera --}}
                     <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">{{ $dist->sedeCarrera->nombreSedeCarrera ?? 'N/A' }}</div>
-                        <div class="text-xs text-gray-500">{{ $dist->sedeCarrera->sede->nombreSede ?? '' }}</div>
+                        <div class="font-medium text-gray-900">{{ $dist->cupoDemanda->sedeCarrera->nombreSedeCarrera ?? 'N/A' }}</div>
+                        <div class="text-xs text-gray-500">{{ $dist->cupoDemanda->sedeCarrera->sede->nombreSede ?? '' }}</div>
                     </td>
                     {{-- Centro de Salud --}}
                     <td class="px-6 py-4">
@@ -115,7 +115,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">No se encontraron distribuciones disponibles.</td>
+                    <td colspan="9" class="px-6 py-4 text-center text-gray-500">No se encontraron distribuciones disponibles.</td>
                 </tr>
             @endforelse
         </tbody>

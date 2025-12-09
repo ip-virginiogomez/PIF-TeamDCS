@@ -58,16 +58,16 @@ class SedeCarrera extends Model
         return $this->hasMany(DocenteCarrera::class, 'idSedeCarrera', 'idSedeCarrera');
     }
 
-    // Relación uno a muchos con AlumnoCarrera
-    public function alumnoCarreras()
-    {
-        return $this->hasMany(AlumnoCarrera::class, 'idSedeCarrera', 'idSedeCarrera');
-    }
-
     // Relación uno a muchos con Asignatura
     public function asignaturas()
     {
         return $this->hasMany(Asignatura::class, 'idSedeCarrera', 'idSedeCarrera');
+    }
+
+    // Relación uno a muchos con AlumnoCarrera
+    public function alumnoCarreras()
+    {
+        return $this->hasMany(AlumnoCarrera::class, 'idSedeCarrera', 'idSedeCarrera');
     }
 
     // Relación uno a muchos con CupoDemanda

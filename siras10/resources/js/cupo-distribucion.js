@@ -7,20 +7,20 @@ import BaseModalManager from './base-modal-manager.js';
  * estándar (aunque la validación principal la haga el backend).
  */
 class CupoDistribucionManager extends BaseModalManager {
-    
+
     constructor() {
         super({
             modalId: 'distribucionModal',
             formId: 'distribucionForm',
             entityName: 'Distribución',
             entityGender: 'f',
-            baseUrl: '/cupo-distribuciones', 
+            baseUrl: '/cupo-distribuciones',
             primaryKey: 'idCupoDistribucion',
             tableContainerId: 'tabla-container',
             fields: [
-                'idCupoOferta', 
+                'idCupoOferta',
                 'idSedeCarrera',
-                'cantCupos' 
+                'cantCupos'
             ]
         });
 
@@ -45,7 +45,7 @@ class CupoDistribucionManager extends BaseModalManager {
             const errorMessage = errors[field][0];
 
             if (input) {
-                input.classList.add('border-red-500'); 
+                input.classList.add('border-red-500');
             }
 
             if (errorDiv) {
@@ -66,7 +66,7 @@ class CupoDistribucionManager extends BaseModalManager {
         this.form.querySelectorAll('.border-red-500').forEach(el => {
             el.classList.remove('border-red-500');
         });
-        
+
         this.form.querySelectorAll('[id^="error-"]').forEach(errorDiv => {
             errorDiv.classList.add('hidden');
             errorDiv.textContent = '';
@@ -80,7 +80,7 @@ class CupoDistribucionManager extends BaseModalManager {
     validate() {
         this.clearValidationErrors();
         let esValido = true;
-        
+
         // Este módulo no requiere validación JS personalizada.
         // La validación de 'cantCupos > 0' la hace el HTML con 'min="1"'.
         // La validación de 'cantCupos <= restantes' la hace el Backend.
@@ -97,7 +97,7 @@ class CupoDistribucionManager extends BaseModalManager {
      */
     onSuccess(data) {
         super.onSuccess(data); // Llama al onSuccess del padre
-        
+
         // Llama a nuestra función de ayuda
         this._actualizarContadorCupos(data);
     }
@@ -108,17 +108,17 @@ class CupoDistribucionManager extends BaseModalManager {
     async eliminarRegistro(id) {
         try {
             // Llama al método del padre (BaseModalManager) y espera la respuesta JSON
-            const response = await super.eliminarRegistro(id); 
+            const response = await super.eliminarRegistro(id);
 
             if (response && response.cuposRestantes !== undefined) {
                 this._actualizarContadorCupos(response);
             }
-            
+
             return response;
 
         } catch (error) {
             // El padre (super.eliminarRegistro) ya maneja el mostrar el error
-            throw error; 
+            throw error;
         }
     }
 

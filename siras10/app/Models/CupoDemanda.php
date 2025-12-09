@@ -20,6 +20,7 @@ class CupoDemanda extends Model
     protected $fillable = [
         'idPeriodo',
         'idSedeCarrera',
+        'asignatura',
         'cuposSolicitados',
     ];
 

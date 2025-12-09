@@ -36,10 +36,10 @@
                 <td class="py-2 px-4">
                     {{-- Estilo Sede: "Pill" azul para la relación principal --}}
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {{ $distribucion->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'CF Desc.' }}
+                        {{ $distribucion->cupoDemanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'CF Desc.' }}
                     </span>
                     <div class="text-gray-500">
-                        ({{ $distribucion->sedeCarrera->sede->nombreSede ?? 'Sede Desc.' }})
+                        ({{ $distribucion->cupoDemanda->sedeCarrera->sede->nombreSede ?? 'Sede Desc.' }})
                     </div>
                 </td>
 
@@ -47,7 +47,7 @@
                 <td class="py-2 px-4">
                     {{-- Estilo Sede: Texto simple --}}
                     <div>
-                        {{ $distribucion->sedeCarrera->nombreSedeCarrera ?: ($distribucion->sedeCarrera->carrera->nombreCarrera ?? 'Carrera Desc.') }}
+                        {{ $distribucion->cupoDemanda->sedeCarrera->nombreSedeCarrera ?: ($distribucion->cupoDemanda->sedeCarrera->carrera->nombreCarrera ?? 'Carrera Desc.') }}
                     </div>
                 </td>
                 

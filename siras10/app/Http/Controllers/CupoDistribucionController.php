@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CupoDistribucion;
 use App\Models\CupoOferta;
+use App\Models\CupoDemanda;
 use App\Models\SedeCarrera;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,21 +36,23 @@ class CupoDistribucionController extends Controller
         // Aplicar ordenamiento
         $query = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
             ->with([
-                'sedeCarrera.sede.centroFormador',
-                'sedeCarrera.carrera',
+                'cupoDemanda.sedeCarrera.sede.centroFormador',
+                'cupoDemanda.sedeCarrera.carrera',
             ]);
 
         // Ordenar según la columna seleccionada
         switch ($sortBy) {
             case 'sedeCarrera.sede.centroFormador.nombreCentroFormador':
-                $query->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                $query->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
                     ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
                     ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
                     ->orderBy('centro_formador.nombreCentroFormador', $sortDirection)
                     ->select('cupo_distribucion.*');
                 break;
             case 'sedeCarrera.carrera.nombreCarrera':
-                $query->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                $query->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
                     ->join('carrera', 'sede_carrera.idCarrera', '=', 'carrera.idCarrera')
                     ->orderBy('carrera.nombreCarrera', $sortDirection)
                     ->select('cupo_distribucion.*');
@@ -63,10 +66,13 @@ class CupoDistribucionController extends Controller
 
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
-        // Filtrar Sede/Carreras que coincidan con la Carrera Base de la Oferta
-        $sedesCarreras = SedeCarrera::with('sede.centroFormador', 'carrera')
+        // Obtener todas las SedeCarreras que coincidan con la Carrera de la Oferta
+        // Esto permite distribuir a cualquier sede que imparta la carrera, tenga o no demanda previa.
+        // Cargamos la demanda del periodo actual si existe, para mostrar info en el select.
+        $sedeCarreras = SedeCarrera::with(['sede.centroFormador', 'carrera', 'cupoDemandas' => function ($q) use ($oferta) {
+                $q->where('idPeriodo', $oferta->idPeriodo);
+            }])
             ->where('idCarrera', $oferta->idCarrera)
-            ->orderBy('idSedeCarrera')
             ->get();
 
         if ($request->ajax()) {
@@ -77,7 +83,7 @@ class CupoDistribucionController extends Controller
             'oferta',
             'distribuciones',
             'cuposRestantes',
-            'sedesCarreras',
+            'sedeCarreras',
             'sortBy',
             'sortDirection'
         ));
@@ -88,22 +94,43 @@ class CupoDistribucionController extends Controller
         $oferta = CupoOferta::findOrFail($request->idCupoOferta);
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
-        $datosValidados = $request->validate([
+        $request->validate([
             'idCupoOferta' => 'required|exists:cupo_oferta,idCupoOferta',
-            'idSedeCarrera' => [
-                'required',
-                'exists:sede_carrera,idSedeCarrera',
-                Rule::unique('cupo_distribucion')->where(fn ($query) => $query->where('idCupoOferta', $request->idCupoOferta)),
-            ],
+            'idSedeCarrera' => 'required|exists:sede_carrera,idSedeCarrera',
             'cantCupos' => [
                 'required', 'integer', 'min:1', 'max:'.$cuposRestantes,
             ],
         ], [
-            'idSedeCarrera.unique' => 'Esta Sede/Carrera ya tiene cupos asignados.',
             'cantCupos.max' => 'La cantidad no puede superar los cupos restantes (:max).',
         ]);
 
-        CupoDistribucion::create($datosValidados);
+        // Buscar o Crear la demanda correspondiente para esta Sede/Carrera y Periodo
+        // Si no existe demanda, se crea una con 0 solicitados para permitir la distribución.
+        $demanda = CupoDemanda::firstOrCreate(
+            [
+                'idSedeCarrera' => $request->idSedeCarrera,
+                'idPeriodo' => $oferta->idPeriodo
+            ],
+            [
+                'cuposSolicitados' => 0
+            ]
+        );
+
+        // Validar unicidad: que no exista ya una distribución para esta oferta y esta demanda
+        $existe = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
+            ->where('idDemandaCupo', $demanda->idDemandaCupo)
+            ->exists();
+
+        if ($existe) {
+            return response()->json(['errors' => ['idSedeCarrera' => ['Esta Sede/Carrera ya tiene cupos asignados en esta oferta.']]], 422);
+        }
+
+        CupoDistribucion::create([
+            'idCupoOferta' => $oferta->idCupoOferta,
+            'idDemandaCupo' => $demanda->idDemandaCupo,
+            'cantCupos' => $request->cantCupos,
+        ]);
+
         $nuevosRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
         return response()->json(['message' => 'Distribución asignada con éxito.', 'cuposRestantes' => $nuevosRestantes]);
@@ -112,7 +139,9 @@ class CupoDistribucionController extends Controller
     public function edit($id)
     {
         try {
-            $distribucion = CupoDistribucion::findOrFail($id);
+            $distribucion = CupoDistribucion::with('cupoDemanda')->findOrFail($id);
+            // Inyectar idSedeCarrera para que el JS pueda preseleccionar el valor correcto
+            $distribucion->idSedeCarrera = $distribucion->cupoDemanda->idSedeCarrera;
 
             return response()->json($distribucion);
         } catch (\Exception $e) {
@@ -136,21 +165,41 @@ class CupoDistribucionController extends Controller
         $cuposRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
         $cuposDisponiblesParaEditar = $cuposRestantes + $distribucion->cantCupos;
 
-        $datosValidados = $request->validate([
-            'idSedeCarrera' => [
-                'required',
-                'exists:sede_carrera,idSedeCarrera',
-                Rule::unique('cupo_distribucion')->where(fn ($query) => $query->where('idCupoOferta', $distribucion->idCupoOferta))->ignore($distribucion->idCupoDistribucion, 'idCupoDistribucion'),
-            ],
+        $request->validate([
+            'idSedeCarrera' => 'required|exists:sede_carrera,idSedeCarrera',
             'cantCupos' => [
                 'required', 'integer', 'min:1', 'max:'.$cuposDisponiblesParaEditar,
             ],
         ], [
-            'idSedeCarrera.unique' => 'Esta Sede/Carrera ya tiene cupos asignados.',
             'cantCupos.max' => 'La cantidad no puede superar los cupos disponibles (:max).',
         ]);
 
-        $distribucion->update($datosValidados);
+        // Buscar o Crear la demanda correspondiente
+        $demanda = CupoDemanda::firstOrCreate(
+            [
+                'idSedeCarrera' => $request->idSedeCarrera,
+                'idPeriodo' => $oferta->idPeriodo
+            ],
+            [
+                'cuposSolicitados' => 0
+            ]
+        );
+
+        // Validar unicidad (excluyendo el registro actual)
+        $existe = CupoDistribucion::where('idCupoOferta', $oferta->idCupoOferta)
+            ->where('idDemandaCupo', $demanda->idDemandaCupo)
+            ->where('idCupoDistribucion', '!=', $distribucion->idCupoDistribucion)
+            ->exists();
+
+        if ($existe) {
+            return response()->json(['errors' => ['idSedeCarrera' => ['Esta Sede/Carrera ya tiene cupos asignados en esta oferta.']]], 422);
+        }
+
+        $distribucion->update([
+            'idDemandaCupo' => $demanda->idDemandaCupo,
+            'cantCupos' => $request->cantCupos,
+        ]);
+
         $nuevosRestantes = $this->_recalcularCupos($oferta->idCupoOferta);
 
         return response()->json(['message' => 'Distribución actualizada con éxito.', 'cuposRestantes' => $nuevosRestantes]);

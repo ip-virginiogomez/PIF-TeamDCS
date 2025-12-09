@@ -9,6 +9,7 @@ import './centro-salud.js';
 import './convenio.js';
 import './cupo-distribucion.js';
 import './cupo-oferta.js';
+import './cupo-demanda.js';
 import './docentes.js';
 import './periodos.js';
 import './roles.js';
