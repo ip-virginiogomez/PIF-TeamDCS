@@ -263,7 +263,7 @@ class AlumnoController extends Controller
                 // Verificar si la propiedad 'archivo' o 'documento' es la correcta
                 // Según el modelo VacunaAlumno, el campo es 'documento'
                 $archivo = $vacuna->documento ?? $vacuna->archivo;
-                
+
                 if ($archivo && Storage::disk('public')->exists($archivo)) {
                     Storage::disk('public')->delete($archivo);
                 }
