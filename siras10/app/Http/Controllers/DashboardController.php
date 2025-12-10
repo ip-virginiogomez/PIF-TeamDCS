@@ -191,8 +191,104 @@ class DashboardController extends Controller
                     ],
                 ];
 
-            } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
+            } elseif ($user->hasRole('Encargado Campo Clínico')) {
+                $variant = 'encargado_campos';
 
+                $today = now();
+                $periodo = \App\Models\Periodo::where('fechaInicio', '<=', $today)
+                    ->where('fechaFin', '>=', $today)
+                    ->first();
+
+                $cuposSolicitados = 0;
+                $cuposOtorgados = 0;
+
+                if ($periodo) {
+                    $cuposSolicitados = \App\Models\CupoDemanda::where('idPeriodo', $periodo->idPeriodo)->sum('cuposSolicitados');
+                    $cuposOtorgados = \App\Models\CupoDistribucion::whereHas('cupoDemanda', function ($q) use ($periodo) {
+                        $q->where('idPeriodo', $periodo->idPeriodo);
+                    })->sum('cantCupos');
+                }
+
+                $dashboardData['kpiBrecha'] = [
+                    'solicitados' => $cuposSolicitados,
+                    'otorgados' => $cuposOtorgados,
+                    'porcentaje' => $cuposSolicitados > 0 ? round(($cuposOtorgados / $cuposSolicitados) * 100) : 0,
+                    'faltantes' => max(0, $cuposSolicitados - $cuposOtorgados),
+                ];
+
+                // KPI: Tasa de Ocupación de Campos
+                $ofertaTotal = 0;
+                $ofertaOcupada = 0;
+                $topCentrosDisponibles = collect([]);
+
+                if ($periodo) {
+                    // Total Oferta: Suma de cupos ofertados en el periodo
+                    $ofertaTotal = \App\Models\CupoOferta::where('idPeriodo', $periodo->idPeriodo)->sum('cantCupos');
+                    
+                    // Oferta Ocupada: Suma de cupos distribuidos (asignados) sobre esa oferta
+                    $ofertaOcupada = \App\Models\CupoDistribucion::whereHas('cupoOferta', function($q) use ($periodo) {
+                        $q->where('idPeriodo', $periodo->idPeriodo);
+                    })->sum('cantCupos');
+
+                    // Top 3 Centros con más cupos disponibles
+                    $ofertas = \App\Models\CupoOferta::where('idPeriodo', $periodo->idPeriodo)
+                        ->with(['unidadClinica.centroSalud', 'cupoDistribuciones'])
+                        ->get();
+
+                    $centrosStats = [];
+                    foreach ($ofertas as $oferta) {
+                        if ($oferta->unidadClinica && $oferta->unidadClinica->centroSalud) {
+                            $id = $oferta->unidadClinica->centroSalud->idCentroSalud;
+                            $nombre = $oferta->unidadClinica->centroSalud->nombreCentro;
+                            
+                            if (!isset($centrosStats[$id])) {
+                                $centrosStats[$id] = ['nombre' => $nombre, 'total' => 0, 'ocupado' => 0];
+                            }
+                            $centrosStats[$id]['total'] += $oferta->cantCupos;
+                            $centrosStats[$id]['ocupado'] += $oferta->cupoDistribuciones->sum('cantCupos');
+                        }
+                    }
+
+                    $topCentrosDisponibles = collect($centrosStats)->map(function($stat) {
+                        $stat['disponible'] = $stat['total'] - $stat['ocupado'];
+                        return $stat;
+                    })->sortByDesc('disponible')->take(3);
+                }
+                
+                $dashboardData['kpiOcupacion'] = [
+                    'total' => $ofertaTotal,
+                    'ocupada' => $ofertaOcupada,
+                    'porcentaje' => $ofertaTotal > 0 ? round(($ofertaOcupada / $ofertaTotal) * 100) : 0,
+                ];
+                $dashboardData['topCentrosDisponibles'] = $topCentrosDisponibles;
+
+                // 3. Gestión Legal y Alertas (Convenios)
+                // Buscar convenios que vencen en los próximos 6 meses o que ya vencieron recientemente (último mes)
+                $conveniosAlertas = \App\Models\Convenio::with('centroFormador')
+                    ->where(function($q) {
+                        $q->whereBetween('fechaFin', [now()->subMonth(), now()->addMonths(6)]);
+                    })
+                    ->orderBy('fechaFin', 'asc')
+                    ->get()
+                    ->map(function($convenio) {
+                        $fechaFin = \Carbon\Carbon::parse($convenio->fechaFin);
+                        $diasRestantes = now()->diffInDays($fechaFin, false);
+                        $convenio->dias_restantes = (int)$diasRestantes;
+                        
+                        if ($diasRestantes < 0) {
+                            $convenio->status = 'Vencido';
+                            $convenio->color = 'red';
+                        } elseif ($diasRestantes <= 90) {
+                            $convenio->status = 'Crítico (< 3 meses)';
+                            $convenio->color = 'orange';
+                        } else {
+                            $convenio->status = 'Por Vencer (3-6 meses)';
+                            $convenio->color = 'yellow';
+                        }
+                        return $convenio;
+                    });
+
+                $dashboardData['conveniosAlertas'] = $conveniosAlertas;
             } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
                 $variant = 'coordinador_campo';
             } elseif ($user->hasRole('Técnico RAD') || (method_exists($user, 'esTecnicoRAD') && $user->esTecnicoRAD())) {
