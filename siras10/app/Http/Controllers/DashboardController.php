@@ -197,6 +197,93 @@ class DashboardController extends Controller
                 $variant = 'coordinador_campo';
             } elseif ($user->hasRole('Técnico RAD') || (method_exists($user, 'esTecnicoRAD') && $user->esTecnicoRAD())) {
                 $variant = 'rad';
+
+                // Obtener el Centro de Salud del usuario RAD
+                $personal = \App\Models\Personal::where('runUsuario', $user->runUsuario)->first();
+                $idCentroSalud = $personal ? $personal->idCentroSalud : null;
+                $nombreCentro = $personal && $personal->centroSalud ? $personal->centroSalud->nombreCentro : 'Sin Asignación';
+                $dashboardData['nombreCentro'] = $nombreCentro;
+
+                $today = now();
+                $nextWeek = now()->addDays(7);
+
+                // KPI: Próximos Ingresos (Para Credenciales)
+                // Cantidad de alumnos que inician su práctica en los próximos 7 días en este Centro de Salud.
+                $proximosIngresos = \App\Models\DossierGrupo::whereHas('grupo.cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                    if ($idCentroSalud) {
+                        $q->where('idCentroSalud', $idCentroSalud);
+                    }
+                })->whereHas('grupo', function ($q) use ($today, $nextWeek) {
+                    $q->whereBetween('fechaInicio', [$today->format('Y-m-d'), $nextWeek->format('Y-m-d')]);
+                })->count();
+
+                $dashboardData['proximosIngresos'] = $proximosIngresos;
+
+                // KPI: Alumnos en Práctica (Actualmente)
+                $alumnosEnPractica = \App\Models\DossierGrupo::whereHas('grupo.cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                    if ($idCentroSalud) {
+                        $q->where('idCentroSalud', $idCentroSalud);
+                    }
+                })->whereHas('grupo', function ($q) use ($today) {
+                    $q->where('fechaInicio', '<=', $today->format('Y-m-d'))
+                      ->where('fechaFin', '>=', $today->format('Y-m-d'));
+                })->count();
+
+                $dashboardData['alumnosEnPractica'] = $alumnosEnPractica;
+
+                // Calendario de Rotaciones (Timeline)
+                $startCal = now()->startOfMonth()->subMonth(); // Mostrar desde un mes atrás
+                $endCal = now()->addMonths(3)->endOfMonth();   // Hasta 3 meses adelante
+
+                $gruposCalendario = \App\Models\Grupo::with([
+                    'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
+                    'cupoDistribucion.sedeCarrera.sede.centroFormador',
+                    'cupoDistribucion.sedeCarrera.carrera'
+                ])
+                ->whereHas('cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                    if ($idCentroSalud) {
+                        $q->where('idCentroSalud', $idCentroSalud);
+                    }
+                })
+                ->where(function($q) use ($startCal, $endCal) {
+                    $q->whereBetween('fechaInicio', [$startCal, $endCal])
+                      ->orWhereBetween('fechaFin', [$startCal, $endCal])
+                      ->orWhere(function($q2) use ($startCal, $endCal) {
+                          $q2->where('fechaInicio', '<', $startCal)
+                             ->where('fechaFin', '>', $endCal);
+                      });
+                })
+                ->get();
+
+                $calendarEvents = $gruposCalendario->map(function($grupo) {
+                    $cf = $grupo->cupoDistribucion->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'Sin CF';
+                    $carrera = $grupo->cupoDistribucion->sedeCarrera->carrera->nombreCarrera ?? 'Sin Carrera';
+                    $unidad = $grupo->cupoDistribucion->cupoOferta->unidadClinica->nombreUnidad ?? 'Sin Unidad';
+                    $centro = $grupo->cupoDistribucion->cupoOferta->unidadClinica->centroSalud->nombreCentro ?? 'Sin Centro';
+                    
+                    // Generar color consistente basado en el nombre del Centro Formador
+                    $hash = md5($cf);
+                    $color = '#' . substr($hash, 0, 6);
+
+                    return [
+                        'id' => $grupo->idGrupo,
+                        'title' => "$cf - $carrera ($unidad)",
+                        'start' => $grupo->fechaInicio->format('Y-m-d'),
+                        'end' => $grupo->fechaFin->addDay()->format('Y-m-d'), // FullCalendar usa end exclusivo
+                        'extendedProps' => [
+                            'unidad' => $unidad,
+                            'centro' => $centro,
+                            'carrera' => $carrera,
+                            'institucion' => $cf
+                        ],
+                        'backgroundColor' => $color,
+                        'borderColor' => $color,
+                        'textColor' => '#ffffff' // Asumimos fondo oscuro, texto blanco
+                    ];
+                });
+
+                $dashboardData['calendarEvents'] = $calendarEvents;
+
             } elseif ($user->hasRole('Docente')) {
                 $variant = 'docente';
             } else {
