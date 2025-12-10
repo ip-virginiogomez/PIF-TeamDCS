@@ -361,7 +361,7 @@ class AlumnoManager extends BaseModalManager {
 
         if (runInput) runInput.removeAttribute('readonly');
         if (runHelpText) runHelpText.classList.add('hidden');
-        if (fotoPreview) fotoPreview.src = "/storage/placeholder.png";
+        if (fotoPreview) fotoPreview.src = "/images/placeholder.png";
         if (acuerdoInfo) acuerdoInfo.classList.add('hidden');
         if (acuerdoLink) {
             acuerdoLink.href = '#';
@@ -398,7 +398,12 @@ class AlumnoManager extends BaseModalManager {
 
         // Foto
         const fotoPreview = document.getElementById('foto-preview');
-        if (fotoPreview) fotoPreview.src = alumno.foto ? `/storage/${alumno.foto}` : "/storage/placeholder.png";
+        if (fotoPreview) {
+            fotoPreview.onerror = () => {
+                fotoPreview.src = "/images/placeholder.png";
+            };
+            fotoPreview.src = alumno.foto ? `/storage/${alumno.foto}` : "/images/placeholder.png";
+        }
 
         // Acuerdo
         const acuerdoInfo = document.getElementById('acuerdo-actual');

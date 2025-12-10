@@ -178,6 +178,7 @@
             <div class="mb-4">
                 <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
                 <div class="mt-2 mb-2">
+                    <img id="foto-preview" src="{{ asset('images/placeholder.png') }}" alt="Vista previa" class="h-24 w-24 object-cover rounded-full border border-gray-300">
                 </div>
                 <input type="file" id="foto" name="foto" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all duration-200">
                 <div class="text-red-500 text-sm mt-1 hidden" id="error-foto"></div>
