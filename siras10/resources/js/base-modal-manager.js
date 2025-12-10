@@ -139,12 +139,31 @@ export default class BaseModalManager {
                     'Accept': 'application/json',
                 }
             });
-            const data = await response.json();
+
+            // Intentar parsear la respuesta como JSON
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                throw new Error('Error de comunicación con el servidor. Por favor, intente nuevamente.');
+            }
 
             if (!response.ok) {
                 if (response.status === 422) {
+                    // Errores de validación
                     this.showValidationErrors(data.errors);
+
+                    // Mostrar también un mensaje general con todos los errores
+                    const errorMessages = Object.values(data.errors).flat();
+                    if (errorMessages.length > 0) {
+                        this.showAlert(
+                            'Error de validación',
+                            errorMessages.join('\n'),
+                            'error'
+                        );
+                    }
                 } else {
+                    // Otros errores del servidor (500, 404, etc.)
                     throw new Error(data.message || 'Ocurrió un error en el servidor');
                 }
             } else {
@@ -152,7 +171,7 @@ export default class BaseModalManager {
             }
         } catch (error) {
             console.error('Error AJAX:', error);
-            this.showAlert('Error', error.message, 'error');
+            this.showAlert('Error', error.message || 'Error de conexión con el servidor', 'error');
         }
     }
 
