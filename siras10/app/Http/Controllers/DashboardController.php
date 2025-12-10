@@ -224,9 +224,9 @@ class DashboardController extends Controller
                 if ($periodo) {
                     // Total Oferta: Suma de cupos ofertados en el periodo
                     $ofertaTotal = \App\Models\CupoOferta::where('idPeriodo', $periodo->idPeriodo)->sum('cantCupos');
-                    
+
                     // Oferta Ocupada: Suma de cupos distribuidos (asignados) sobre esa oferta
-                    $ofertaOcupada = \App\Models\CupoDistribucion::whereHas('cupoOferta', function($q) use ($periodo) {
+                    $ofertaOcupada = \App\Models\CupoDistribucion::whereHas('cupoOferta', function ($q) use ($periodo) {
                         $q->where('idPeriodo', $periodo->idPeriodo);
                     })->sum('cantCupos');
 
@@ -240,8 +240,8 @@ class DashboardController extends Controller
                         if ($oferta->unidadClinica && $oferta->unidadClinica->centroSalud) {
                             $id = $oferta->unidadClinica->centroSalud->idCentroSalud;
                             $nombre = $oferta->unidadClinica->centroSalud->nombreCentro;
-                            
-                            if (!isset($centrosStats[$id])) {
+
+                            if (! isset($centrosStats[$id])) {
                                 $centrosStats[$id] = ['nombre' => $nombre, 'total' => 0, 'ocupado' => 0];
                             }
                             $centrosStats[$id]['total'] += $oferta->cantCupos;
@@ -249,12 +249,13 @@ class DashboardController extends Controller
                         }
                     }
 
-                    $topCentrosDisponibles = collect($centrosStats)->map(function($stat) {
+                    $topCentrosDisponibles = collect($centrosStats)->map(function ($stat) {
                         $stat['disponible'] = $stat['total'] - $stat['ocupado'];
+
                         return $stat;
                     })->sortByDesc('disponible')->take(3);
                 }
-                
+
                 $dashboardData['kpiOcupacion'] = [
                     'total' => $ofertaTotal,
                     'ocupada' => $ofertaOcupada,
@@ -265,16 +266,16 @@ class DashboardController extends Controller
                 // 3. Gestión Legal y Alertas (Convenios)
                 // Buscar convenios que vencen en los próximos 6 meses o que ya vencieron recientemente (último mes)
                 $conveniosAlertas = \App\Models\Convenio::with('centroFormador')
-                    ->where(function($q) {
+                    ->where(function ($q) {
                         $q->whereBetween('fechaFin', [now()->subMonth(), now()->addMonths(6)]);
                     })
                     ->orderBy('fechaFin', 'asc')
                     ->get()
-                    ->map(function($convenio) {
+                    ->map(function ($convenio) {
                         $fechaFin = \Carbon\Carbon::parse($convenio->fechaFin);
                         $diasRestantes = now()->diffInDays($fechaFin, false);
-                        $convenio->dias_restantes = (int)$diasRestantes;
-                        
+                        $convenio->dias_restantes = (int) $diasRestantes;
+
                         if ($diasRestantes < 0) {
                             $convenio->status = 'Vencido';
                             $convenio->color = 'red';
@@ -285,6 +286,7 @@ class DashboardController extends Controller
                             $convenio->status = 'Por Vencer (3-6 meses)';
                             $convenio->color = 'yellow';
                         }
+
                         return $convenio;
                     });
 

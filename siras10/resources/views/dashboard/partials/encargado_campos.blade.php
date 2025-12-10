@@ -52,7 +52,7 @@
 
         <!-- KPI: Tasa de Ocupación -->
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 col-span-1">
-            <h4 class="text-lg font-semibold text-gray-800 mb-4">Tasa de Ocupación de Campos</h4>
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Tasa de Ocupación de Cupos</h4>
             
             <div class="flex items-end justify-between mb-4">
                 <div>
