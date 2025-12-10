@@ -548,12 +548,12 @@ class SedeCarreraController extends Controller
     {
         $programa = $asignatura->programa;
 
-        if (! $programa || ! $programa->doc || ! Storage::disk('public')->exists($programa->doc)) {
+        if (! $programa || ! $programa->documento || ! Storage::disk('public')->exists($programa->documento)) {
             abort(404, 'Programa no encontrado');
         }
 
         return Storage::disk('public')->download(
-            $programa->doc,
+            $programa->documento,
             $asignatura->nombreAsignatura.' - Programa.pdf'
         );
     }
@@ -680,9 +680,30 @@ class SedeCarreraController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar la malla curricular.',
-                'error' => config('app.debug') ? $e->getMessage() : null,
+                'message' => 'Error al eliminar la malla curricular',
             ], 500);
+        }
+    }
+
+    /**
+     * Descargar una malla curricular
+     */
+    public function descargarMallaPdf($idMallaSedeCarrera)
+    {
+        try {
+            $malla = \App\Models\MallaSedeCarrera::findOrFail($idMallaSedeCarrera);
+
+            if (!$malla->documento || !\Storage::disk('public')->exists($malla->documento)) {
+                abort(404, 'Malla curricular no encontrada');
+            }
+
+            $nombreArchivo = $malla->nombre . '_' . $malla->mallaCurricular->anio . '.pdf';
+
+            return \Storage::disk('public')->download($malla->documento, $nombreArchivo);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en descargarMallaPdf: '.$e->getMessage());
+            abort(500, 'Error al descargar la malla curricular');
         }
     }
 
