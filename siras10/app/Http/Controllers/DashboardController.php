@@ -226,7 +226,7 @@ class DashboardController extends Controller
                     }
                 })->whereHas('grupo', function ($q) use ($today) {
                     $q->where('fechaInicio', '<=', $today->format('Y-m-d'))
-                      ->where('fechaFin', '>=', $today->format('Y-m-d'));
+                        ->where('fechaFin', '>=', $today->format('Y-m-d'));
                 })->count();
 
                 $dashboardData['alumnosEnPractica'] = $alumnosEnPractica;
@@ -238,32 +238,32 @@ class DashboardController extends Controller
                 $gruposCalendario = \App\Models\Grupo::with([
                     'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
                     'cupoDistribucion.sedeCarrera.sede.centroFormador',
-                    'cupoDistribucion.sedeCarrera.carrera'
+                    'cupoDistribucion.sedeCarrera.carrera',
                 ])
-                ->whereHas('cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
-                    if ($idCentroSalud) {
-                        $q->where('idCentroSalud', $idCentroSalud);
-                    }
-                })
-                ->where(function($q) use ($startCal, $endCal) {
-                    $q->whereBetween('fechaInicio', [$startCal, $endCal])
-                      ->orWhereBetween('fechaFin', [$startCal, $endCal])
-                      ->orWhere(function($q2) use ($startCal, $endCal) {
-                          $q2->where('fechaInicio', '<', $startCal)
-                             ->where('fechaFin', '>', $endCal);
-                      });
-                })
-                ->get();
+                    ->whereHas('cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                        if ($idCentroSalud) {
+                            $q->where('idCentroSalud', $idCentroSalud);
+                        }
+                    })
+                    ->where(function ($q) use ($startCal, $endCal) {
+                        $q->whereBetween('fechaInicio', [$startCal, $endCal])
+                            ->orWhereBetween('fechaFin', [$startCal, $endCal])
+                            ->orWhere(function ($q2) use ($startCal, $endCal) {
+                                $q2->where('fechaInicio', '<', $startCal)
+                                    ->where('fechaFin', '>', $endCal);
+                            });
+                    })
+                    ->get();
 
-                $calendarEvents = $gruposCalendario->map(function($grupo) {
+                $calendarEvents = $gruposCalendario->map(function ($grupo) {
                     $cf = $grupo->cupoDistribucion->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'Sin CF';
                     $carrera = $grupo->cupoDistribucion->sedeCarrera->carrera->nombreCarrera ?? 'Sin Carrera';
                     $unidad = $grupo->cupoDistribucion->cupoOferta->unidadClinica->nombreUnidad ?? 'Sin Unidad';
                     $centro = $grupo->cupoDistribucion->cupoOferta->unidadClinica->centroSalud->nombreCentro ?? 'Sin Centro';
-                    
+
                     // Generar color consistente basado en el nombre del Centro Formador
                     $hash = md5($cf);
-                    $color = '#' . substr($hash, 0, 6);
+                    $color = '#'.substr($hash, 0, 6);
 
                     return [
                         'id' => $grupo->idGrupo,
@@ -274,11 +274,11 @@ class DashboardController extends Controller
                             'unidad' => $unidad,
                             'centro' => $centro,
                             'carrera' => $carrera,
-                            'institucion' => $cf
+                            'institucion' => $cf,
                         ],
                         'backgroundColor' => $color,
                         'borderColor' => $color,
-                        'textColor' => '#ffffff' // Asumimos fondo oscuro, texto blanco
+                        'textColor' => '#ffffff', // Asumimos fondo oscuro, texto blanco
                     ];
                 });
 
