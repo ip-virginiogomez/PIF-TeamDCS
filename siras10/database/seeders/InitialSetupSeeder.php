@@ -36,6 +36,7 @@ class InitialSetupSeeder extends Seeder
             ],
             'Gestión de Prácticas' => [
                 'periodos' => ['create', 'read', 'update', 'delete'],
+                'cupo-demandas' => ['create', 'read', 'update', 'delete'],
                 'cupo-ofertas' => ['create', 'read', 'update', 'delete'],
                 'tipos-practica' => ['create', 'read', 'update', 'delete'],
                 'cupo-distribuciones' => ['create', 'read', 'update', 'delete'],

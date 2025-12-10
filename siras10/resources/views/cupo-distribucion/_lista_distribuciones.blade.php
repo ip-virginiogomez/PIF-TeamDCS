@@ -1,36 +1,12 @@
-<div class="overflow-x-auto">
+<div class="overflow-x-auto bg-white shadow-md rounded-lg">
     <table class="w-full text-sm text-left text-gray-500">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
-                @php
-                    $getSortLink = function($column, $text) use ($sortBy, $sortDirection) {
-                        $direction = ($sortBy === $column && $sortDirection == 'asc') ? 'desc' : 'asc';
-                        $params = array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => $direction, 'page' => 1]);
-                        $url = route('grupos.index', $params);
-                        $icon = '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>';
-                        if ($sortBy === $column) {
-                            $icon = $sortDirection === 'asc' 
-                                ? '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>'
-                                : '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
-                        }
-                        return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
-                    };
-                @endphp
-                <th scope="col" class="px-6 py-3">
-                    {!! $getSortLink('centro_formador', 'Centro Formador') !!}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    {!! $getSortLink('sede_carrera', 'Sede / Carrera') !!}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    {!! $getSortLink('centro_salud', 'Centro de Salud') !!}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    {!! $getSortLink('unidad_clinica', 'Unidad Clínica') !!}
-                </th>
-                <th scope="col" class="px-6 py-3">
-                    {!! $getSortLink('tipo_practica', 'Tipo de Práctica') !!}
-                </th>
+                <th scope="col" class="px-6 py-3">Centro Formador</th>
+                <th scope="col" class="px-6 py-3">Sede / Carrera</th>
+                <th scope="col" class="px-6 py-3">Centro de Salud</th>
+                <th scope="col" class="px-6 py-3">Unidad Clínica</th>
+                <th scope="col" class="px-6 py-3">Tipo de Práctica</th>
                 <th scope="col" class="px-6 py-3 text-center">Cupos</th>
                 <th scope="col" class="px-6 py-3 text-center">Fechas</th>
                 <th scope="col" class="px-6 py-3 text-center">Horario</th>
@@ -41,7 +17,7 @@
             @forelse($distribuciones as $dist)
                 @php $oferta = $dist->cupoOferta; @endphp
                 
-                <tr class="bg-white border-b hover:bg-gray-50 transition row-distribucion" data-id="{{ $dist->idCupoDistribucion }}">
+                <tr class="bg-white border-b hover:bg-gray-50 transition">
 
                     <td class="px-6 py-4">
                         <div class="font-medium text-gray-900">
@@ -103,24 +79,21 @@
                     </td>
                     {{-- Botón Acción --}}
                     <td class="px-6 py-4 text-center">
-                        <button 
-                            type="button"
-                            data-action="select-distribucion" 
-                            data-id="{{ $dist->idCupoDistribucion }}"
-                            data-summary="{{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad' }} - {{ $dist->sedeCarrera->nombreSedeCarrera ?? 'Carrera' }}"
-                            class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-3 py-2 focus:outline-none shadow-sm transition-colors duration-200">
-                            Asignar Grupos
+                        <button data-action="delete-distribucion" data-id="{{ $dist->idCupoDistribucion }}" title="Eliminar" class="inline-flex items-center justify-center w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-150">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
                         </button>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="px-6 py-4 text-center text-gray-500">No se encontraron distribuciones disponibles.</td>
+                    <td colspan="9" class="px-6 py-4 text-center text-gray-500">No se han realizado distribuciones aún.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-        {{ $distribuciones->links() }} 
+        {{ $distribuciones->appends(request()->query())->links() }} 
     </div>
 </div>

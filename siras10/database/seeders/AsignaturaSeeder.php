@@ -11,11 +11,27 @@ class AsignaturaSeeder extends Seeder
     {
         $asignaturas = [
             [
-                'nombreAsignatura' => 'Práctico Integrado',
+                'nombreAsignatura' => 'Enfermería Básica',
                 'idTipoPractica' => 1,
                 'idSedeCarrera' => 1,
                 'fechaCreacion' => now(),
-                'codAsignatura' => 'PI101',
+                'codAsignatura' => 'ENF101',
+                'Semestre' => 1,
+            ],
+            [
+                'nombreAsignatura' => 'Cuidados del Adulto Mayor',
+                'idTipoPractica' => 1,
+                'idSedeCarrera' => 1,
+                'fechaCreacion' => now(),
+                'codAsignatura' => 'ENF201',
+                'Semestre' => 2,
+            ],
+            [
+                'nombreAsignatura' => 'Práctica Clínica I',
+                'idTipoPractica' => 2,
+                'idSedeCarrera' => 1,
+                'fechaCreacion' => now(),
+                'codAsignatura' => 'ENF301',
                 'Semestre' => 3,
             ],
         ];

@@ -314,11 +314,20 @@ export default class BaseModalManager {
         if (!this.modal) return;
         this.modal.classList.remove('hidden');
         this.modal.classList.add('flex', 'items-center', 'justify-center');
+        this.modal.setAttribute('aria-hidden', 'false');
     }
     cerrarModal() {
         if (!this.modal) return;
+
+        // Fix: Remove focus from any element inside the modal before hiding it
+        // to prevent "Blocked aria-hidden" error.
+        if (document.activeElement && this.modal.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+
         this.modal.classList.add('hidden');
         this.modal.classList.remove('flex', 'items-center', 'justify-center');
+        this.modal.setAttribute('aria-hidden', 'true');
     }
     setModalTitle(title) { document.getElementById('modalTitle').textContent = title; }
     setButtonText(text) { document.getElementById('btnTexto').textContent = text; }
