@@ -3,7 +3,8 @@
     @php
         $dist = $grupo->cupoDistribucion;
         $oferta = $dist->cupoOferta ?? null;
-        $sedeCarrera = $dist->sedeCarrera ?? null;
+        $demanda = $dist->cupoDemanda ?? null;
+        $sedeCarrera = $demanda->sedeCarrera ?? null;
         $sede = $sedeCarrera->sede ?? null;
         $centroFormador = $sede->centroFormador ?? null;
         $unidad = $oferta->unidadClinica ?? null;

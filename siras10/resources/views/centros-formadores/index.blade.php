@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Centros Formadores') }}
             </h2>
+            @can('centros-formadores.create')
             <button data-modal-target="centroFormadorModal" data-modal-toggle="centroFormadorModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Centro Formador
             </button>
+            @endcan
         </div>
     </x-slot>
 

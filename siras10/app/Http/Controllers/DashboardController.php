@@ -335,8 +335,8 @@ class DashboardController extends Controller
 
                 $gruposCalendario = \App\Models\Grupo::with([
                     'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
-                    'cupoDistribucion.sedeCarrera.sede.centroFormador',
-                    'cupoDistribucion.sedeCarrera.carrera',
+                    'cupoDistribucion.cupoDemanda.sedeCarrera.sede.centroFormador',
+                    'cupoDistribucion.cupoDemanda.sedeCarrera.carrera',
                 ])
                     ->whereHas('cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
                         if ($idCentroSalud) {
@@ -354,8 +354,8 @@ class DashboardController extends Controller
                     ->get();
 
                 $calendarEvents = $gruposCalendario->map(function ($grupo) {
-                    $cf = $grupo->cupoDistribucion->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'Sin CF';
-                    $carrera = $grupo->cupoDistribucion->sedeCarrera->carrera->nombreCarrera ?? 'Sin Carrera';
+                    $cf = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'Sin CF';
+                    $carrera = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->carrera->nombreCarrera ?? 'Sin Carrera';
                     $unidad = $grupo->cupoDistribucion->cupoOferta->unidadClinica->nombreUnidad ?? 'Sin Unidad';
                     $centro = $grupo->cupoDistribucion->cupoOferta->unidadClinica->centroSalud->nombreCentro ?? 'Sin Centro';
 
@@ -531,7 +531,7 @@ class DashboardController extends Controller
                 // 8. Rotaciones Activas Hoy (Grupos)
                 $gruposActivos = \App\Models\Grupo::where('fechaInicio', '<=', $today)
                     ->where('fechaFin', '>=', $today)
-                    ->whereHas('cupoDistribucion.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                    ->whereHas('cupoDistribucion.cupoDemanda.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
                         $q->where('idCentroFormador', $idCentroFormador);
                     })
                     ->with(['cupoDistribucion.cupoOferta.unidadClinica.centroSalud'])
@@ -555,7 +555,8 @@ class DashboardController extends Controller
                     ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
                     ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
                     ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
-                    ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
                     ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
                     ->where('sede.idCentroFormador', $idCentroFormador)
                     ->whereDate('cupo_oferta.fechaEntrada', '<=', $today)
@@ -567,7 +568,8 @@ class DashboardController extends Controller
                 $asignados = \App\Models\DossierGrupo::query()
                     ->join('grupo', 'dossier_grupo.idGrupo', '=', 'grupo.idGrupo')
                     ->join('cupo_distribucion', 'grupo.idCupoDistribucion', '=', 'cupo_distribucion.idCupoDistribucion')
-                    ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
                     ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
                     ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
                     ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
