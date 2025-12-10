@@ -72,7 +72,7 @@
                     </div>
                     @endcanany
                     {{-- CAMBIO: @canany corregido con los permisos correctos --}}
-                    @canany(['periodos.read', 'cupo-ofertas.read', 'tipos-practica.read'])
+                    @canany(['periodos.read', 'cupo-demandas.read', 'cupo-ofertas.read', 'cupo-distribuciones.read', 'tipos-practica.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -83,7 +83,9 @@
                             </x-slot>
                             <x-slot name="content">
                                 @can('periodos.read')<x-dropdown-link :href="route('periodos.index')" wire:navigate>{{ __('Períodos') }}</x-dropdown-link>@endcan
+                                @can('cupo-demandas.read')<x-dropdown-link :href="route('cupo-demandas.index')" wire:navigate>{{ __('Demanda de Cupos') }}</x-dropdown-link>@endcan
                                 @can('cupo-ofertas.read')<x-dropdown-link :href="route('cupo-ofertas.index')" wire:navigate>{{ __('Oferta de Cupos') }}</x-dropdown-link>@endcan
+                                @can('cupo-distribuciones.read')<x-dropdown-link :href="route('cupo-distribuciones.index')" wire:navigate>{{ __('Distribución de Cupos') }}</x-dropdown-link>@endcan
                                 @can('tipos-practica.read')<x-dropdown-link :href="route('tipos-practica.index')" wire:navigate>{{ __('Tipos de Práctica') }}</x-dropdown-link>@endcan
                                 <div class="border-t border-gray-200"></div>
                                 <x-dropdown-link :href="route('grupos.index')" wire:navigate>{{ __('Dossier de Grupos') }}</x-dropdown-link>
@@ -233,7 +235,7 @@
             @endcanany
 
             {{-- CAMBIO: Añadido @canany --}}
-            @canany(['periodos.read', 'cupo-ofertas.read', 'tipos-practica.read'])
+            @canany(['periodos.read', 'cupo-demandas.read', 'cupo-ofertas.read', 'cupo-distribuciones.read', 'tipos-practica.read'])
                 <div class="border-t border-dcs-blue-700 pt-2">
                     <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión de Prácticas') }}
@@ -243,9 +245,19 @@
                         {{ __('Períodos') }}
                     </x-responsive-nav-link>
                     @endcan
+                    @can('cupo-demandas.read')
+                    <x-responsive-nav-link :href="route('cupo-demandas.index')" :active="request()->routeIs('cupo-demandas.*')" class="pl-6" wire:navigate>
+                        {{ __('Demanda de Cupos') }}
+                    </x-responsive-nav-link>
+                    @endcan
                     @can('cupo-ofertas.read')
                     <x-responsive-nav-link :href="route('cupo-ofertas.index')" :active="request()->routeIs('cupo-ofertas.*')" class="pl-6" wire:navigate>
                         {{ __('Oferta de Cupos') }}
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('cupo-distribuciones.read')
+                    <x-responsive-nav-link :href="route('cupo-distribuciones.index')" :active="request()->routeIs('cupo-distribuciones.*')" class="pl-6" wire:navigate>
+                        {{ __('Distribución de Cupos') }}
                     </x-responsive-nav-link>
                     @endcan
                     @can('tipos-practica.read')

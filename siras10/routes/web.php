@@ -8,6 +8,7 @@ use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
 use App\Http\Controllers\ConvenioController;
+use App\Http\Controllers\CupoDemandaController;
 use App\Http\Controllers\CupoDistribucionController;
 use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DashboardController;
@@ -74,6 +75,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- GESTIÓN ACADÉMICA ---
     Route::resource('carreras', CarreraController::class);
+    Route::get('cupo-demandas/asignaturas/{idSedeCarrera}', [CupoDemandaController::class, 'getAsignaturasBySedeCarrera']);
+    Route::resource('cupo-demandas', CupoDemandaController::class);
     Route::get('/alumnos/sedes-carreras-by-centro', [AlumnoController::class, 'getSedesCarrerasByCentro'])->name('alumnos.sedes-carreras');
     Route::resource('alumnos', AlumnoController::class);
     Route::get('/alumnos/{run}/documentos', [App\Http\Controllers\AlumnoController::class, 'getDocumentos'])->name('alumnos.documentos');
@@ -115,6 +118,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('tipos-practica', TipoPracticaController::class);
 
     // --- GESTIÓN DE CUPOS ---
+    Route::get('cupo-demandas/asignaturas/{idSedeCarrera}', [CupoDemandaController::class, 'getAsignaturasBySedeCarrera'])->name('cupo-demandas.asignaturas');
+    Route::resource('cupo-demandas', CupoDemandaController::class);
     Route::resource('cupo-ofertas', CupoOfertaController::class);
     Route::resource('cupo-distribuciones', CupoDistribucionController::class);
 

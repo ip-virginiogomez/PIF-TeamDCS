@@ -32,7 +32,8 @@ class GrupoController extends Controller
             ->pluck('year');
 
         $query = CupoDistribucion::select('cupo_distribucion.*')
-            ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+            ->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+            ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
             ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
             ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
             ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
@@ -40,7 +41,7 @@ class GrupoController extends Controller
             ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
             ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
             ->with([
-                'sedeCarrera.sede.centroFormador',
+                'cupoDemanda.sedeCarrera.sede.centroFormador',
                 'cupoOferta.unidadClinica.centroSalud',
                 'cupoOferta.horarios',
             ]);

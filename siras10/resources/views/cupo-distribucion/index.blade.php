@@ -73,14 +73,19 @@
 
         {{-- Campo Sede/Carrera --}}
         <div class="mb-4">
-            <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Sede / Carrera *</label>
+            <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Sede / Carrera (Demanda) *</label>
             <select id="idSedeCarrera" name="idSedeCarrera" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                <option value="">Seleccione Centro Formador(Sede)</option>
-                @foreach ($sedesCarreras as $sedeCarrera)
+                <option value="">Seleccione Sede / Carrera...</option>
+                @foreach ($sedeCarreras as $sedeCarrera)
+                    @php
+                        $demanda = $sedeCarrera->cupoDemandas->first();
+                        $infoSolicitud = $demanda ? " (Solicitados: {$demanda->cuposSolicitados})" : "";
+                    @endphp
                     <option value="{{ $sedeCarrera->idSedeCarrera }}">
                         {{ $sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'CF Desc.' }} 
                         ({{ $sedeCarrera->sede->nombreSede ?? 'Sede Desc.' }}) 
                         - {{ $sedeCarrera->nombreSedeCarrera ?: ($sedeCarrera->carrera->nombreCarrera ?? 'Carrera Desc.') }}
+                        {{ $infoSolicitud }}
                     </option>
                 @endforeach
             </select>

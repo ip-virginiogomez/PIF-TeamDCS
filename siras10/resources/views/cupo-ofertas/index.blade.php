@@ -2,11 +2,13 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Gestión de Oferta de Cupos') }}
+                {{ isset($isDistributionSelection) && $isDistributionSelection ? __('Seleccionar Oferta para Distribuir') : __('Gestión de Oferta de Cupos') }}
             </h2>
+            @if(!isset($isDistributionSelection) || !$isDistributionSelection)
             <button data-modal-target="cupoOfertaModal" data-modal-toggle="cupoOfertaModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Oferta
             </button>
+            @endif
         </div>
     </x-slot>
 
@@ -72,6 +74,7 @@
     </div>
 
     {{-- Modal para Crear/Editar Ofertas de Cupo --}}
+    @if(!isset($isDistributionSelection) || !$isDistributionSelection)
     <x-crud-modal 
         modalId="cupoOfertaModal" 
         formId="cupoOfertaForm" 
@@ -162,6 +165,7 @@
             </button>
         </x-slot>
     </x-crud-modal>
+    @endif
 
     {{-- Modal para Ver Horario --}}
     <div id="verHorarioModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 z-50 hidden flex items-center justify-center w-full h-full bg-gray-900 bg-opacity-50 backdrop-blur-sm">

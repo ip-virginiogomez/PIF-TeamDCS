@@ -220,20 +220,41 @@ class SedeCarreraManager extends BaseModalManager {
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json'
                 }
             });
 
-            const result = await res.json();
+            // Intentar parsear la respuesta como JSON
+            let result;
+            try {
+                result = await res.json();
+            } catch (parseError) {
+                throw new Error('Error de comunicación con el servidor. Por favor, intente nuevamente.');
+            }
 
             if (res.ok && result.success) {
                 this.onSuccess(result);
+            } else if (res.status === 422) {
+                // Errores de validación
+                this.showValidationErrors(result.errors);
+
+                // Mostrar también un mensaje general con todos los errores
+                const errorMessages = Object.values(result.errors).flat();
+                if (errorMessages.length > 0) {
+                    this.showAlert(
+                        'Error de validación',
+                        errorMessages.join('\n'),
+                        'error'
+                    );
+                }
             } else {
-                this.handleError(result);
+                // Otros errores del servidor
+                this.showAlert('Error', result.message || 'Ocurrió un error en el servidor', 'error');
             }
         } catch (err) {
-            console.error(err);
-            this.showAlert('Error', 'Error de red', 'error');
+            console.error('Error en handleFormSubmit:', err);
+            this.showAlert('Error', err.message || 'Error de conexión con el servidor', 'error');
         }
     }
 

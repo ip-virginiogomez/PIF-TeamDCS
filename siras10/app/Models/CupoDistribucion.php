@@ -21,7 +21,7 @@ class CupoDistribucion extends Model
 
     protected $fillable = [
         'idCupoOferta',
-        'idSedeCarrera',
+        'idDemandaCupo',
         'cantCupos',
         'fechaCreacion',
     ];
@@ -32,10 +32,10 @@ class CupoDistribucion extends Model
         return $this->belongsTo(CupoOferta::class, 'idCupoOferta', 'idCupoOferta');
     }
 
-    // Relación inversa con SedeCarrera
-    public function sedeCarrera()
+    // Relación inversa con CupoDemanda
+    public function cupoDemanda()
     {
-        return $this->belongsTo(SedeCarrera::class, 'idSedeCarrera', 'idSedeCarrera');
+        return $this->belongsTo(CupoDemanda::class, 'idDemandaCupo', 'idDemandaCupo');
     }
 
     // Relación uno a muchos con Grupo
