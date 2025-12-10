@@ -44,7 +44,7 @@
                         {{ $proximosIngresos ?? 0 }}
                     </div>
                     <div class="text-xs text-gray-400 mt-1">
-                        Alumnos por ingresar (Credenciales)
+                        Alumnos por ingresar
                     </div>
                 </div>
             </div>

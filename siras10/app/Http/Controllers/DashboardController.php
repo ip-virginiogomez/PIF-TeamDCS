@@ -207,7 +207,7 @@ class DashboardController extends Controller
                 $today = now();
                 $nextWeek = now()->addDays(7);
 
-                // KPI: Próximos Ingresos (Para Credenciales)
+                // KPI: Próximos Ingresos
                 // Cantidad de alumnos que inician su práctica en los próximos 7 días en este Centro de Salud.
                 $proximosIngresos = \App\Models\DossierGrupo::whereHas('grupo.cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
                     if ($idCentroSalud) {
