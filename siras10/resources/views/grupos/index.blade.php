@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-8">
             
             {{-- SECCIÓN 1: TABLA DE DISTRIBUCIONES (MAESTRO) --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">

@@ -136,6 +136,28 @@ class GrupoController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
+        // 2. VALIDAR FECHAS CONTRA LA OFERTA DE CUPO
+        $distribucion = CupoDistribucion::with('cupoOferta')->find($request->idCupoDistribucion);
+
+        if ($distribucion && $distribucion->cupoOferta) {
+            $fechaEntradaOferta = $distribucion->cupoOferta->fechaEntrada;
+            $fechaSalidaOferta = $distribucion->cupoOferta->fechaSalida;
+
+            if ($request->fechaInicio && $fechaEntradaOferta && $request->fechaInicio < $fechaEntradaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaInicio' => ['La fecha de inicio no puede ser anterior a la fecha de entrada de la oferta ('.date('d/m/Y', strtotime($fechaEntradaOferta)).')']],
+                ], 422);
+            }
+
+            if ($request->fechaFin && $fechaSalidaOferta && $request->fechaFin > $fechaSalidaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaFin' => ['La fecha de fin no puede ser posterior a la fecha de salida de la oferta ('.date('d/m/Y', strtotime($fechaSalidaOferta)).')']],
+                ], 422);
+            }
+        }
+
         try {
             // 4. CREAR EN BD
             $grupo = Grupo::create($request->all());
@@ -165,6 +187,28 @@ class GrupoController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        // 2. VALIDAR FECHAS CONTRA LA OFERTA DE CUPO
+        $distribucion = $grupo->cupoDistribucion()->with('cupoOferta')->first();
+
+        if ($distribucion && $distribucion->cupoOferta) {
+            $fechaEntradaOferta = $distribucion->cupoOferta->fechaEntrada;
+            $fechaSalidaOferta = $distribucion->cupoOferta->fechaSalida;
+
+            if ($request->fechaInicio && $fechaEntradaOferta && $request->fechaInicio < $fechaEntradaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaInicio' => ['La fecha de inicio no puede ser anterior a la fecha de entrada de la oferta ('.date('d/m/Y', strtotime($fechaEntradaOferta)).')']],
+                ], 422);
+            }
+
+            if ($request->fechaFin && $fechaSalidaOferta && $request->fechaFin > $fechaSalidaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaFin' => ['La fecha de fin no puede ser posterior a la fecha de salida de la oferta ('.date('d/m/Y', strtotime($fechaSalidaOferta)).')']],
+                ], 422);
+            }
         }
 
         try {

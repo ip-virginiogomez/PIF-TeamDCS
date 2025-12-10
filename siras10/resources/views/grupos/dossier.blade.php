@@ -219,7 +219,7 @@
                                 </div>
                             </div>
 
-                            <div class="mt-4 sm:mt-0 z-10 flex space-x-2">
+                            <div class="mt-4 sm:mt-0 z-10 flex space-x-2 sm:ml-8">
                                 @php
                                     $docsAsignatura = [];
                                     
@@ -305,16 +305,16 @@
 
                         {{-- TABLA DE ALUMNOS --}}
                         <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-gray-200">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-16">Foto</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-32">RUN</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Nombre Completo</th>
-                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-48">Acciones</th>
+                                        <th class="py-2 px-4 text-center whitespace-nowrap">Foto</th>
+                                        <th class="py-2 px-4 text-left whitespace-nowrap">RUN</th>
+                                        <th class="py-2 px-4 text-left whitespace-nowrap">Nombre Completo</th>
+                                        <th class="py-2 px-4 text-center whitespace-nowrap">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody>
                                     @forelse($grupo->alumnos as $index => $alumno)
                                         @php
                                             $documentosAlumno = [];
@@ -330,21 +330,23 @@
                                                 }
                                             }
                                         @endphp
-                                        <tr class="hover:bg-gray-50 transition">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
-                                                    @if($alumno->foto)
-                                                        <img src="{{ asset('storage/' . $alumno->foto) }}" class="h-full w-full object-cover">
-                                                    @else
-                                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                                        <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}{{ substr($alumno->apellidoMaterno, 0, 1) }}</span>
-                                                    </div>                                                    
-                                                    @endif
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="py-2 px-4 whitespace-nowrap">
+                                                <div class="flex justify-center">
+                                                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                                                        @if($alumno->foto)
+                                                            <img src="{{ asset('storage/' . $alumno->foto) }}" class="h-full w-full object-cover">
+                                                        @else
+                                                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                                            <span class="text-xs">{{ substr($alumno->nombres, 0, 1) }}{{ substr($alumno->apellidoPaterno, 0, 1) }}{{ substr($alumno->apellidoMaterno, 0, 1) }}</span>
+                                                        </div>                                                    
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $alumno->runAlumno }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $alumno->nombres ?? '' }} {{ $alumno->apellidoPaterno ?? '' }} {{ $alumno->apellidoMaterno ?? '' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                            <td class="py-2 px-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $alumno->runAlumno }}</td>
+                                            <td class="py-2 px-4 whitespace-nowrap text-sm text-gray-700">{{ $alumno->nombres ?? '' }} {{ $alumno->apellidoPaterno ?? '' }} {{ $alumno->apellidoMaterno ?? '' }}</td>
+                                            <td class="py-2 px-4 text-center whitespace-nowrap">
                                                 <div class="flex items-center justify-center gap-2">
         
                                                     {{-- BOTÓN 1: VER FICHA --}}
@@ -372,6 +374,7 @@
                                                     </button>
 
                                                     {{-- BOTÓN 3: ELIMINAR --}}
+                                                    @can('grupos.create')
                                                     <button type="button" 
                                                             data-action="delete-alumno" 
                                                             data-run="{{ $alumno->runAlumno }}" 
@@ -381,13 +384,14 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                         </svg>
                                                     </button>
+                                                    @endcan
 
                                                 </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="px-6 py-10 text-center bg-gray-50">
+                                            <td colspan="4" class="py-4 px-4 text-center text-gray-500">
                                                 <div class="flex flex-col items-center justify-center text-gray-400">
                                                     <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
                                                     <span class="text-base font-medium">Aún no hay alumnos en este grupo.</span>
