@@ -693,11 +693,11 @@ class SedeCarreraController extends Controller
         try {
             $malla = \App\Models\MallaSedeCarrera::findOrFail($idMallaSedeCarrera);
 
-            if (!$malla->documento || !\Storage::disk('public')->exists($malla->documento)) {
+            if (! $malla->documento || ! \Storage::disk('public')->exists($malla->documento)) {
                 abort(404, 'Malla curricular no encontrada');
             }
 
-            $nombreArchivo = $malla->nombre . '_' . $malla->mallaCurricular->anio . '.pdf';
+            $nombreArchivo = $malla->nombre.'_'.$malla->mallaCurricular->anio.'.pdf';
 
             return \Storage::disk('public')->download($malla->documento, $nombreArchivo);
 
