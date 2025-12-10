@@ -31,6 +31,29 @@ class UsuarioManager extends BaseModalManager {
         });
 
         this.initFiltros();
+        this.initRunInputRestriction();
+    }
+
+    initRunInputRestriction() {
+        const runInput = this.form.querySelector('[name="runUsuario"]');
+        if (runInput) {
+            runInput.addEventListener('input', (e) => {
+                // Solo permitir números, K, k y guión
+                const valor = e.target.value;
+                const valorLimpio = valor.replace(/[^0-9kK\-]/g, '');
+                if (valor !== valorLimpio) {
+                    e.target.value = valorLimpio;
+                }
+            });
+
+            runInput.addEventListener('keypress', (e) => {
+                // Prevenir caracteres no permitidos antes de que se ingresen
+                const char = String.fromCharCode(e.which || e.keyCode);
+                if (!/[0-9kK\-]/.test(char)) {
+                    e.preventDefault();
+                }
+            });
+        }
     }
 
     initFiltros() {
@@ -143,8 +166,6 @@ class UsuarioManager extends BaseModalManager {
     }
 
     showCreateModal() {
-        super.showCreateModal();
-
         // En modo crear, el RUN es editable
         const runInput = this.form.querySelector('[name="runUsuario"]');
         if (runInput) {
@@ -156,7 +177,27 @@ class UsuarioManager extends BaseModalManager {
         const contraseniaInput = this.form.querySelector('[name="contrasenia"]');
         if (contraseniaInput) {
             contraseniaInput.setAttribute('required', 'required');
+            contraseniaInput.placeholder = '';
         }
+
+        // Mostrar asteriscos rojos de contraseña en modo creación
+        const passwordRequired = document.getElementById('password-required');
+        if (passwordRequired) {
+            passwordRequired.classList.remove('hidden');
+        }
+        const passwordConfirmRequired = document.getElementById('password-confirm-required');
+        if (passwordConfirmRequired) {
+            passwordConfirmRequired.classList.remove('hidden');
+        }
+
+        // Restaurar texto de ayuda
+        const passwordHelp = document.getElementById('password-help');
+        if (passwordHelp) {
+            passwordHelp.textContent = 'Mínimo 8 caracteres';
+        }
+
+        // Mostrar el modal
+        this.mostrarModal();
     }
 
     async editarRegistro(id) {
@@ -201,6 +242,22 @@ class UsuarioManager extends BaseModalManager {
             const contraseniaConfirmInput = this.form.querySelector('[name="contrasenia_confirmation"]');
             if (contraseniaConfirmInput) {
                 contraseniaConfirmInput.value = '';
+            }
+
+            // Ocultar asteriscos rojos de contraseña en modo edición
+            const passwordRequired = document.getElementById('password-required');
+            if (passwordRequired) {
+                passwordRequired.classList.add('hidden');
+            }
+            const passwordConfirmRequired = document.getElementById('password-confirm-required');
+            if (passwordConfirmRequired) {
+                passwordConfirmRequired.classList.add('hidden');
+            }
+
+            // Cambiar texto de ayuda
+            const passwordHelp = document.getElementById('password-help');
+            if (passwordHelp) {
+                passwordHelp.textContent = 'Dejar en blanco para mantener la actual (mínimo 8 caracteres si se cambia)';
             }
 
             // Poblar roles (checkboxes)
@@ -269,7 +326,7 @@ class UsuarioManager extends BaseModalManager {
             if (!validarRun(runInput.value)) {
                 esValido = false;
                 this.showValidationErrors({
-                    'runUsuario': ['El RUN debe tener el formato correcto (12345678-9).']
+                    'runUsuario': ['El RUN ingresado no es válido.']
                 });
             }
         }
@@ -303,7 +360,7 @@ class UsuarioManager extends BaseModalManager {
             const contraseniaConfirm = contraseniaConfirmInput.value;
 
             // Si estamos creando, la contraseña es obligatoria
-            if (!this.isEditing && contrasenia.trim() === '') {
+            if (!this.editando && contrasenia.trim() === '') {
                 esValido = false;
                 this.showValidationErrors({
                     'contrasenia': ['La contraseña es obligatoria al crear un usuario.']

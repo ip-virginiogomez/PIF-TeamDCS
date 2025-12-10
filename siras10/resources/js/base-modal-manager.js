@@ -221,7 +221,13 @@ export default class BaseModalManager {
         this.setModalTitle(`${articulo} ${this.config.entityName}`);
         this.setButtonText(`Guardar ${this.config.entityName}`);
         this.clearValidationErrors();
-        this.mostrarModal();
+        
+        // Si la clase hija tiene un método showCreateModal, llamarlo
+        if (typeof this.showCreateModal === 'function') {
+            this.showCreateModal();
+        } else {
+            this.mostrarModal();
+        }
     }
 
     async editarRegistro(id) {

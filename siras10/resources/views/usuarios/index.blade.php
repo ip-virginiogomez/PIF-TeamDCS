@@ -65,6 +65,9 @@
         <div class="mb-4">
             <label for="runUsuario" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" id="runUsuario" name="runUsuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Ej: 12345678-9" required>
+            <div class="text-xs text-gray-500 mt-1">
+                Debe ingresar el RUN sin puntos y con guion
+            </div>
             <div id="run-help-text" class="text-xs text-amber-600 mt-1 hidden">
                 El RUN no puede modificarse al editar un usuario existente
             </div>
