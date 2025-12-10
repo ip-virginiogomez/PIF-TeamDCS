@@ -98,7 +98,18 @@ class GrupoController extends Controller
             'sort_direction' => $sortDirection,
         ]);
 
-        $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
+        // Cargar docentes con sus relaciones necesarias
+        $listaDocentesCarrera = DocenteCarrera::with(['docente' => function ($q) {
+            $q->withTrashed();
+        }, 'sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera'])
+            ->withTrashed()
+            ->whereHas('docente', function ($q) {
+                $q->withTrashed();
+            })
+            ->get()
+            ->sortBy(function ($dc) {
+                return $dc->docente->apellidoPaterno.' '.$dc->docente->nombresDocente;
+            });
 
         $listaAsignaturas = Asignatura::orderBy('nombreAsignatura')->get();
 
@@ -208,7 +219,7 @@ class GrupoController extends Controller
         ]);
 
         $distribucion = CupoDistribucion::with([
-            'sedeCarrera.sede',
+            'cupoDemanda.sedeCarrera.sede',
             'cupoOferta.unidadClinica',
         ])->find($idDistribucion);
 
@@ -224,7 +235,7 @@ class GrupoController extends Controller
         $grupo = Grupo::with([
             'asignatura',
             'docenteCarrera.docente',
-            'cupoDistribucion.sedeCarrera.sede.centroFormador',
+            'cupoDistribucion.cupoDemanda.sedeCarrera.sede.centroFormador',
             'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
             'cupoDistribucion.cupoOferta.tipoPractica',
             'alumnos',
@@ -239,10 +250,10 @@ class GrupoController extends Controller
         $grupo->save();
 
         // Notificar al Coordinador de Campo Clínico
-        $grupo->load('cupoDistribucion.sedeCarrera.sede');
+        $grupo->load('cupoDistribucion.cupoDemanda.sedeCarrera.sede');
 
-        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
-            $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->cupoDemanda && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede->idCentroFormador;
 
             $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
 
@@ -276,10 +287,10 @@ class GrupoController extends Controller
         $grupo->save();
 
         // Notificar al Coordinador de Campo Clínico
-        $grupo->load('cupoDistribucion.sedeCarrera.sede');
+        $grupo->load('cupoDistribucion.cupoDemanda.sedeCarrera.sede');
 
-        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->sedeCarrera && $grupo->cupoDistribucion->sedeCarrera->sede) {
-            $idCentroFormador = $grupo->cupoDistribucion->sedeCarrera->sede->idCentroFormador;
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->cupoDemanda && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede->idCentroFormador;
 
             $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
 
