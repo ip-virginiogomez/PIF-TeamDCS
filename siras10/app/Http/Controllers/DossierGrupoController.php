@@ -13,7 +13,7 @@ class DossierGrupoController extends Controller
         $grupo = Grupo::with([
             'asignatura',
             'docenteCarrera.docente',
-            'cupoDistribucion.sedeCarrera.sede.centroFormador',
+            'cupoDistribucion.cupoDemanda.sedeCarrera.sede.centroFormador',
             'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
             'cupoDistribucion.cupoOferta.tipoPractica',
             'alumnos',

@@ -134,9 +134,8 @@
                 @if(isset($listaDocentesCarrera))
                     @foreach($listaDocentesCarrera as $dc)
                         <option value="{{ $dc->idDocenteCarrera }}">
-                            {{ $dc->docente->nombresDocente ?? 'Sin Nombre' }} 
-                            {{ $dc->docente->apellidoPaterno ?? '' }} 
-                            ({{ $dc->sedeCarrera->nombreSedeCarrera ?? 'N/A' }})
+                            {{ $dc->docente->nombresDocente ?? '' }} {{ $dc->docente->apellidoPaterno ?? '' }} 
+                            ({{ $dc->sedeCarrera->sede->nombreSede ?? 'Sin Sede' }})
                         </option>
                     @endforeach
                 @endif

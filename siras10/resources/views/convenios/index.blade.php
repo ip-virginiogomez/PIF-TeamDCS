@@ -7,9 +7,11 @@
             <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Convenios') }}
             </h2>
+            @can('convenios.create')
             <button onclick="abrirModal()" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Convenio
             </button>
+            @endcan
         </div>
     </x-slot>
 

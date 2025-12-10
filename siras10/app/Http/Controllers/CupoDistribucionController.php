@@ -152,6 +152,9 @@ class CupoDistribucionController extends Controller
                         ->orWhereHas('cupoDemanda.sedeCarrera.carrera', function ($q) use ($search) {
                             $q->where('nombreCarrera', 'like', "%{$search}%");
                         })
+                        ->orWhereHas('cupoDemanda', function ($q) use ($search) {
+                            $q->where('asignatura', 'like', "%{$search}%");
+                        })
                         ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($q) use ($search) {
                             $q->where('nombreCentro', 'like', "%{$search}%");
                         })

@@ -5,9 +5,11 @@
                 {{ isset($isDistributionSelection) && $isDistributionSelection ? __('Seleccionar Oferta para Distribuir') : __('Gestión de Oferta de Cupos') }}
             </h2>
             @if(!isset($isDistributionSelection) || !$isDistributionSelection)
+            @can('cupo-ofertas.create')
             <button data-modal-target="cupoOfertaModal" data-modal-toggle="cupoOfertaModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Oferta
             </button>
+            @endcan
             @endif
         </div>
     </x-slot>

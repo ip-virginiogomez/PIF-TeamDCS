@@ -191,12 +191,197 @@ class DashboardController extends Controller
                     ],
                 ];
 
-            } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
+            } elseif ($user->hasRole('Encargado Campo Clínico')) {
+                $variant = 'encargado_campos';
 
+                $today = now();
+                $periodo = \App\Models\Periodo::where('fechaInicio', '<=', $today)
+                    ->where('fechaFin', '>=', $today)
+                    ->first();
+
+                $cuposSolicitados = 0;
+                $cuposOtorgados = 0;
+
+                if ($periodo) {
+                    $cuposSolicitados = \App\Models\CupoDemanda::where('idPeriodo', $periodo->idPeriodo)->sum('cuposSolicitados');
+                    $cuposOtorgados = \App\Models\CupoDistribucion::whereHas('cupoDemanda', function ($q) use ($periodo) {
+                        $q->where('idPeriodo', $periodo->idPeriodo);
+                    })->sum('cantCupos');
+                }
+
+                $dashboardData['kpiBrecha'] = [
+                    'solicitados' => $cuposSolicitados,
+                    'otorgados' => $cuposOtorgados,
+                    'porcentaje' => $cuposSolicitados > 0 ? round(($cuposOtorgados / $cuposSolicitados) * 100) : 0,
+                    'faltantes' => max(0, $cuposSolicitados - $cuposOtorgados),
+                ];
+
+                // KPI: Tasa de Ocupación de Campos
+                $ofertaTotal = 0;
+                $ofertaOcupada = 0;
+                $topCentrosDisponibles = collect([]);
+
+                if ($periodo) {
+                    // Total Oferta: Suma de cupos ofertados en el periodo
+                    $ofertaTotal = \App\Models\CupoOferta::where('idPeriodo', $periodo->idPeriodo)->sum('cantCupos');
+
+                    // Oferta Ocupada: Suma de cupos distribuidos (asignados) sobre esa oferta
+                    $ofertaOcupada = \App\Models\CupoDistribucion::whereHas('cupoOferta', function ($q) use ($periodo) {
+                        $q->where('idPeriodo', $periodo->idPeriodo);
+                    })->sum('cantCupos');
+
+                    // Top 3 Centros con más cupos disponibles
+                    $ofertas = \App\Models\CupoOferta::where('idPeriodo', $periodo->idPeriodo)
+                        ->with(['unidadClinica.centroSalud', 'cupoDistribuciones'])
+                        ->get();
+
+                    $centrosStats = [];
+                    foreach ($ofertas as $oferta) {
+                        if ($oferta->unidadClinica && $oferta->unidadClinica->centroSalud) {
+                            $id = $oferta->unidadClinica->centroSalud->idCentroSalud;
+                            $nombre = $oferta->unidadClinica->centroSalud->nombreCentro;
+
+                            if (! isset($centrosStats[$id])) {
+                                $centrosStats[$id] = ['nombre' => $nombre, 'total' => 0, 'ocupado' => 0];
+                            }
+                            $centrosStats[$id]['total'] += $oferta->cantCupos;
+                            $centrosStats[$id]['ocupado'] += $oferta->cupoDistribuciones->sum('cantCupos');
+                        }
+                    }
+
+                    $topCentrosDisponibles = collect($centrosStats)->map(function ($stat) {
+                        $stat['disponible'] = $stat['total'] - $stat['ocupado'];
+
+                        return $stat;
+                    })->sortByDesc('disponible')->take(3);
+                }
+
+                $dashboardData['kpiOcupacion'] = [
+                    'total' => $ofertaTotal,
+                    'ocupada' => $ofertaOcupada,
+                    'porcentaje' => $ofertaTotal > 0 ? round(($ofertaOcupada / $ofertaTotal) * 100) : 0,
+                ];
+                $dashboardData['topCentrosDisponibles'] = $topCentrosDisponibles;
+
+                // 3. Gestión Legal y Alertas (Convenios)
+                // Buscar convenios que vencen en los próximos 6 meses o que ya vencieron recientemente (último mes)
+                $conveniosAlertas = \App\Models\Convenio::with('centroFormador')
+                    ->where(function ($q) {
+                        $q->whereBetween('fechaFin', [now()->subMonth(), now()->addMonths(6)]);
+                    })
+                    ->orderBy('fechaFin', 'asc')
+                    ->get()
+                    ->map(function ($convenio) {
+                        $fechaFin = \Carbon\Carbon::parse($convenio->fechaFin);
+                        $diasRestantes = now()->diffInDays($fechaFin, false);
+                        $convenio->dias_restantes = (int) $diasRestantes;
+
+                        if ($diasRestantes < 0) {
+                            $convenio->status = 'Vencido';
+                            $convenio->color = 'red';
+                        } elseif ($diasRestantes <= 90) {
+                            $convenio->status = 'Crítico (< 3 meses)';
+                            $convenio->color = 'orange';
+                        } else {
+                            $convenio->status = 'Por Vencer (3-6 meses)';
+                            $convenio->color = 'yellow';
+                        }
+
+                        return $convenio;
+                    });
+
+                $dashboardData['conveniosAlertas'] = $conveniosAlertas;
             } elseif ($user->hasRole('Coordinador Campo Clínico') || (method_exists($user, 'esCoordinador') && $user->esCoordinador())) {
                 $variant = 'coordinador_campo';
             } elseif ($user->hasRole('Técnico RAD') || (method_exists($user, 'esTecnicoRAD') && $user->esTecnicoRAD())) {
                 $variant = 'rad';
+
+                // Obtener el Centro de Salud del usuario RAD
+                $personal = \App\Models\Personal::where('runUsuario', $user->runUsuario)->first();
+                $idCentroSalud = $personal ? $personal->idCentroSalud : null;
+                $nombreCentro = $personal && $personal->centroSalud ? $personal->centroSalud->nombreCentro : 'Sin Asignación';
+                $dashboardData['nombreCentro'] = $nombreCentro;
+
+                $today = now();
+                $nextWeek = now()->addDays(7);
+
+                // KPI: Próximos Ingresos
+                // Cantidad de alumnos que inician su práctica en los próximos 7 días en este Centro de Salud.
+                $proximosIngresos = \App\Models\DossierGrupo::whereHas('grupo.cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                    if ($idCentroSalud) {
+                        $q->where('idCentroSalud', $idCentroSalud);
+                    }
+                })->whereHas('grupo', function ($q) use ($today, $nextWeek) {
+                    $q->whereBetween('fechaInicio', [$today->format('Y-m-d'), $nextWeek->format('Y-m-d')]);
+                })->count();
+
+                $dashboardData['proximosIngresos'] = $proximosIngresos;
+
+                // KPI: Alumnos en Práctica (Actualmente)
+                $alumnosEnPractica = \App\Models\DossierGrupo::whereHas('grupo.cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                    if ($idCentroSalud) {
+                        $q->where('idCentroSalud', $idCentroSalud);
+                    }
+                })->whereHas('grupo', function ($q) use ($today) {
+                    $q->where('fechaInicio', '<=', $today->format('Y-m-d'))
+                        ->where('fechaFin', '>=', $today->format('Y-m-d'));
+                })->count();
+
+                $dashboardData['alumnosEnPractica'] = $alumnosEnPractica;
+
+                // Calendario de Rotaciones (Timeline)
+                $startCal = now()->startOfMonth()->subMonth(); // Mostrar desde un mes atrás
+                $endCal = now()->addMonths(3)->endOfMonth();   // Hasta 3 meses adelante
+
+                $gruposCalendario = \App\Models\Grupo::with([
+                    'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
+                    'cupoDistribucion.cupoDemanda.sedeCarrera.sede.centroFormador',
+                    'cupoDistribucion.cupoDemanda.sedeCarrera.carrera',
+                ])
+                    ->whereHas('cupoDistribucion.cupoOferta.unidadClinica', function ($q) use ($idCentroSalud) {
+                        if ($idCentroSalud) {
+                            $q->where('idCentroSalud', $idCentroSalud);
+                        }
+                    })
+                    ->where(function ($q) use ($startCal, $endCal) {
+                        $q->whereBetween('fechaInicio', [$startCal, $endCal])
+                            ->orWhereBetween('fechaFin', [$startCal, $endCal])
+                            ->orWhere(function ($q2) use ($startCal, $endCal) {
+                                $q2->where('fechaInicio', '<', $startCal)
+                                    ->where('fechaFin', '>', $endCal);
+                            });
+                    })
+                    ->get();
+
+                $calendarEvents = $gruposCalendario->map(function ($grupo) {
+                    $cf = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'Sin CF';
+                    $carrera = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->carrera->nombreCarrera ?? 'Sin Carrera';
+                    $unidad = $grupo->cupoDistribucion->cupoOferta->unidadClinica->nombreUnidad ?? 'Sin Unidad';
+                    $centro = $grupo->cupoDistribucion->cupoOferta->unidadClinica->centroSalud->nombreCentro ?? 'Sin Centro';
+
+                    // Generar color consistente basado en el nombre del Centro Formador
+                    $hash = md5($cf);
+                    $color = '#'.substr($hash, 0, 6);
+
+                    return [
+                        'id' => $grupo->idGrupo,
+                        'title' => "$cf - $carrera ($unidad)",
+                        'start' => $grupo->fechaInicio->format('Y-m-d'),
+                        'end' => $grupo->fechaFin->addDay()->format('Y-m-d'), // FullCalendar usa end exclusivo
+                        'extendedProps' => [
+                            'unidad' => $unidad,
+                            'centro' => $centro,
+                            'carrera' => $carrera,
+                            'institucion' => $cf,
+                        ],
+                        'backgroundColor' => $color,
+                        'borderColor' => $color,
+                        'textColor' => '#ffffff', // Asumimos fondo oscuro, texto blanco
+                    ];
+                });
+
+                $dashboardData['calendarEvents'] = $calendarEvents;
+
             } elseif ($user->hasRole('Docente')) {
                 $variant = 'docente';
             } else {
@@ -346,7 +531,7 @@ class DashboardController extends Controller
                 // 8. Rotaciones Activas Hoy (Grupos)
                 $gruposActivos = \App\Models\Grupo::where('fechaInicio', '<=', $today)
                     ->where('fechaFin', '>=', $today)
-                    ->whereHas('cupoDistribucion.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
+                    ->whereHas('cupoDistribucion.cupoDemanda.sedeCarrera.sede', function ($q) use ($idCentroFormador) {
                         $q->where('idCentroFormador', $idCentroFormador);
                     })
                     ->with(['cupoDistribucion.cupoOferta.unidadClinica.centroSalud'])
@@ -370,7 +555,8 @@ class DashboardController extends Controller
                     ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
                     ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
                     ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
-                    ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
                     ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
                     ->where('sede.idCentroFormador', $idCentroFormador)
                     ->whereDate('cupo_oferta.fechaEntrada', '<=', $today)
@@ -382,7 +568,8 @@ class DashboardController extends Controller
                 $asignados = \App\Models\DossierGrupo::query()
                     ->join('grupo', 'dossier_grupo.idGrupo', '=', 'grupo.idGrupo')
                     ->join('cupo_distribucion', 'grupo.idCupoDistribucion', '=', 'cupo_distribucion.idCupoDistribucion')
-                    ->join('sede_carrera', 'cupo_distribucion.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+                    ->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+                    ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
                     ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
                     ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
                     ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
