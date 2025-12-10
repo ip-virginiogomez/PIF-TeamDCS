@@ -137,6 +137,7 @@ export default class BaseModalManager {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 }
             });
 
@@ -296,7 +297,8 @@ export default class BaseModalManager {
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                     }
                 });
 

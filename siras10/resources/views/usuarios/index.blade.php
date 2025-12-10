@@ -4,12 +4,14 @@
             <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Usuarios') }}
             </h2>
+            @can('usuarios.create')
             <button 
                 data-modal-target="usuarioModal" 
                 data-modal-toggle="usuarioModal" 
                 class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Usuario
             </button>
+            @endcan
         </div>
     </x-slot>
 

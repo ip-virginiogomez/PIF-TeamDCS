@@ -28,9 +28,27 @@ class CupoDistribucionController extends Controller
         if (! $periodoId) {
             $currentYear = date('Y');
             $periodoActual = $periodos->firstWhere('Año', $currentYear) ?? $periodos->first();
-            $periodoId = $periodoActual->idPeriodo;
+            $periodoId = $periodoActual ? $periodoActual->idPeriodo : null;
         } else {
             $periodoActual = $periodos->find($periodoId);
+        }
+
+        // Si no hay periodos registrados, mostrar vista vacía
+        if (! $periodoActual || ! $periodoId) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay períodos registrados en el sistema.',
+                    'demandas' => [],
+                ]);
+            }
+
+            return view('cupo-distribucion.index', [
+                'periodos' => collect(),
+                'periodoActual' => null,
+                'cuposRestantes' => 0,
+                'carreras' => collect(),
+            ]);
         }
 
         // AJAX: Cargar Demandas

@@ -101,12 +101,16 @@ class DocentesController extends Controller
 
     public function store(Request $request)
     {
+        // Limpiar el RUN eliminando puntos
+        $runLimpio = str_replace('.', '', $request->input('runDocente'));
+        $request->merge(['runDocente' => $runLimpio]);
+
         $validator = Validator::make($request->all(), [
             'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
             'runDocente' => [
                 'required',
                 'string',
-                'max:12',
+                'regex:/^[0-9]+[-]?[0-9kK]{1}$/',
                 \Illuminate\Validation\Rule::unique('docente', 'runDocente')->whereNull('deleted_at'),
             ],
             'nombresDocente' => 'required|string|max:100',
@@ -241,11 +245,17 @@ class DocentesController extends Controller
 
     public function update(Request $request, Docente $docente)
     {
+        // Limpiar el RUN eliminando puntos (aunque en update no se debería cambiar)
+        if ($request->has('runDocente')) {
+            $runLimpio = str_replace('.', '', $request->input('runDocente'));
+            $request->merge(['runDocente' => $runLimpio]);
+        }
+
         $validator = Validator::make($request->all(), [
             'runDocente' => [
                 'required',
                 'string',
-                'max:12',
+                'regex:/^[0-9]+[-]?[0-9kK]{1}$/',
                 \Illuminate\Validation\Rule::unique('docente', 'runDocente')->ignore($docente->runDocente, 'runDocente')->whereNull('deleted_at'),
             ],
             'nombresDocente' => 'required|string|max:100',

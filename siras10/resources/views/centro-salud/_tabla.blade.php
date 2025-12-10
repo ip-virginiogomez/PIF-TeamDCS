@@ -49,9 +49,8 @@
                     </td>
                     <td class="py-2 px-4">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {{ $centro->tipoCentroSalud->acronimo ?? 'N/A' }}
+                            {{ $centro->tipoCentroSalud->nombreTipo ?? 'N/A' }}
                         </span>
-                        <div class="text-xs text-gray-500">{{ $centro->tipoCentroSalud->nombreTipo ?? 'N/A' }}</div>
                     </td>
                     <td class="py-2 px-4 text-center">
                         @if($centro->personal->isNotEmpty())

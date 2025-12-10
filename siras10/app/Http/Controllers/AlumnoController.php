@@ -104,11 +104,15 @@ class AlumnoController extends Controller
 
     public function store(Request $request)
     {
+        // Limpiar el RUN eliminando puntos
+        $runLimpio = str_replace('.', '', $request->input('runAlumno'));
+        $request->merge(['runAlumno' => $runLimpio]);
+
         $validator = Validator::make($request->all(), [
             'runAlumno' => [
                 'required',
                 'string',
-                'max:10',
+                'regex:/^[0-9]+[-]?[0-9kK]{1}$/',
                 Rule::unique('alumno', 'runAlumno')->whereNull('deleted_at'),
             ],
             'nombres' => 'required|string|max:100',

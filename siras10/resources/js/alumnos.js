@@ -34,6 +34,29 @@ class AlumnoManager extends BaseModalManager {
         this.initFotoPreview();
         this.initDocumentosViewer();
         this.initSearch();
+        this.initRunInputRestriction();
+    }
+
+    initRunInputRestriction() {
+        const runInput = this.form.querySelector('[name="runAlumno"]');
+        if (runInput) {
+            runInput.addEventListener('input', (e) => {
+                // Solo permitir números, K, k y guión
+                const valor = e.target.value;
+                const valorLimpio = valor.replace(/[^0-9kK\-]/g, '');
+                if (valor !== valorLimpio) {
+                    e.target.value = valorLimpio;
+                }
+            });
+
+            runInput.addEventListener('keypress', (e) => {
+                // Prevenir caracteres no permitidos antes de que se ingresen
+                const char = String.fromCharCode(e.which || e.keyCode);
+                if (!/[0-9kK\-]/.test(char)) {
+                    e.preventDefault();
+                }
+            });
+        }
     }
 
     initSearch() {
