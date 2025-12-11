@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Sedes') }}
             </h2>
+            @can('sede.create')
             <button data-modal-target="sedeModal" data-modal-toggle="sedeModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nueva Sede
             </button>
+            @endcan
         </div>
     </x-slot>
 

@@ -264,10 +264,23 @@ class GrupoManager extends BaseModalManager {
 
             if (!response.ok) {
                 if (response.status === 422) {
-                    if (typeof this.mostrarErrores === 'function') {
-                        this.mostrarErrores(data.errors);
+                    // Mostrar errores de validación en SweetAlert
+                    let errorMessages = '';
+                    if (data.errors) {
+                        errorMessages = Object.values(data.errors)
+                            .flat()
+                            .join('<br>');
+                    }
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de validación',
+                            html: errorMessages || 'Por favor, verifica los datos ingresados',
+                            confirmButtonText: 'Aceptar'
+                        });
                     } else {
-                        alert('Error de validación.');
+                        alert(errorMessages || 'Error de validación.');
                     }
                 } else {
                     throw new Error(data.message || 'Error en el servidor');

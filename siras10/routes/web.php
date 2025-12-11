@@ -7,6 +7,7 @@ use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
+use App\Http\Controllers\CiudadController;
 use App\Http\Controllers\ConvenioController;
 use App\Http\Controllers\CupoDemandaController;
 use App\Http\Controllers\CupoDistribucionController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeCarreraController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\TipoCentroFormadorController;
+use App\Http\Controllers\TipoCentroSaludController;
 use App\Http\Controllers\TipoPracticaController;
 use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
@@ -113,6 +115,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/docentes/vacunas/{id}/status', [DocentesController::class, 'updateVacunaStatus'])->name('docentes.vacunas.updateStatus');
 
     // --- GESTIÓN DE CENTROS DE SALUD Y UNIDADES ---
+    Route::resource('ciudad', CiudadController::class);
+    Route::resource('tipo-centro-salud', TipoCentroSaludController::class);
     Route::resource('centro-salud', CentroSaludController::class);
     Route::resource('unidad-clinicas', UnidadClinicaController::class);
     Route::resource('tipos-practica', TipoPracticaController::class);

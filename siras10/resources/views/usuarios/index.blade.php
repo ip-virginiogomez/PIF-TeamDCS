@@ -4,12 +4,14 @@
             <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Usuarios') }}
             </h2>
+            @can('usuarios.create')
             <button 
                 data-modal-target="usuarioModal" 
                 data-modal-toggle="usuarioModal" 
                 class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Usuario
             </button>
+            @endcan
         </div>
     </x-slot>
 
@@ -65,6 +67,9 @@
         <div class="mb-4">
             <label for="runUsuario" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" id="runUsuario" name="runUsuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Ej: 12345678-9" required>
+            <div class="text-xs text-gray-500 mt-1">
+                Debe ingresar el RUN sin puntos y con guion
+            </div>
             <div id="run-help-text" class="text-xs text-amber-600 mt-1 hidden">
                 El RUN no puede modificarse al editar un usuario existente
             </div>

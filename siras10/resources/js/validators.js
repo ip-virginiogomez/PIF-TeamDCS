@@ -18,7 +18,12 @@ export function validarRun(run) {
     if (!run || run.trim() === '') {
         return false;
     }
-    const patronRegex = /^[0-9]{7,8}-[0-9kK]$/;
+    
+    // Eliminar puntos del RUN antes de validar
+    run = run.replace(/\./g, '');
+    
+    // Verificar que tenga el formato número-dígito verificador (sin restricción de longitud mínima)
+    const patronRegex = /^[0-9]+-[0-9kK]$/;
     if (!patronRegex.test(run)) {
         return false;
     }

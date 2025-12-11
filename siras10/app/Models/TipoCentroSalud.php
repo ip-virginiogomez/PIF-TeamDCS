@@ -21,7 +21,6 @@ class TipoCentroSalud extends Model
     protected $fillable = [
         'nombreTipo',
         'fechaCreacion',
-        'acronimo',
     ];
 
     // Relación uno a muchos con CentroSalud

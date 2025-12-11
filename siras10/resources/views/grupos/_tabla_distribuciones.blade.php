@@ -1,6 +1,6 @@
-<div class="overflow-x-auto">
-    <table class="w-full text-sm text-left text-gray-500">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+<div class="overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="min-w-full bg-white">
+        <thead class="bg-gray-200">
             <tr>
                 @php
                     $getSortLink = function($column, $text) use ($sortBy, $sortDirection) {
@@ -16,69 +16,68 @@
                         return '<a href="'.$url.'" class="sort-link flex items-center gap-1 w-full h-full hover:bg-gray-100 p-1 rounded transition-colors duration-200">'.$text.' '.$icon.'</a>';
                     };
                 @endphp
-                <th scope="col" class="px-6 py-3">
+                <th class="py-2 px-4 text-left whitespace-nowrap">
                     {!! $getSortLink('centro_formador', 'Centro Formador') !!}
                 </th>
-                <th scope="col" class="px-6 py-3">
+                <th class="py-2 px-4 text-left whitespace-nowrap">
                     {!! $getSortLink('sede_carrera', 'Sede / Carrera') !!}
                 </th>
-                <th scope="col" class="px-6 py-3">
+                <th class="py-2 px-4 text-left whitespace-nowrap">
                     {!! $getSortLink('centro_salud', 'Centro de Salud') !!}
                 </th>
-                <th scope="col" class="px-6 py-3">
+                <th class="py-2 px-4 text-left whitespace-nowrap">
                     {!! $getSortLink('unidad_clinica', 'Unidad Clínica') !!}
                 </th>
-                <th scope="col" class="px-6 py-3">
+                <th class="py-2 px-4 text-left whitespace-nowrap">
                     {!! $getSortLink('tipo_practica', 'Tipo de Práctica') !!}
                 </th>
-                <th scope="col" class="px-6 py-3 text-center">Cupos</th>
-                <th scope="col" class="px-6 py-3 text-center">Fechas</th>
-                <th scope="col" class="px-6 py-3 text-center">Horario</th>
-                <th scope="col" class="px-6 py-3 text-center">Acción</th>
+                <th class="py-2 px-4 text-center whitespace-nowrap">Cupos</th>
+                <th class="py-2 px-4 text-center whitespace-nowrap">Fechas</th>
+                <th class="py-2 px-4 text-center whitespace-nowrap">Horario</th>
+                <th class="py-2 px-4 text-center whitespace-nowrap">Acción</th>
             </tr>
         </thead>
         <tbody>
             @forelse($distribuciones as $dist)
                 @php $oferta = $dist->cupoOferta; @endphp
                 
-                <tr class="bg-white border-b hover:bg-gray-50 transition row-distribucion" data-id="{{ $dist->idCupoDistribucion }}">
-
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">
+                <tr class="border-b hover:bg-gray-50">
+                    
+                    {{-- Centro Formador --}}
+                    <td class="py-2 px-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
                             {{ $dist->cupoDemanda->sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'N/A' }}
                         </div>
                     </td>
                     
                     {{-- Sede y Carrera --}}
-                    <td class="px-6 py-4">
+                    <td class="py-2 px-4 whitespace-nowrap">
                         <div class="font-medium text-gray-900">{{ $dist->cupoDemanda->sedeCarrera->nombreSedeCarrera ?? 'N/A' }}</div>
                         <div class="text-xs text-gray-500">{{ $dist->cupoDemanda->sedeCarrera->sede->nombreSede ?? '' }}</div>
                     </td>
                     {{-- Centro de Salud --}}
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">
-                            {{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'N/A' }}
-                        </div>
+                    <td class="py-2 px-4 whitespace-nowrap">
+                        {{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'N/A' }}
                     </td>
                     {{-- Unidad Clínica --}}
-                    <td class="px-6 py-4 font-medium text-gray-900">
+                    <td class="py-2 px-4 whitespace-nowrap">
                         {{ $oferta->unidadClinica->nombreUnidad ?? 'N/A' }}
                     </td>
                     {{-- Tipo de Práctica --}}
-                    <td class="px-6 py-4">
+                    <td class="py-2 px-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                             {{ $oferta->tipoPractica->nombrePractica ?? 'N/A' }}
                         </span>
                     </td>
                     {{-- Cupos --}}
-                    <td class="px-6 py-4 text-center">
-                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded border border-blue-400">
+                    <td class="py-2 px-4 text-center whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {{ $dist->cantCupos }}
                         </span>
                     </td>
                     
                     {{-- Fechas --}}
-                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                    <td class="py-2 px-4 text-center whitespace-nowrap">
                         @if($oferta)
                             <div class="text-gray-900">{{ \Carbon\Carbon::parse($oferta->fechaEntrada)->format('d/m/Y') }}</div>
                             <div class="text-xs text-gray-400">hasta</div>
@@ -86,7 +85,7 @@
                         @else - @endif
                     </td>
                     {{-- Horario --}}
-                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                    <td class="py-2 px-4 text-center whitespace-nowrap">
                         @if($oferta && $oferta->horarios->count() > 0)
                             <button 
                                 type="button"
@@ -102,15 +101,26 @@
                         @endif
                     </td>
                     {{-- Botón Acción --}}
-                    <td class="px-6 py-4 text-center">
-                        <button 
-                            type="button"
-                            data-action="select-distribucion" 
-                            data-id="{{ $dist->idCupoDistribucion }}"
-                            data-summary="{{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad' }} - {{ $dist->sedeCarrera->nombreSedeCarrera ?? 'Carrera' }}"
-                            class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-3 py-2 focus:outline-none shadow-sm transition-colors duration-200">
-                            Asignar Grupos
-                        </button>
+                    <td class="py-2 px-4 text-center whitespace-nowrap">
+                        @can('grupos.create')
+                            <button 
+                                type="button"
+                                data-action="select-distribucion" 
+                                data-id="{{ $dist->idCupoDistribucion }}"
+                                data-summary="{{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad' }} - {{ $dist->sedeCarrera->nombreSedeCarrera ?? 'Carrera' }}"
+                                class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-3 py-2 focus:outline-none shadow-sm transition-colors duration-200">
+                                Asignar Grupos
+                            </button>
+                        @else
+                            <button 
+                                type="button"
+                                data-action="select-distribucion" 
+                                data-id="{{ $dist->idCupoDistribucion }}"
+                                data-summary="{{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad' }} - {{ $dist->sedeCarrera->nombreSedeCarrera ?? 'Carrera' }}"
+                                class="text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 focus:outline-none shadow-sm transition-colors duration-200">
+                                Ver Grupos
+                            </button>
+                        @endcan
                     </td>
                 </tr>
             @empty

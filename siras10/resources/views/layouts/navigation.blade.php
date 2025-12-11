@@ -54,7 +54,7 @@
                     </div>
                     @endcanany
                     {{-- CAMBIO: @canany corregido con los permisos correctos --}}
-                    @canany(['centro-salud.read', 'unidad-clinicas.read'])
+                    @canany(['ciudades.read', 'tipos-centro-salud.read', 'centro-salud.read', 'unidad-clinicas.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -65,6 +65,8 @@
                             </x-slot>
                             <x-slot name="content">
                                 {{-- CAMBIO: Añadidos @can individuales --}}
+                                @can('ciudades.read')<x-dropdown-link :href="route('ciudad.index')" wire:navigate>{{ __('Ciudades') }}</x-dropdown-link>@endcan
+                                @can('tipos-centro-salud.read')<x-dropdown-link :href="route('tipo-centro-salud.index')" wire:navigate>{{ __('Tipos de Centro de Salud') }}</x-dropdown-link>@endcan
                                 @can('centro-salud.read')<x-dropdown-link :href="route('centro-salud.index')" wire:navigate>{{ __('Centros de Salud') }}</x-dropdown-link>@endcan
                                 @can('unidad-clinicas.read')<x-dropdown-link :href="route('unidad-clinicas.index')" wire:navigate>{{ __('Unidades Clínicas') }}</x-dropdown-link>@endcan
                             </x-slot>
@@ -216,11 +218,21 @@
             @endcanany
 
             {{-- CAMBIO: Añadido @canany y @can individuales --}}
-            @canany(['centro-salud.read', 'unidad-clinicas.read'])
+            @canany(['ciudades.read', 'tipos-centro-salud.read', 'centro-salud.read', 'unidad-clinicas.read'])
             <div class="border-t border-dcs-blue-700 pt-2">
                 <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                     {{ __('Gestión CS') }}
                 </div>
+                @can('ciudades.read')
+                <x-responsive-nav-link :href="route('ciudad.index')" :active="request()->routeIs('ciudad.*')" class="pl-6" wire:navigate>
+                    {{ __('Ciudades') }}
+                </x-responsive-nav-link>
+                @endcan
+                @can('tipos-centro-salud.read')
+                <x-responsive-nav-link :href="route('tipo-centro-salud.index')" :active="request()->routeIs('tipo-centro-salud.*')" class="pl-6" wire:navigate>
+                    {{ __('Tipos de Centro de Salud') }}
+                </x-responsive-nav-link>
+                @endcan
                 @can('centro-salud.read')
                 <x-responsive-nav-link :href="route('centro-salud.index')" :active="request()->routeIs('centro-salud.*')" class="pl-6" wire:navigate>
                     {{ __('Centros de Salud') }}

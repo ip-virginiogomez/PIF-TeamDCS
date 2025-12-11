@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Centros de Salud') }}
             </h2>
+            @can('centro-salud.create')
             <button data-modal-target="centroSaludModal" data-modal-toggle="centroSaludModal" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Centro de Salud
             </button>
+            @endcan
         </div>
     </x-slot>
 

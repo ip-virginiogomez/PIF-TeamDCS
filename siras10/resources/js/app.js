@@ -23,6 +23,8 @@ import './roles.js';
 import './grupos.js';
 import './grupodossier.js';
 import './dashboard.js';
+import './tipo-centro-salud.js';
+import './ciudad.js';
 
 import Alpine from 'alpinejs';
 

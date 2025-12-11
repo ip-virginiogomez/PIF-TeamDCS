@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-8">
             
             {{-- SECCIÓN 1: TABLA DE DISTRIBUCIONES (MAESTRO) --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">
@@ -80,9 +80,11 @@
                         <span id="titulo-distribucion-seleccionada" class="text-sm font-normal text-blue-600 ml-2"></span>
                     </h3>
                     
+                    @can('grupos.create')
                     <button id="btn-nuevo-grupo" data-distribucion-id="" class="bg-blue-600 hover:bg-blue-800 text-white text-sm font-bold py-2 px-4 rounded transition">
                         <i class="fas fa-plus mr-2"></i> Agregar Grupo
                     </button>
+                    @endcan
                 </div>
                 
                 <div class="p-6">

@@ -33,6 +33,8 @@ class InitialSetupSeeder extends Seeder
             'Gestión de Salud' => [
                 'centro-salud' => ['create', 'read', 'update', 'delete'],
                 'unidad-clinicas' => ['create', 'read', 'update', 'delete'],
+                'tipos-centro-salud' => ['create', 'read', 'update', 'delete'],
+                'ciudades' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión de Prácticas' => [
                 'periodos' => ['create', 'read', 'update', 'delete'],

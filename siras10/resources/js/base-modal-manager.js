@@ -137,6 +137,7 @@ export default class BaseModalManager {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 }
             });
 
@@ -221,7 +222,13 @@ export default class BaseModalManager {
         this.setModalTitle(`${articulo} ${this.config.entityName}`);
         this.setButtonText(`Guardar ${this.config.entityName}`);
         this.clearValidationErrors();
-        this.mostrarModal();
+        
+        // Si la clase hija tiene un método showCreateModal, llamarlo
+        if (typeof this.showCreateModal === 'function') {
+            this.showCreateModal();
+        } else {
+            this.mostrarModal();
+        }
     }
 
     async editarRegistro(id) {
@@ -290,7 +297,8 @@ export default class BaseModalManager {
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                     }
                 });
 
