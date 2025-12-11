@@ -147,6 +147,7 @@
                             <h3 class="text-lg font-semibold text-gray-900">Asignaturas</h3>
                             <p class="text-sm text-gray-500">Gestión de asignaturas y programas para la carrera.</p>
                         </div>
+                        @can('sede-carrera.create')
                         <button 
                             type="button"
                             data-open-asignatura
@@ -154,6 +155,7 @@
                             class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                             <i class="fas fa-plus mr-2"></i>Nueva Asignatura
                         </button>
+                        @endcan
                     </div>
 
                     <div class="overflow-x-auto">
@@ -255,6 +257,7 @@
                                             </div>
 
                                                 {{-- Botón Editar Asignatura --}}
+                                                @can('sede-carrera.create')
                                                 <button
                                                     type="button"
                                                     data-action="edit-asignatura"
@@ -266,8 +269,10 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </button>
+                                                @endcan
 
                                                 {{-- Botón Eliminar Asignatura --}}
+                                                @can('sede-carrera.create')
                                                 <button
                                                     type="button"
                                                     data-action="delete-asignatura"
@@ -279,6 +284,7 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                 </button>
+                                                @endcan
 
                                                 {{-- Botón Subir/Actualizar Programa --}}
                                                 <button
