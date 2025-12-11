@@ -143,5 +143,5 @@
         </div>
     </div>
 
-@vite(['resources/js/permission-matrix.js'])
+@vite(['resources/js/app.js'])
 </x-app-layout>
