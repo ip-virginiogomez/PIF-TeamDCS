@@ -25,6 +25,7 @@ import './grupodossier.js';
 import './dashboard.js';
 import './tipo-centro-salud.js';
 import './ciudad.js';
+import './permission-matrix.js'
 
 import Alpine from 'alpinejs';
 
