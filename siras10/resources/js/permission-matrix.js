@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterForm = document.getElementById('filterForm');
     const noPermissionsMessage = document.getElementById('no-permissions-message');
 
+    // Si no existen los elementos necesarios, salir del script
+    if (!roleSelect || !userSelect || !menuSelect || !filterForm) {
+        return;
+    }
+
     // --- NUEVAS FUNCIONES DE AYUDA ---
 
     /**

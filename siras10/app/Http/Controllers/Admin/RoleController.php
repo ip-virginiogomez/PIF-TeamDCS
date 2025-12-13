@@ -85,9 +85,7 @@ class RoleController extends Controller
         // ¡CAMBIO AQUÍ! Usamos wantsJson()
         // =======================================================
         if (request()->wantsJson()) {
-            return response()->json([
-                'role' => $role,
-            ]);
+            return response()->json($role);
         }
 
         return view('roles.edit', compact('role'));
