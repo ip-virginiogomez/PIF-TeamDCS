@@ -172,10 +172,6 @@ class RolManager extends BaseModalManager {
 
         return esValido;
     }
-
-    showCreateModal() {
-        this.limpiarFormulario();
-    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

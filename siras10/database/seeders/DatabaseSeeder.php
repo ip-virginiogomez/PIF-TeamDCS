@@ -11,8 +11,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             InitialSetupSeeder::class,
-            // TipoPersonalSaludSeeder::class,
             UserSeeder::class,
+            // TipoPersonalSaludSeeder::class,
             // PeriodoSeeder::class,
             // CiudadSeeder::class,
             // TipoCentroSaludSeeder::class,

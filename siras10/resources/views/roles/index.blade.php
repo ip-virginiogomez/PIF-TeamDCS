@@ -5,7 +5,7 @@
                 {{ __('Gestión de Roles') }}
             </h2>
             @can('roles.create')
-            <button onclick="window.rolManager.showCreateModal()" 
+            <button onclick="window.rolManager.limpiarFormulario()" 
                 class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Crear Nuevo Rol
             </button>
