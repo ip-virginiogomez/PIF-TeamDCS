@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\CentroFormador;
 use App\Models\Docente;
+use App\Models\DocenteVacuna;
+use App\Models\EstadoVacuna;
 use App\Models\SedeCarrera;
+use App\Models\TipoVacuna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class DocentesController extends Controller
 {
@@ -73,8 +75,10 @@ class DocentesController extends Controller
             'sede_carrera_id' => $filtroSedeCarrera,
         ]);
 
-        $sedesCarreras = SedeCarrera::with('sede')->get();
+        $sedesCarreras = SedeCarrera::with(['sede', 'carrera'])->get();
         $centrosFormadores = CentroFormador::all();
+        $tiposVacuna = TipoVacuna::orderBy('nombreVacuna', 'asc')->get();
+        $estadosVacuna = EstadoVacuna::all();
 
         if (request()->ajax()) {
             return view('docentes._tabla', [
@@ -90,14 +94,25 @@ class DocentesController extends Controller
             'sortDirection' => $sortDirection,
             'sedesCarreras' => $sedesCarreras,
             'centrosFormadores' => $centrosFormadores,
+            'tiposVacuna' => $tiposVacuna,
+            'estadosVacuna' => $estadosVacuna,
         ]);
     }
 
     public function store(Request $request)
     {
+        // Limpiar el RUN eliminando puntos
+        $runLimpio = str_replace('.', '', $request->input('runDocente'));
+        $request->merge(['runDocente' => $runLimpio]);
+
         $validator = Validator::make($request->all(), [
             'idSedeCarrera' => 'required|integer|exists:sede_carrera,idSedeCarrera',
-            'runDocente' => 'required|string|max:12|unique:docente,runDocente',
+            'runDocente' => [
+                'required',
+                'string',
+                'regex:/^[0-9]+[-]?[0-9kK]{1}$/',
+                \Illuminate\Validation\Rule::unique('docente', 'runDocente')->whereNull('deleted_at'),
+            ],
             'nombresDocente' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
@@ -105,7 +120,7 @@ class DocentesController extends Controller
                 'required',
                 'email',
                 'max:50',
-                'unique:Docente,correo',
+                \Illuminate\Validation\Rule::unique('docente', 'correo')->whereNull('deleted_at'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'required|date',
@@ -153,9 +168,6 @@ class DocentesController extends Controller
             $data = $request->except(['idSedeCarrera', 'foto', 'acuerdo', 'certIAAS', 'certRCP', 'certSuperInt', 'curriculum']);
             $sedeCarreraId = $request->input('idSedeCarrera');
 
-            if ($sedeCarreraId) {
-                $docente->sedesCarreras()->attach($sedeCarreraId);
-            }
             if (empty($data['fechaCreacion'])) {
                 $data['fechaCreacion'] = now()->format('Y-m-d');
             }
@@ -190,7 +202,21 @@ class DocentesController extends Controller
                 $data['acuerdo'] = $rutaAcuerdo;
             }
 
-            $docente = Docente::create($data);
+            // Verificar si existe un docente eliminado (Soft Delete)
+            $docente = Docente::withTrashed()->where('runDocente', $data['runDocente'])->first();
+
+            if ($docente) {
+                if ($docente->trashed()) {
+                    $docente->restore();
+                }
+                $docente->update($data);
+            } else {
+                $docente = Docente::create($data);
+            }
+
+            if ($sedeCarreraId) {
+                $docente->sedesCarreras()->sync([$sedeCarreraId]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -207,7 +233,7 @@ class DocentesController extends Controller
 
     public function edit(Docente $docente)
     {
-        $sedesCarrerasDisponibles = SedeCarrera::with('sede')->get();
+        $sedesCarrerasDisponibles = SedeCarrera::with(['sede', 'carrera'])->get();
         $sedeCarreraActual = $docente->sedesCarreras()->first();
 
         return response()->json([
@@ -219,8 +245,19 @@ class DocentesController extends Controller
 
     public function update(Request $request, Docente $docente)
     {
+        // Limpiar el RUN eliminando puntos (aunque en update no se debería cambiar)
+        if ($request->has('runDocente')) {
+            $runLimpio = str_replace('.', '', $request->input('runDocente'));
+            $request->merge(['runDocente' => $runLimpio]);
+        }
+
         $validator = Validator::make($request->all(), [
-            'runDocente' => 'required|string|max:12|unique:docente,runDocente,'.$docente->runDocente.',runDocente',
+            'runDocente' => [
+                'required',
+                'string',
+                'regex:/^[0-9]+[-]?[0-9kK]{1}$/',
+                \Illuminate\Validation\Rule::unique('docente', 'runDocente')->ignore($docente->runDocente, 'runDocente')->whereNull('deleted_at'),
+            ],
             'nombresDocente' => 'required|string|max:100',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
@@ -228,7 +265,7 @@ class DocentesController extends Controller
                 'required',
                 'email',
                 'max:50',
-                Rule::unique('Docente', 'correo')->ignore($docente->runDocente, 'runDocente'),
+                \Illuminate\Validation\Rule::unique('docente', 'correo')->ignore($docente->runDocente, 'runDocente')->whereNull('deleted_at'),
                 'regex:/^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$/',
             ],
             'fechaNacto' => 'required|date',
@@ -417,7 +454,32 @@ class DocentesController extends Controller
 
     public function destroy(Docente $docente)
     {
-        // Eliminar archivos individualmente
+        // 1. Verificar si el docente tiene grupos asignados
+        $tieneGrupos = $docente->docenteCarreras()->whereHas('grupos')->exists();
+
+        if ($tieneGrupos) {
+            $mensaje = 'No se puede eliminar el docente porque tiene grupos asignados. Desvincúlelo de los grupos primero.';
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $mensaje,
+                ], 422);
+            }
+
+            return redirect()->route('docentes.index')
+                ->with('error', $mensaje);
+        }
+
+        // 2. Eliminar relaciones dependientes
+        // Eliminar vacunas asociadas
+        $docente->docenteVacunas()->delete();
+
+        // Eliminar asignaciones a carreras (SedeCarrera)
+        // Nota: Como ya verificamos que no tiene grupos, esto debería ser seguro si la FK en grupo es restrictiva
+        $docente->docenteCarreras()->delete();
+
+        // 3. Eliminar archivos individualmente
         if ($docente->foto) {
             Storage::disk('public')->delete($docente->foto);
         }
@@ -437,6 +499,7 @@ class DocentesController extends Controller
             Storage::disk('public')->delete($docente->acuerdo);
         }
 
+        // 4. Eliminar el docente
         $docente->delete();
 
         // Respuesta JSON para AJAX
@@ -472,5 +535,85 @@ class DocentesController extends Controller
         $sedesCarreras = $query->get();
 
         return response()->json($sedesCarreras);
+    }
+
+    public function getVacunas($runDocente)
+    {
+        try {
+            $vacunas = DocenteVacuna::where('runDocente', $runDocente)->get();
+
+            return view('docentes._lista_vacunas', compact('vacunas'))->render();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function storeVacuna(Request $request, $runDocente)
+    {
+        $request->validate([
+            'idTipoVacuna' => 'required|integer',
+            'idEstadoVacuna' => 'required|integer',
+            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'archivo.max' => 'El archivo seleccionado excede el tamaño máximo permitido de 2MB. Por favor, optimice el archivo o seleccione uno más pequeño.',
+            'archivo.mimes' => 'Formato no válido. Solo se permite PDF, JPG o PNG.',
+            'archivo.required' => 'Debes seleccionar un archivo.',
+        ]);
+
+        try {
+            $path = $request->file('archivo')->store('vacunas_docentes', 'public');
+
+            DocenteVacuna::create([
+                'runDocente' => $runDocente,
+                'idTipoVacuna' => $request->idTipoVacuna,
+                'idEstadoVacuna' => $request->idEstadoVacuna,
+                'documento' => $path,
+                'fechaSubida' => now(),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Vacuna agregada correctamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error BD: '.$e->getMessage()], 500);
+        }
+    }
+
+    public function destroyVacuna($idDocenteVacuna)
+    {
+        $vacuna = DocenteVacuna::findOrFail($idDocenteVacuna);
+
+        if (Storage::disk('public')->exists($vacuna->documento)) {
+            Storage::disk('public')->delete($vacuna->documento);
+        }
+
+        $vacuna->delete();
+
+        return response()->json(['success' => true, 'message' => 'Vacuna eliminada']);
+    }
+
+    public function updateVacunaStatus(Request $request, $idDocenteVacuna)
+    {
+        $request->validate([
+            'idEstadoVacuna' => 'required|integer|exists:estado_vacuna,idEstadoVacuna',
+        ]);
+
+        $vacuna = DocenteVacuna::findOrFail($idDocenteVacuna);
+        $vacuna->idEstadoVacuna = $request->idEstadoVacuna;
+        $vacuna->save();
+
+        return response()->json(['success' => true, 'message' => 'Estado actualizado']);
+    }
+
+    public function getDocumentos($runDocente)
+    {
+        $docente = Docente::findOrFail($runDocente);
+
+        // Cargar vacunas filtradas por estado 'Activo'
+        $docente->load(['docenteVacunas' => function ($query) {
+            $query->whereHas('estadoVacuna', function ($q) {
+                $q->where('nombreEstado', 'Activo');
+            })->with(['tipoVacuna', 'estadoVacuna']);
+        }]);
+
+        return view('docentes._lista_documentos_completa', compact('docente'))->render();
     }
 }

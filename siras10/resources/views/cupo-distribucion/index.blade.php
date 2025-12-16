@@ -13,6 +13,7 @@
                     <h2 class="font-semibold text-xl text-black leading-tight">
                         Distribución de Cupos
                     </h2>
+                @if(isset($oferta))
                 {{-- CAMBIO: Color de texto del párrafo --}}
                 <p class="text-sm text-gray-600"> 
                     Estás distribuyendo <strong>{{ $oferta->cantCupos }}</strong> cupos para
@@ -23,16 +24,23 @@
                     en <strong>{{ $oferta->unidadClinica->centroSalud->nombreCentro ?? 'Centro Desconocido' }}</strong>
                     ({{ $oferta->unidadClinica->nombreUnidad ?? 'Unidad Desc.' }})
                 </p>
+                @else
+                <p class="text-sm text-gray-600"> 
+                    Para distribuir cupos, debes acceder desde el mantenedor de <a href="{{ route('cupo-ofertas.index') }}" class="text-blue-600 hover:underline font-semibold">Ofertas de Cupos</a>
+                </p>
+                @endif
                 </div>
             </div>
 
             {{-- Botón "Nuevo" (Estilo Sede) --}}
+            @can('cupo-distribuciones.create')
             <button
                 data-modal-target="distribucionModal"
                 data-modal-toggle="distribucionModal"
                 class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Asignar a Centro
             </button>
+            @endcan
         </div>
     </x-slot>
 
@@ -48,20 +56,28 @@
                         <div id="distribucion-data" data-cupos-restantes="{{ $cuposRestantes }}"></div>
                     </div>
 
+                    @if(isset($oferta) && isset($distribuciones))
                     {{-- Contenedor de la Tabla --}}
                     <div id="tabla-container">
                         @include('cupo-distribucion._tabla', [
                             'distribuciones' => $distribuciones,
                             'oferta' => $oferta,
-                            'sortBy' => $sortBy ?? 'idCupoDistribucion', // Añadimos defaults
-                            'sortDirection' => $sortDirection ?? 'asc' // Añadimos defaults
+                            'sortBy' => $sortBy ?? 'idCupoDistribucion',
+                            'sortDirection' => $sortDirection ?? 'asc'
                         ])
                     </div>
+                    @else
+                    <div class="text-center py-10 text-gray-500">
+                        <i class="fas fa-info-circle text-4xl mb-4"></i>
+                        <p class="text-lg">No hay datos disponibles. Accede desde <a href="{{ route('cupo-ofertas.index') }}" class="text-blue-600 hover:underline">Ofertas de Cupos</a>.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
+    @if(isset($oferta))
     {{-- Modal (Tu código estaba perfecto) --}}
     <x-crud-modal
         modalId="distribucionModal"
@@ -73,14 +89,19 @@
 
         {{-- Campo Sede/Carrera --}}
         <div class="mb-4">
-            <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Sede / Carrera *</label>
+            <label for="idSedeCarrera" class="block text-sm font-medium text-gray-700">Sede / Carrera (Demanda) *</label>
             <select id="idSedeCarrera" name="idSedeCarrera" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                <option value="">Seleccione Centro Formador(Sede)</option>
-                @foreach ($sedesCarreras as $sedeCarrera)
+                <option value="">Seleccione Sede / Carrera...</option>
+                @foreach ($sedeCarreras as $sedeCarrera)
+                    @php
+                        $demanda = $sedeCarrera->cupoDemandas->first();
+                        $infoSolicitud = $demanda ? " (Solicitados: {$demanda->cuposSolicitados})" : "";
+                    @endphp
                     <option value="{{ $sedeCarrera->idSedeCarrera }}">
                         {{ $sedeCarrera->sede->centroFormador->nombreCentroFormador ?? 'CF Desc.' }} 
                         ({{ $sedeCarrera->sede->nombreSede ?? 'Sede Desc.' }}) 
                         - {{ $sedeCarrera->nombreSedeCarrera ?: ($sedeCarrera->carrera->nombreCarrera ?? 'Carrera Desc.') }}
+                        {{ $infoSolicitud }}
                     </option>
                 @endforeach
             </select>
@@ -95,6 +116,7 @@
         </div>
 
     </x-crud-modal>
+    @endif
     
     @vite(['resources/js/app.js'])
 </x-app-layout>

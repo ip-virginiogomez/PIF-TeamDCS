@@ -8,6 +8,17 @@
             ['key' => 'certIAAS', 'nombre' => 'Certificado IAAS', 'campo' => $docente->certIAAS],
             ['key' => 'acuerdo', 'nombre' => 'Documento de Acuerdo', 'campo' => $docente->acuerdo],
         ];
+
+        foreach($docente->docenteVacunas as $vacuna) {
+            if($vacuna->documento && $vacuna->estadoVacuna && $vacuna->estadoVacuna->nombreEstado === 'Activo') {
+            $documentos[] = [
+                'key' => 'vacuna_' . $vacuna->idDocenteVacuna,
+                'nombre' => $vacuna->tipoVacuna->nombreVacuna ?? 'Vacuna',
+                'campo' => $vacuna->documento
+            ];
+            }
+        }
+
         $hasDocs = false;
     @endphp
 

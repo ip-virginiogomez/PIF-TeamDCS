@@ -152,7 +152,7 @@ class DocenteSeeder extends Seeder
             ],
         ];
         foreach ($docentes as $docenteData) {
-            Docente::create($docenteData);
+            Docente::firstOrCreate(['runDocente' => $docenteData['runDocente']], $docenteData);
         }
     }
 }

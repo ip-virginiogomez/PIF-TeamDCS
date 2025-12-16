@@ -47,7 +47,24 @@ class SedeCarreraController extends Controller
             ->orderBy('nombreCarrera')
             ->get();
 
-        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase'));
+        // Verificar si el usuario es coordinador de campo clínico
+        $coordinadorCentro = null;
+        $user = auth()->user();
+
+        if ($user) {
+            $coordinador = \App\Models\CoordinadorCampoClinico::where('runUsuario', $user->runUsuario)
+                ->with('centroFormador')
+                ->first();
+
+            if ($coordinador) {
+                $coordinadorCentro = [
+                    'idCentroFormador' => $coordinador->idCentroFormador,
+                    'nombreCentroFormador' => $coordinador->centroFormador->nombreCentroFormador,
+                ];
+            }
+        }
+
+        return view('gestion-carreras.index', compact('centrosFormadores', 'carrerasBase', 'coordinadorCentro'));
     }
 
     /**
@@ -106,32 +123,63 @@ class SedeCarreraController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'idSede' => 'required|exists:sede,idSede',
-            'idCarrera' => 'required|exists:carrera,idCarrera',
-            'codigoCarrera' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('sede_carrera', 'codigoCarrera')
-                    ->where('idSede', $request->idSede),
-            ],
-            'nombreSedeCarrera' => 'nullable|string|max:255',
-        ]);
+        try {
+            $request->validate([
+                'idSede' => 'required|exists:sede,idSede',
+                'idCarrera' => [
+                    'required',
+                    'exists:carrera,idCarrera',
+                    Rule::unique('sede_carrera', 'idCarrera')
+                        ->where('idSede', $request->idSede),
+                ],
+                'codigoCarrera' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    Rule::unique('sede_carrera', 'codigoCarrera')
+                        ->where('idSede', $request->idSede),
+                ],
+                'nombreSedeCarrera' => 'nullable|string|max:255',
+            ], [
+                'idSede.required' => 'Debe seleccionar una sede.',
+                'idSede.exists' => 'La sede seleccionada no existe.',
+                'idCarrera.required' => 'Debe seleccionar un perfil de carrera.',
+                'idCarrera.exists' => 'El perfil seleccionado no existe.',
+                'idCarrera.unique' => 'Esta carrera ya está asignada a la sede seleccionada.',
+                'codigoCarrera.required' => 'El código de la carrera es obligatorio.',
+                'codigoCarrera.max' => 'El código no puede exceder los 50 caracteres.',
+                'codigoCarrera.unique' => 'Ya existe una carrera con este código en la sede seleccionada.',
+                'nombreSedeCarrera.max' => 'El nombre no puede exceder los 255 caracteres.',
+            ]);
 
-        $carrera = SedeCarrera::create([
-            'idSede' => $request->idSede,
-            'idCarrera' => $request->idCarrera,
-            'nombreSedeCarrera' => $request->nombreSedeCarrera,
-            'codigoCarrera' => $request->codigoCarrera,
-            'fechaCreacion' => now(),
-        ]);
+            $carrera = SedeCarrera::create([
+                'idSede' => $request->idSede,
+                'idCarrera' => $request->idCarrera,
+                'nombreSedeCarrera' => $request->nombreSedeCarrera,
+                'codigoCarrera' => $request->codigoCarrera,
+                'fechaCreacion' => now(),
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Carrera asignada correctamente',
-            'data' => $carrera,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Carrera asignada correctamente',
+                'data' => $carrera,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            \Log::error('Error en store SedeCarrera: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar la carrera. Por favor, intente nuevamente.',
+            ], 500);
+        }
     }
 
     /**
@@ -158,19 +206,43 @@ class SedeCarreraController extends Controller
     public function update(Request $request, SedeCarrera $sedeCarrera): JsonResponse
     {
         try {
-            $rules = $this->getValidationRules();
-            // Excluir el registro actual de la validación unique
-            $rules['codigoCarrera'] = 'required|string|max:50|unique:sede_carrera,codigoCarrera,'.$sedeCarrera->idSedeCarrera.',idSedeCarrera';
-
-            $validatedData = $request->validate($rules);
+            $validated = $request->validate([
+                'idSede' => 'required|exists:sede,idSede',
+                'idCarrera' => [
+                    'required',
+                    'exists:carrera,idCarrera',
+                    Rule::unique('sede_carrera', 'idCarrera')
+                        ->where('idSede', $request->idSede)
+                        ->ignore($sedeCarrera->idSedeCarrera, 'idSedeCarrera'),
+                ],
+                'codigoCarrera' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    Rule::unique('sede_carrera', 'codigoCarrera')
+                        ->where('idSede', $request->idSede)
+                        ->ignore($sedeCarrera->idSedeCarrera, 'idSedeCarrera'),
+                ],
+                'nombreSedeCarrera' => 'nullable|string|max:255',
+            ], [
+                'idSede.required' => 'Debe seleccionar una sede.',
+                'idSede.exists' => 'La sede seleccionada no existe.',
+                'idCarrera.required' => 'Debe seleccionar un perfil de carrera.',
+                'idCarrera.exists' => 'El perfil seleccionado no existe.',
+                'idCarrera.unique' => 'Esta carrera ya está asignada a la sede seleccionada.',
+                'codigoCarrera.required' => 'El código de la carrera es obligatorio.',
+                'codigoCarrera.max' => 'El código no puede exceder los 50 caracteres.',
+                'codigoCarrera.unique' => 'Ya existe otra carrera con este código en la sede seleccionada.',
+                'nombreSedeCarrera.max' => 'El nombre no puede exceder los 255 caracteres.',
+            ]);
 
             // Si no se proporciona nombre específico, usar el de la carrera base
-            if (empty($validatedData['nombreSedeCarrera'])) {
-                $carrera = Carrera::find($validatedData['idCarrera']);
-                $validatedData['nombreSedeCarrera'] = $carrera->nombreCarrera;
+            if (empty($validated['nombreSedeCarrera'])) {
+                $carrera = Carrera::find($validated['idCarrera']);
+                $validated['nombreSedeCarrera'] = $carrera->nombreCarrera;
             }
 
-            $sedeCarrera->update($validatedData);
+            $sedeCarrera->update($validated);
 
             return response()->json([
                 'success' => true,
@@ -189,7 +261,7 @@ class SedeCarreraController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error interno del servidor',
+                'message' => 'Error al actualizar la carrera. Por favor, intente nuevamente.',
             ], 500);
         }
     }
@@ -273,7 +345,7 @@ class SedeCarreraController extends Controller
                     'idSedeCarrera' => $validated['idSedeCarrera'],
                     'nombre' => $validated['nombre'],
                     'documento' => $documentoPath,
-                    'fechaSubida' => now()->toDateString(),
+                    'fechaSubida' => now(),
                 ]);
 
                 \DB::commit();
@@ -387,14 +459,14 @@ class SedeCarreraController extends Controller
         $asignaturas = $sedeCarrera->asignaturas()
             ->with(['programas' => function ($q) {
                 $q->latest('fechaSubida');
-            }])
+            }, 'programa', 'tipoPractica'])
             ->orderBy('nombreAsignatura')
-            ->get();
+            ->paginate(5, ['*'], 'asignaturas_page');
 
         $mallas = $sedeCarrera->mallaSedeCarreras()
             ->with('mallaCurricular')
             ->orderByDesc('fechaSubida')
-            ->get();
+            ->paginate(5, ['*'], 'mallas_page');
 
         return view('gestion-carreras.archivos', [
             'sedeCarrera' => $sedeCarrera,
@@ -415,15 +487,7 @@ class SedeCarreraController extends Controller
             \DB::beginTransaction();
 
             try {
-                // Si ya existe un programa, eliminar el archivo anterior
-                if ($asignatura->programa) {
-                    $programaAnterior = $asignatura->programa;
-                    // Intentar eliminar archivo usando el campo doc
-                    if ($programaAnterior->documento && Storage::disk('public')->exists($programaAnterior->doc)) {
-                        Storage::disk('public')->delete($programaAnterior->doc);
-                    }
-                    $programaAnterior->delete();
-                }
+                // No eliminar el programa anterior para mantener historial
 
                 // Procesar el archivo
                 $file = $request->file('documento');
@@ -564,7 +628,7 @@ class SedeCarreraController extends Controller
                     'idMallaCurricular' => $mallaCurricular->idMallaCurricular,
                     'nombre' => $validated['nombre'],
                     'documento' => $documentoPath,
-                    'fechaSubida' => now()->toDateString(),
+                    'fechaSubida' => now(),
                 ]);
 
                 \DB::commit();
@@ -834,7 +898,7 @@ class SedeCarreraController extends Controller
      */
     public function showProgramas(Asignatura $asignatura)
     {
-        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->get();
+        $programas = $asignatura->programas()->orderByDesc('fechaSubida')->paginate(5);
         \Log::debug('[showProgramas] idAsignatura: '.$asignatura->idAsignatura.' | count: '.$programas->count());
         foreach ($programas as $p) {
             \Log::debug('[showProgramas] Programa id: '.$p->idPrograma.' | documento: '.$p->documento);
@@ -854,5 +918,156 @@ class SedeCarreraController extends Controller
         $nombre = 'Programa_'.($programa->asignatura->nombreAsignatura ?? 'asignatura').'_'.($programa->fechaSubida ?? '').'.pdf';
 
         return \Storage::disk('public')->download($programa->documento, $nombre);
+    }
+
+    /**
+     * Eliminar un programa específico
+     */
+    public function destroyPrograma(\App\Models\Programa $programa)
+    {
+        try {
+            \DB::beginTransaction();
+
+            // Eliminar el archivo del almacenamiento
+            if ($programa->documento && \Storage::disk('public')->exists($programa->documento)) {
+                \Storage::disk('public')->delete($programa->documento);
+            }
+
+            // Eliminar el registro de la base de datos
+            $programa->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Programa eliminado correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error al eliminar programa: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el programa',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Subir pauta de evaluación para una asignatura
+     */
+    public function uploadPautaEvaluacion(Request $request, $asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            $request->validate([
+                'documento' => 'required|file|mimes:pdf|max:2048',
+            ]);
+
+            \DB::beginTransaction();
+
+            try {
+                // Eliminar pauta anterior si existe
+                if ($asig->pauta_evaluacion && \Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+                    \Storage::disk('public')->delete($asig->pauta_evaluacion);
+                }
+
+                // Guardar nueva pauta
+                $path = $request->file('documento')->store('pautas-evaluacion', 'public');
+
+                $asig->update(['pauta_evaluacion' => $path]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pauta de evaluación subida correctamente',
+                    'data' => [
+                        'pauta_evaluacion' => $path,
+                        'url' => asset('storage/'.$path),
+                    ],
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error en uploadPautaEvaluacion: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al subir la pauta de evaluación',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Descargar pauta de evaluación de una asignatura
+     */
+    public function descargarPautaEvaluacion($asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            if (! $asig->pauta_evaluacion || ! \Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+                abort(404, 'Pauta de evaluación no encontrada');
+            }
+
+            $nombre = 'Pauta_Evaluacion_'.str_replace(' ', '_', $asig->nombreAsignatura).'.pdf';
+
+            return \Storage::disk('public')->download($asig->pauta_evaluacion, $nombre);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al descargar pauta: '.$e->getMessage());
+            abort(404, 'Pauta de evaluación no encontrada');
+        }
+    }
+
+    /**
+     * Eliminar pauta de evaluación de una asignatura
+     */
+    public function destroyPautaEvaluacion($asignatura)
+    {
+        try {
+            $asig = Asignatura::findOrFail($asignatura);
+
+            \DB::beginTransaction();
+
+            try {
+                // Eliminar el archivo del almacenamiento
+                if ($asig->pauta_evaluacion && \Storage::disk('public')->exists($asig->pauta_evaluacion)) {
+                    \Storage::disk('public')->delete($asig->pauta_evaluacion);
+                }
+
+                // Actualizar el registro
+                $asig->update(['pauta_evaluacion' => null]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pauta de evaluación eliminada correctamente',
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error al eliminar pauta: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la pauta de evaluación',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
 }

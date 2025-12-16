@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PermisosRol extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'permisos_rol';
 
@@ -34,8 +37,15 @@ class PermisosRol extends Model
     }
 
     // Relación inversa con EstadoPermisos
-    public function estadoPermiso()
+    public function estadoPermisos()
     {
         return $this->belongsTo(EstadoPermisos::class, 'idEstadoPermisos', 'idEstadoPermisos');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

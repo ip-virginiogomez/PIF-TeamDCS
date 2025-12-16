@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class CupoOferta extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'cupo_oferta';
 
@@ -23,8 +26,6 @@ class CupoOferta extends Model
         'cantCupos',
         'fechaEntrada',
         'fechaSalida',
-        'horaEntrada',
-        'horaSalida',
         'fechaCreacion',
     ];
 
@@ -56,5 +57,30 @@ class CupoOferta extends Model
     public function cupoDistribuciones()
     {
         return $this->hasMany(CupoDistribucion::class, 'idCupoOferta', 'idCupoOferta');
+    }
+
+    // Relación uno a muchos con Horarios
+    public function horarios()
+    {
+        return $this->hasMany(CupoOfertaHorario::class, 'idCupoOferta', 'idCupoOferta');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($cupoOferta) {
+            $cupoOferta->cupoDistribuciones()->each(function ($cupoDistribucion) {
+                $cupoDistribucion->delete();
+            });
+            $cupoOferta->horarios()->each(function ($horario) {
+                $horario->delete();
+            });
+        });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

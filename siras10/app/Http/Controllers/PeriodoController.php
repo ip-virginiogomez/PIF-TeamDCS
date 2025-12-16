@@ -19,14 +19,26 @@ class PeriodoController extends Controller
 
     public function index(Request $request)
     {
-        $periodos = Periodo::orderBy('idPeriodo', 'desc')->paginate(10);
+        $search = $request->input('search');
+        $sortBy = $request->get('sort_by', 'idPeriodo');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
+        $query = Periodo::query();
+
+        if ($search) {
+            $query->where('Año', 'like', "%{$search}%");
+        }
+
+        $query->orderBy($sortBy, $sortDirection);
+
+        $periodos = $query->paginate(10);
 
         // Si la petición es AJAX, devolvemos solo la vista de la tabla
         if ($request->ajax()) {
-            return View::make('periodos._tabla', compact('periodos'))->render();
+            return View::make('periodos._tabla', compact('periodos', 'sortBy', 'sortDirection'))->render();
         }
 
-        return view('periodos.index', compact('periodos'));
+        return view('periodos.index', compact('periodos', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)
@@ -36,6 +48,20 @@ class PeriodoController extends Controller
             'fechaInicio' => 'required|date',
             'fechaFin' => 'required|date|after_or_equal:fechaInicio',
         ]);
+
+        // Validar que no exista un periodo para el año especificado
+        $añoSolicitado = $request->input('Año');
+        $periodoExistente = Periodo::where('Año', $añoSolicitado)->first();
+
+        if ($periodoExistente) {
+            return response()->json([
+                'success' => false,
+                'message' => "Ya existe un periodo para el año {$añoSolicitado}. Solo se permite un periodo de oferta de cupos por año.",
+                'errors' => [
+                    'Año' => ["Ya existe un periodo para el año {$añoSolicitado}."],
+                ],
+            ], 422);
+        }
 
         Periodo::create($request->all());
 
@@ -55,6 +81,22 @@ class PeriodoController extends Controller
             'fechaInicio' => 'required|date',
             'fechaFin' => 'required|date|after_or_equal:fechaInicio',
         ]);
+
+        // Validar que no exista otro periodo para el año especificado (excepto el actual)
+        $añoSolicitado = $request->input('Año');
+        $periodoExistente = Periodo::where('Año', $añoSolicitado)
+            ->where('idPeriodo', '!=', $periodo->idPeriodo)
+            ->first();
+
+        if ($periodoExistente) {
+            return response()->json([
+                'success' => false,
+                'message' => "Ya existe un periodo para el año {$añoSolicitado}. Solo se permite un periodo de oferta de cupos por año.",
+                'errors' => [
+                    'Año' => ["Ya existe un periodo para el año {$añoSolicitado}."],
+                ],
+            ], 422);
+        }
 
         $periodo->update($request->all());
 

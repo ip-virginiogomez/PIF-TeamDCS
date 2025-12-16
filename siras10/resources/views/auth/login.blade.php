@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Iniciar Sesión - SIRAS</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico') }}">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700&display=swap" rel="stylesheet" />
@@ -88,11 +91,11 @@
 
                 <!-- Botón de Iniciar Sesión -->
                 <div class="pt-2">
-                    <x-primary-button class="w-full justify-center text-base py-3 bg-gradient-to-r from-dcs-blue-600 to-dcs-blue-700 hover:from-dcs-blue-700 hover:to-dcs-blue-800 focus:ring-4 focus:ring-dcs-blue-200 active:bg-dcs-blue-800 shadow-lg hover:shadow-xl transition-all duration-150 text-white font-semibold">
-                        <svg class="w-5 h-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    <x-primary-button class="w-full justify-center text-base py-3 shadow-lg hover:shadow-xl !text-white">
+                        <svg class="w-5 h-5 mr-2 stroke-current text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                         </svg>
-                        {{ __('Iniciar Sesión') }}
+                        <span class="text-white font-semibold">{{ __('Iniciar Sesión') }}</span>
                     </x-primary-button>
                 </div>
             </form>

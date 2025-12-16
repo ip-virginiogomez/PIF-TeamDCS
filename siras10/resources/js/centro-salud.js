@@ -22,8 +22,169 @@ class CentroSaludManager extends BaseModalManager {
                 'idTipoCentroSalud'
             ]
         });
+
+        this.initPersonalModal();
+        this.initSearch();
     }
-    
+
+    initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('btn-clear-search');
+        const tablaContainer = document.getElementById('tabla-container');
+
+        if (!searchInput || !tablaContainer) return;
+
+        // Mostrar X si ya hay texto
+        if (clearBtn && searchInput.value.trim().length > 0) {
+            clearBtn.classList.remove('hidden');
+            clearBtn.classList.add('flex');
+        }
+
+        // --- FUNCIÓN PARA EJECUTAR BÚSQUEDA ---
+        const executeSearch = (page = 1) => {
+            const params = new URLSearchParams();
+
+            if (searchInput.value.trim()) {
+                params.append('search', searchInput.value.trim());
+            }
+
+            if (page > 1) {
+                params.append('page', page);
+            }
+
+            // Mantener ordenamiento si existe en URL actual
+            const currentUrlParams = new URLSearchParams(window.location.search);
+            if (currentUrlParams.has('sort_by')) params.append('sort_by', currentUrlParams.get('sort_by'));
+            if (currentUrlParams.has('sort_direction')) params.append('sort_direction', currentUrlParams.get('sort_direction'));
+
+            const url = `${window.location.pathname}?${params.toString()}`;
+
+            // Actualizar URL sin recargar
+            window.history.pushState({}, '', url);
+
+            // Fetch AJAX
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    tablaContainer.innerHTML = html;
+                    // Re-inicializar listeners de paginación y ordenamiento si es necesario
+                    // (Depende de cómo BaseModalManager maneje esto, pero generalmente los eventos delegados funcionan)
+                })
+                .catch(error => console.error('Error en búsqueda:', error));
+        };
+
+        // --- EVENT LISTENERS ---
+        let debounceTimer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+
+            // Mostrar/Ocultar botón X
+            if (searchInput.value.trim().length > 0) {
+                clearBtn.classList.remove('hidden');
+                clearBtn.classList.add('flex');
+            } else {
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+            }
+
+            debounceTimer = setTimeout(() => {
+                executeSearch();
+            }, 300); // Debounce de 300ms
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.classList.add('hidden');
+                clearBtn.classList.remove('flex');
+                executeSearch();
+                searchInput.focus();
+            });
+        }
+
+        // Prevenir submit del form
+        const form = document.getElementById('search-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                executeSearch();
+            });
+        }
+    }
+
+    initPersonalModal() {
+        const tableContainer = document.getElementById('tabla-container');
+        const modal = document.getElementById('personalModal');
+        const closeBtnX = document.getElementById('closePersonalModalX');
+        const closeBtnBottom = document.getElementById('closePersonalModalBtn');
+        const backdrop = document.getElementById('personalModalBackdrop');
+        const listContainer = document.getElementById('personalListContainer');
+
+        if (!tableContainer || !modal) return;
+
+        // Open Modal
+        tableContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action="view-personal"]');
+            if (btn) {
+                const data = JSON.parse(btn.dataset.personal);
+                this.showPersonalInfo(data, listContainer);
+                modal.classList.remove('hidden');
+            }
+        });
+
+        // Close Modal
+        const closeModal = () => modal.classList.add('hidden');
+        if (closeBtnX) closeBtnX.addEventListener('click', closeModal);
+        if (closeBtnBottom) closeBtnBottom.addEventListener('click', closeModal);
+        if (backdrop) backdrop.addEventListener('click', closeModal);
+    }
+
+    showPersonalInfo(users, container) {
+        if (!users || users.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">No hay personal asignado.</p>';
+            return;
+        }
+
+        const html = users.map(user => {
+            const fullName = `${user.nombreUsuario || ''} ${user.apellidoPaterno || ''} ${user.apellidoMaterno || ''}`.trim();
+            const photoUrl = user.foto
+                ? `/storage/${user.foto}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=bae6fd&color=0369a1&size=64`;
+
+            return `
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4 flex items-start space-x-4 hover:shadow-md transition-shadow">
+                    <div class="flex-shrink-0 mr-2">
+                        <img class="h-16 w-16 rounded-full object-cover border border-gray-200" src="${photoUrl}" alt="${fullName}">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-lg font-bold text-gray-900 truncate">
+                            ${fullName}
+                        </p>
+                        <p class="text-sm text-sky-600 font-medium mb-2">
+                            ${user.runUsuario || 'N/A'}
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-500">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                <span class="truncate">${user.correo || 'Sin correo'}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                <span class="truncate">${user.telefono || 'Sin teléfono'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
     // ¡Todo el código repetido de 'showValidationErrors', 'clearValidationErrors' y 'validate' se elimina!
     // Usará los métodos del padre.
 }

@@ -4,12 +4,14 @@
             <h2 class="font-semibold text-xl text-black leading-tight">
                 {{ __('Gestión de Usuarios') }}
             </h2>
+            @can('usuarios.create')
             <button 
                 data-modal-target="usuarioModal" 
                 data-modal-toggle="usuarioModal" 
                 class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Nuevo Usuario
             </button>
+            @endcan
         </div>
     </x-slot>
 
@@ -23,6 +25,25 @@
                             <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
                     @endif
+
+                    {{-- Barra de búsqueda --}}
+                    <div class="mb-4 flex justify-between items-center">
+                        <div class="relative w-full max-w-md">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                </svg>
+                            </div>
+                            <input type="text" id="search-input" 
+                                class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+                                placeholder="Buscar por RUN, nombre o rol...">
+                            <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 items-center pr-3 hidden">
+                                <svg class="w-4 h-4 text-gray-500 hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
                     <div id="tabla-container">
                         @include('usuarios._tabla', [
@@ -46,6 +67,9 @@
         <div class="mb-4">
             <label for="runUsuario" class="block text-sm font-medium text-gray-700">RUN *</label>
             <input type="text" id="runUsuario" name="runUsuario" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Ej: 12345678-9" required>
+            <div class="text-xs text-gray-500 mt-1">
+                Debe ingresar el RUN sin puntos y con guion
+            </div>
             <div id="run-help-text" class="text-xs text-amber-600 mt-1 hidden">
                 El RUN no puede modificarse al editar un usuario existente
             </div>
@@ -100,6 +124,18 @@
             <label for="contrasenia_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Contraseña <span id="password-confirm-required">*</span></label>
             <input type="password" id="contrasenia_confirmation" name="contrasenia_confirmation" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
             <div class="text-red-500 text-sm mt-1 hidden" id="error-contrasenia_confirmation"></div>
+        </div>
+
+        {{-- Foto --}}
+        <div class="mb-4">
+            <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
+            <input type="file" 
+                id="foto" 
+                name="foto" 
+                accept="image/*"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            <div class="text-xs text-gray-500 mt-1">Formatos permitidos: JPG, PNG (máx. 2MB)</div>
+            <div id="error-foto" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
 
         {{-- Roles --}}

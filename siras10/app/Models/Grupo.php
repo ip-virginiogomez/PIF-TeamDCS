@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Grupo extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'grupo';
 
@@ -21,6 +24,16 @@ class Grupo extends Model
         'idAsignatura',
         'fechaCreacion',
         'nombreGrupo',
+        'fechaInicio',
+        'fechaFin',
+        'estadoDossier',
+        'motivoRechazo',
+    ];
+
+    protected $casts = [
+        'fechaInicio' => 'date',
+        'fechaFin' => 'date',
+        'fechaCreacion' => 'datetime',
     ];
 
     // Relación inversa con CupoDistribucion
@@ -54,5 +67,21 @@ class Grupo extends Model
             'idGrupo',
             'runAlumno'
         );
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($grupo) {
+            $grupo->dossierGrupos()->each(function ($dossierGrupo) {
+                $dossierGrupo->delete();
+            });
+        });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

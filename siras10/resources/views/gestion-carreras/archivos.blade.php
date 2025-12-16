@@ -12,7 +12,10 @@
                     Sede {{ $sedeCarrera->sede->nombreSede }} · Carrera {{ $sedeCarrera->carrera->nombreCarrera }} · Código {{ $sedeCarrera->codigoCarrera }}
                 </p>
             </div>
-            <a href="{{ route('sede-carrera.index') }}"
+            <a href="{{ route('sede-carrera.index', [
+                'centro' => $sedeCarrera->sede->centroFormador->idCentroFormador,
+                'sede' => $sedeCarrera->sede->idSede
+            ]) }}"
             class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
                 <i class="fas fa-arrow-left mr-2"></i>Volver
             </a>
@@ -50,7 +53,7 @@
                                     <th class="py-2 px-4 text-left font-bold">Nombre</th>
                                     <th class="py-2 px-4 text-left font-bold">Año</th>
                                     <th class="py-2 px-4 text-left font-bold">Fecha Subida</th>
-                                    <th class="py-2 px-4 text-left font-bold">Acciones</th>
+                                    <th class="py-2 px-4 text-center font-bold">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -70,10 +73,10 @@
                                             </span>
                                         </td>
                                         <td class="py-2 px-4">
-                                            <div class="flex space-x-2">
+                                            <div class="flex justify-center space-x-2">
                                                 <button type="button"
                                                         data-action="preview-malla" 
-                                                        data-url="{{ Storage::url($malla->documento) }}"
+                                                        data-url="{{ asset('storage/' . $malla->documento) }}"
                                                         data-title="{{ $malla->nombre }}"
                                                         data-info="Año {{ $malla->mallaCurricular->anio }} · {{ optional($malla->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
                                                         title="Ver documento"
@@ -111,14 +114,6 @@
                                                     </svg>
                                                 </button>
                                                 @endcan
-
-                                                <a href="{{ route('sede-carrera.malla.descargar', $malla->idMallaSedeCarrera) }}"
-                                                   title="Descargar documento"
-                                                   class="inline-flex items-center justify-center w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-150">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                    </svg>
-                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -135,6 +130,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if($mallas->hasPages())
+                    <div class="mt-4">
+                        {{ $mallas->appends(['asignaturas_page' => request('asignaturas_page')])->links() }}
+                    </div>
+                    @endif
                 </div>
             </section>
 
@@ -146,6 +147,7 @@
                             <h3 class="text-lg font-semibold text-gray-900">Asignaturas</h3>
                             <p class="text-sm text-gray-500">Gestión de asignaturas y programas para la carrera.</p>
                         </div>
+                        @can('sede-carrera.create')
                         <button 
                             type="button"
                             data-open-asignatura
@@ -153,6 +155,7 @@
                             class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                             <i class="fas fa-plus mr-2"></i>Nueva Asignatura
                         </button>
+                        @endcan
                     </div>
 
                     <div class="overflow-x-auto">
@@ -164,7 +167,8 @@
                                     <th class="py-2 px-4 text-left font-bold">Semestre</th>
                                     <th class="py-2 px-4 text-left font-bold">Tipo Práctica</th>
                                     <th class="py-2 px-4 text-left font-bold">Programa Vigente</th>
-                                    <th class="py-2 px-4 text-left font-bold">Acciones</th>
+                                    <th class="py-2 px-4 text-left font-bold">Pauta Evaluación</th>
+                                    <th class="py-2 px-4 text-center font-bold">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -187,40 +191,43 @@
                                         <td class="py-2 px-4 text-sm">
                                             {{ $asignatura->tipoPractica->nombrePractica ?? 'N/A' }}
                                         </td>
-                                        <td class="py-2 px-4">
+                                        <td class="py-2 px-4 text-center">
                                             @if ($programa)
-                                                <div>
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Programa cargado
-                                                    </span>
-                                                    <span class="block text-xs text-gray-500 mt-1">
-                                                        {{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}
-                                                    </span>
-                                                </div>
+                                                <button
+                                                    type="button"
+                                                    data-action="preview-programa"
+                                                    data-url="{{ asset('storage/' . $programa->documento) }}"
+                                                    data-title="Programa de {{ $asignatura->nombreAsignatura }}"
+                                                    data-asignatura="{{ $asignatura->nombreAsignatura }}"
+                                                    data-fecha="{{ $programa->fechaSubida ? $programa->fechaSubida->format('d/m/Y') : 'N/A' }}"
+                                                    title="Ver programa vigente"
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </button>
                                             @else
                                                 <span class="text-sm text-gray-400">Sin programa</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <div class="flex space-x-2">
-                                                {{-- Botón Ver Programa (si existe) --}}
-                                                @if ($programa)
-                                                    <button
-                                                        type="button"
-                                                        data-action="preview-programa"
-                                                        data-url="{{ Storage::url($programa->documento) }}"
-                                                        data-title="Programa de {{ $asignatura->nombreAsignatura }}"
-                                                        data-asignatura="{{ $asignatura->nombreAsignatura }}"
-                                                        data-fecha="{{ optional($programa->fechaSubida)->format('d/m/Y') ?? 'N/A' }}"
-                                                        title="Ver programa"
-                                                        class="inline-flex items-center justify-center w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-150">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
+                                        <td class="py-2 px-4 text-center">
+                                            <button
+                                                type="button"
+                                                data-action="view-pauta"
+                                                data-id="{{ $asignatura->idAsignatura }}"
+                                                data-nombre="{{ $asignatura->nombreAsignatura }}"
+                                                data-tiene-pauta="{{ $asignatura->pauta_evaluacion ? 'true' : 'false' }}"
+                                                data-url="{{ $asignatura->pauta_evaluacion ? asset('storage/' . $asignatura->pauta_evaluacion) : '' }}"
+                                                title="Ver/Subir pauta de evaluación"
+                                                class="inline-flex items-center justify-center w-8 h-8 {{ $asignatura->pauta_evaluacion ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-400 hover:bg-gray-500' }} text-white rounded-md transition-colors duration-150">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                        <td class="py-2 px-4">
+                                            <div class="flex justify-center space-x-2">
                                                 {{-- Botón Ver todos los programas --}}
                                                 <button
                                                     type="button"
@@ -233,8 +240,8 @@
                                                     </svg>
                                                 </button>
                                             {{-- Modal para historial de programas --}}
-                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 items-center justify-center hidden">
-                                                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh]">
+                                            <div id="programasModal" class="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center hidden">
+                                                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-auto max-h-[80vh] m-4">
                                                     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                                                         <h3 class="text-lg font-semibold text-gray-900">Historial de Programas</h3>
                                                         <button data-action="close-programas-modal" class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
@@ -250,6 +257,7 @@
                                             </div>
 
                                                 {{-- Botón Editar Asignatura --}}
+                                                @can('sede-carrera.create')
                                                 <button
                                                     type="button"
                                                     data-action="edit-asignatura"
@@ -261,8 +269,10 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </button>
+                                                @endcan
 
                                                 {{-- Botón Eliminar Asignatura --}}
+                                                @can('sede-carrera.create')
                                                 <button
                                                     type="button"
                                                     data-action="delete-asignatura"
@@ -274,6 +284,7 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                 </button>
+                                                @endcan
 
                                                 {{-- Botón Subir/Actualizar Programa --}}
                                                 <button
@@ -288,22 +299,12 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                                     </svg>
                                                 </button>
-
-                                                @if ($programa)
-                                                <a href="{{ route('sede-carrera.asignaturas.programa.download', $asignatura->idAsignatura) }}"
-                                                title="Descargar programa"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-150">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                    </svg>
-                                                </a>
-                                                @endif
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="py-4 px-4 text-center text-gray-500">
+                                        <td colspan="7" class="py-4 px-4 text-center text-gray-500">
                                             <div class="flex flex-col items-center">
                                                 <i class="fas fa-book text-4xl text-gray-300 mb-2"></i>
                                                 <span>No hay asignaturas registradas.</span>
@@ -314,16 +315,21 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if($asignaturas->hasPages())
+                    <div class="mt-4">
+                        {{ $asignaturas->appends(['mallas_page' => request('mallas_page')])->links() }}
+                    </div>
+                    @endif
                 </div>
             </section>
         </div>
     </div>
 
     {{-- MODAL MALLA CURRICULAR --}}
-    <div id="mallaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="mallaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 id="mallaModalTitle" class="text-lg font-semibold text-gray-900">Gestionar Malla Curricular</h3>
                     <button
                         type="button"
@@ -408,15 +414,13 @@
                         </div>
                     </form>
                 </div>
-            </div>
         </div>
     </div>
 
     {{-- MODAL ASIGNATURA --}}
-    <div id="asignaturaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="asignaturaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 id="asignaturaModalTitle" class="text-lg font-semibold text-gray-900">Crear Asignatura</h3>
                     <button
                         type="button"
@@ -510,15 +514,13 @@
                         </div>
                     </form>
                 </div>
-            </div>
         </div>
     </div>
 
     {{-- MODAL PROGRAMA --}}
-    <div id="programaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="programaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div>
                         <h3 id="programaModalTitle" class="text-lg font-semibold text-gray-900">Subir Programa</h3>
                         <p id="programaAsignaturaName" class="text-sm text-gray-500 mt-1"></p>
@@ -575,15 +577,13 @@
                         </div>
                     </form>
                 </div>
-            </div>
         </div>
     </div>
 
     {{-- MODAL VISTA PREVIA PDF --}}
-    <div id="pdfPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl" style="max-height: 90vh;">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+    <div id="pdfModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex-1">
                         <h3 id="pdfModalTitle" class="text-lg font-semibold text-gray-900">Vista Previa de Documento</h3>
                         <p id="pdfModalInfo" class="text-sm text-gray-500 mt-1"></p>
@@ -610,7 +610,7 @@
                 </div>
 
                 <div class="p-6">
-                    <div class="bg-gray-100 rounded-lg overflow-hidden" style="height: calc(90vh - 200px); min-height: 500px;">
+                    <div class="bg-gray-100 rounded-lg overflow-hidden h-[calc(90vh-200px)] min-h-[500px]">
                         <iframe 
                             id="pdfViewer"
                             src="" 
@@ -626,9 +626,98 @@
                         </iframe>
                     </div>
                 </div>
+        </div>
+    </div>
+
+    {{-- MODAL PAUTA DE EVALUACIÓN --}}
+    <div id="pautaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl m-4 max-h-[90vh] overflow-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <div class="flex-1">
+                    <h3 id="pautaModalTitle" class="text-lg font-semibold text-gray-900">Pauta de Evaluación</h3>
+                    <p id="pautaModalSubtitle" class="text-sm text-gray-500 mt-1"></p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button 
+                        id="pautaDeleteBtn"
+                        type="button"
+                        class="hidden bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-4 py-2">
+                        <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar
+                    </button>
+                    <button 
+                        type="button"
+                        data-action="close-pauta-modal" 
+                        class="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <!-- Vista del PDF cuando existe -->
+                <div id="pautaViewerContainer" class="hidden bg-gray-100 rounded-lg overflow-hidden h-[calc(90vh-200px)] min-h-[500px]">
+                    <iframe 
+                        id="pautaViewer"
+                        src="" 
+                        class="w-full h-full border-0"
+                        frameborder="0"
+                        title="Visor de Pauta de Evaluación">
+                        <p class="p-4 text-center text-gray-600">
+                            Tu navegador no soporta iframes. 
+                            <a id="pautaFallbackLink" href="#" target="_blank" class="text-blue-600 hover:underline">
+                                Haz clic aquí para abrir el PDF
+                            </a>
+                        </p>
+                    </iframe>
+                </div>
+
+                <!-- Formulario de subida cuando no existe -->
+                <div id="pautaUploadContainer" class="hidden">
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay pauta de evaluación</h3>
+                        <p class="text-sm text-gray-500 mb-6">Sube un archivo PDF con la pauta de evaluación para esta asignatura</p>
+                        
+                        <form id="pautaUploadForm" enctype="multipart/form-data" class="max-w-md mx-auto">
+                            <input type="hidden" id="pautaAsignaturaId" name="idAsignatura">
+                            
+                            <div class="mb-4">
+                                <label for="pautaArchivo" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Archivo PDF <span class="text-red-500">*</span>
+                                    <span class="text-gray-500 text-xs font-normal">(Máximo 2MB)</span>
+                                </label>
+                                <input
+                                    id="pautaArchivo"
+                                    name="documento"
+                                    type="file"
+                                    accept=".pdf"
+                                    required
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                >
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-6 py-3">
+                                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                Subir Pauta de Evaluación
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
     @push('scripts')
         @vite(['resources/js/app.js'])
     @endpush

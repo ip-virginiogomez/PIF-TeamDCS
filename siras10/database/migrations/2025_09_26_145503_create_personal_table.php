@@ -27,8 +27,8 @@ return new class extends Migration
             $table->foreign('runUsuario')
                 ->references('runUsuario')
                 ->on('usuarios')
-                ->onUpdate('no action')
-                ->onDelete('no action');
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
         });
     }
 

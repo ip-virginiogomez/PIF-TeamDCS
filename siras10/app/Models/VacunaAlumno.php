@@ -4,14 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class VacunaAlumno extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
-    protected $table = 'vacuna_alumno';
+    protected $table = 'alumno_vacuna';
 
-    protected $primaryKey = 'idVacunaAlumno';
+    protected $primaryKey = 'idAlumnoVacuna';
 
     public $timestamps = false;
 
@@ -27,6 +30,13 @@ class VacunaAlumno extends Model
     public function estadoVacuna()
     {
         return $this->belongsTo(EstadoVacuna::class, 'idEstadoVacuna', 'idEstadoVacuna');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     // Relación inversa con Alumno

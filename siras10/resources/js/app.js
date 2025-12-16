@@ -1,4 +1,5 @@
 import './alumnos.js';
+import AlumnoVacunaManager from './alumnovacuna.js';
 import './asignacion.js';
 import './base-modal-manager.js';
 import './bootstrap';
@@ -8,6 +9,7 @@ import './centro-salud.js';
 import './convenio.js';
 import './cupo-distribucion.js';
 import './cupo-oferta.js';
+import './cupo-demanda.js';
 import './docentes.js';
 import './periodos.js';
 import './roles.js';
@@ -21,8 +23,17 @@ import './roles.js';
 import './grupos.js';
 import './grupodossier.js';
 import './dashboard.js';
+import './tipo-centro-salud.js';
+import './ciudad.js';
+import './permission-matrix.js'
 
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 Alpine.start();
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('modalVacunas')) {
+        new AlumnoVacunaManager();
+    }
+});

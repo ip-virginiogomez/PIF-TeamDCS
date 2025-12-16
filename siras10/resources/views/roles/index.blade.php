@@ -4,10 +4,12 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Gestión de Roles') }}
             </h2>
-            <button onclick="window.rolManager.showCreateModal()" 
+            @can('roles.create')
+            <button onclick="window.rolManager.limpiarFormulario()" 
                 class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded">
                 Crear Nuevo Rol
             </button>
+            @endcan
         </div>
     </x-slot>
 
@@ -26,6 +28,25 @@
                             <span class="block sm:inline">{{ session('error') }}</span>
                         </div>
                     @endif
+
+                    {{-- Barra de búsqueda --}}
+                    <div class="mb-4 flex justify-between items-center">
+                        <div class="relative w-full max-w-md">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                </svg>
+                            </div>
+                            <input type="text" id="search-input" 
+                                class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
+                                placeholder="Buscar por nombre de rol...">
+                            <button type="button" id="btn-clear-search" class="absolute inset-y-0 right-0 items-center pr-3 hidden">
+                                <svg class="w-4 h-4 text-gray-500 hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
                     <div id="tabla-container">
                         @include('roles._tabla', ['roles' => $roles, 'sortBy' => $sortBy ?? 'name', 'sortDirection' => $sortDirection ?? 'asc'])

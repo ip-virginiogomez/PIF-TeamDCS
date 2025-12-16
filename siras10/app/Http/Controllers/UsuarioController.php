@@ -6,6 +6,7 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
 class UsuarioController extends Controller
@@ -22,9 +23,23 @@ class UsuarioController extends Controller
     {
         $sortBy = $request->query('sort_by', 'runUsuario');
         $sortDirection = $request->query('sort_direction', 'desc');
+        $search = $request->query('search');
 
-        $usuarios = Usuario::with('roles')
-            ->orderBy($sortBy, $sortDirection)
+        $query = Usuario::with('roles');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('runUsuario', 'like', "%{$search}%")
+                    ->orWhere('nombreUsuario', 'like', "%{$search}%")
+                    ->orWhere('apellidoPaterno', 'like', "%{$search}%")
+                    ->orWhere('apellidoMaterno', 'like', "%{$search}%")
+                    ->orWhereHas('roles', function ($qRole) use ($search) {
+                        $qRole->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $usuarios = $query->orderBy($sortBy, $sortDirection)
             ->paginate(10);
 
         $roles = Role::all();
@@ -46,17 +61,28 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'runUsuario' => 'required|string|max:10|unique:usuarios,runUsuario',
+            'runUsuario' => [
+                'required',
+                'string',
+                'max:10',
+                \Illuminate\Validation\Rule::unique('usuarios', 'runUsuario')->whereNull('deleted_at'),
+            ],
             'nombreUsuario' => 'required|string|max:45',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
-            'correo' => 'required|email|max:45|unique:usuarios,correo',
+            'correo' => [
+                'required',
+                'email',
+                'max:45',
+                \Illuminate\Validation\Rule::unique('usuarios', 'correo')->whereNull('deleted_at'),
+            ],
             'telefono' => 'nullable|string|max:20',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'contrasenia' => 'required|string|min:8|confirmed',
             'roles' => 'required|array',
         ]);
 
-        $usuario = Usuario::create([
+        $usuarioData = [
             'runUsuario' => $validated['runUsuario'],
             'nombreUsuario' => $validated['nombreUsuario'],
             'apellidoPaterno' => $validated['apellidoPaterno'],
@@ -65,7 +91,26 @@ class UsuarioController extends Controller
             'telefono' => $validated['telefono'] ?? null,
             'contrasenia' => Hash::make($validated['contrasenia']),
             'fechaCreacion' => now(),
-        ]);
+        ];
+
+        // Manejo de foto
+        if ($request->hasFile('foto')) {
+            $rutafoto = $request->file('foto')->store('fotos/usuarios', 'public');
+            $usuarioData['foto'] = $rutafoto;
+        }
+
+        // Verificar si existe un usuario eliminado (Soft Delete)
+        $usuario = Usuario::withTrashed()->where('runUsuario', $usuarioData['runUsuario'])->first();
+
+        if ($usuario) {
+            if ($usuario->trashed()) {
+                $usuario->restore();
+            }
+            // Actualizar datos, incluyendo contraseña si se proporciona
+            $usuario->update($usuarioData);
+        } else {
+            $usuario = Usuario::create($usuarioData);
+        }
 
         $usuario->syncRoles($validated['roles']);
 
@@ -103,8 +148,14 @@ class UsuarioController extends Controller
             'nombreUsuario' => 'required|string|max:45',
             'apellidoPaterno' => 'required|string|max:45',
             'apellidoMaterno' => 'nullable|string|max:45',
-            'correo' => 'required|email|max:45|unique:usuarios,correo,'.$usuario->runUsuario.',runUsuario',
+            'correo' => [
+                'required',
+                'email',
+                'max:45',
+                \Illuminate\Validation\Rule::unique('usuarios', 'correo')->ignore($usuario->runUsuario, 'runUsuario')->whereNull('deleted_at'),
+            ],
             'telefono' => 'nullable|string|max:20',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'contrasenia' => 'nullable|string|min:8|confirmed',
             'roles' => 'required|array',
         ]);
@@ -116,6 +167,15 @@ class UsuarioController extends Controller
             'correo' => $validated['correo'],
             'telefono' => $validated['telefono'] ?? null,
         ];
+
+        // Manejo de foto
+        if ($request->hasFile('foto')) {
+            // Eliminar foto anterior si existe
+            if ($usuario->foto) {
+                Storage::disk('public')->delete($usuario->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('fotos/usuarios', 'public');
+        }
 
         if ($request->filled('contrasenia')) {
             $data['contrasenia'] = Hash::make($validated['contrasenia']);
@@ -145,6 +205,12 @@ class UsuarioController extends Controller
         }
 
         $usuario = Usuario::findOrFail($runUsuario);
+
+        // Eliminar la foto si existe
+        if ($usuario->foto) {
+            Storage::disk('public')->delete($usuario->foto);
+        }
+
         $usuario->delete();
 
         if ($request->ajax() || $request->wantsJson()) {

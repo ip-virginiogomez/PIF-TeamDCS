@@ -22,7 +22,13 @@ class CentroFormadorScope implements Scope
         }
 
         if ($user->esCoordinador()) {
-            $centroIds = $user->centrosFormadores()->pluck('centro_formador.idCentroFormador')->toArray();
+            // Filtrar por fechas de vigencia
+            $centroIds = $user->centrosFormadores()
+                ->wherePivot('fechaInicio', '<=', now()->toDateString())
+                ->wherePivot('fechaFin', '>=', now()->toDateString())
+                ->pluck('centro_formador.idCentroFormador')
+                ->toArray();
+
             if (empty($centroIds)) {
                 $builder->whereRaw('1 = 0');
 
@@ -44,6 +50,22 @@ class CentroFormadorScope implements Scope
                 $builder->whereIn('idCentroFormador', $centroIds);
             } elseif ($tableName === 'sede_carrera') {
                 $builder->whereHas('sede', function ($query) use ($centroIds) {
+                    $query->whereIn('idCentroFormador', $centroIds);
+                });
+            } elseif ($tableName === 'docente_carrera') {
+                $builder->whereHas('sedeCarrera.sede', function ($query) use ($centroIds) {
+                    $query->whereIn('idCentroFormador', $centroIds);
+                });
+            } elseif ($tableName === 'alumno_carrera') {
+                $builder->whereHas('sedeCarrera.sede', function ($query) use ($centroIds) {
+                    $query->whereIn('idCentroFormador', $centroIds);
+                });
+            } elseif ($tableName === 'cupo_distribucion') {
+                $builder->whereHas('cupoDemanda.sedeCarrera.sede', function ($query) use ($centroIds) {
+                    $query->whereIn('idCentroFormador', $centroIds);
+                });
+            } elseif ($tableName === 'cupo_demanda') {
+                $builder->whereHas('sedeCarrera.sede', function ($query) use ($centroIds) {
                     $query->whereIn('idCentroFormador', $centroIds);
                 });
             }

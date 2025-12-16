@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class TipoCentroSalud extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'tipo_centro_salud';
 
@@ -18,12 +21,18 @@ class TipoCentroSalud extends Model
     protected $fillable = [
         'nombreTipo',
         'fechaCreacion',
-        'acronimo',
     ];
 
     // Relación uno a muchos con CentroSalud
-    public function centroSaluds()
+    public function centrosSalud()
     {
         return $this->hasMany(CentroSalud::class, 'idTipoCentroSalud', 'idTipoCentroSalud');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

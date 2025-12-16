@@ -18,6 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('idAsignatura')->nullable();
             $table->date('fechaCreacion')->nullable();
             $table->string('nombreGrupo', 45)->nullable();
+            $table->date('fechaInicio')->nullable();
+            $table->date('fechaFin')->nullable();
             $table->timestamps();
 
             $table->foreign('idCupoDistribucion')

@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class TipoCentroFormador extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'tipo_centro_formador';
 
@@ -21,8 +24,15 @@ class TipoCentroFormador extends Model
     ];
 
     // Relación uno a muchos con CentroFormador
-    public function centroFormadores()
+    public function centrosFormadores()
     {
         return $this->hasMany(CentroFormador::class, 'idTipoCentroFormador', 'idTipoCentroFormador');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

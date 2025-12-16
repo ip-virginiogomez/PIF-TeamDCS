@@ -4,7 +4,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" wire:navigate>
-                        <x-application-logo class="block h-9 w-auto fill-current text-white" />
+                        <x-application-logo class="block h-14 w-auto fill-current text-white" />
                     </a>
                 </div>
 
@@ -27,7 +27,7 @@
                                 @can('docentes.read')<x-dropdown-link :href="route('docentes.index')" wire:navigate>{{ __('Docentes') }}</x-dropdown-link>@endcan
                                 @can('carreras.read')<x-dropdown-link :href="route('carreras.index')" wire:navigate>{{ __('Carreras') }}</x-dropdown-link>@endcan
                                 <div class="border-t border-gray-200"></div>
-                                @can('sede-carrera.read')<x-dropdown-link :href="route('sede-carrera.index')" wire:navigate>{{ __('Asignar Carreras') }}</x-dropdown-link>@endcan
+                                @can('sede-carrera.read')<x-dropdown-link :href="route('sede-carrera.index')" wire:navigate>{{ __('Gestionar Carreras') }}</x-dropdown-link>@endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -54,7 +54,7 @@
                     </div>
                     @endcanany
                     {{-- CAMBIO: @canany corregido con los permisos correctos --}}
-                    @canany(['centro-salud.read', 'unidad-clinicas.read'])
+                    @canany(['ciudades.read', 'tipos-centro-salud.read', 'centro-salud.read', 'unidad-clinicas.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -65,6 +65,8 @@
                             </x-slot>
                             <x-slot name="content">
                                 {{-- CAMBIO: Añadidos @can individuales --}}
+                                @can('ciudades.read')<x-dropdown-link :href="route('ciudad.index')" wire:navigate>{{ __('Ciudades') }}</x-dropdown-link>@endcan
+                                @can('tipos-centro-salud.read')<x-dropdown-link :href="route('tipo-centro-salud.index')" wire:navigate>{{ __('Tipos de Centro de Salud') }}</x-dropdown-link>@endcan
                                 @can('centro-salud.read')<x-dropdown-link :href="route('centro-salud.index')" wire:navigate>{{ __('Centros de Salud') }}</x-dropdown-link>@endcan
                                 @can('unidad-clinicas.read')<x-dropdown-link :href="route('unidad-clinicas.index')" wire:navigate>{{ __('Unidades Clínicas') }}</x-dropdown-link>@endcan
                             </x-slot>
@@ -72,7 +74,7 @@
                     </div>
                     @endcanany
                     {{-- CAMBIO: @canany corregido con los permisos correctos --}}
-                    @canany(['periodos.read', 'cupo-ofertas.read', 'tipos-practica.read'])
+                    @canany(['periodos.read', 'cupo-demandas.read', 'cupo-ofertas.read', 'cupo-distribuciones.read', 'tipos-practica.read'])
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -82,11 +84,13 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                {{-- Los @can internos estaban bien --}}
                                 @can('periodos.read')<x-dropdown-link :href="route('periodos.index')" wire:navigate>{{ __('Períodos') }}</x-dropdown-link>@endcan
+                                @can('cupo-demandas.read')<x-dropdown-link :href="route('cupo-demandas.index')" wire:navigate>{{ __('Demanda de Cupos') }}</x-dropdown-link>@endcan
                                 @can('cupo-ofertas.read')<x-dropdown-link :href="route('cupo-ofertas.index')" wire:navigate>{{ __('Oferta de Cupos') }}</x-dropdown-link>@endcan
-                                <x-dropdown-link :href="route('grupos.index')" wire:navigate>{{ __('Grupos') }}</x-dropdown-link>
+                                @can('cupo-distribuciones.read')<x-dropdown-link :href="route('cupo-distribuciones.index')" wire:navigate>{{ __('Distribución de Cupos') }}</x-dropdown-link>@endcan
                                 @can('tipos-practica.read')<x-dropdown-link :href="route('tipos-practica.index')" wire:navigate>{{ __('Tipos de Práctica') }}</x-dropdown-link>@endcan
+                                <div class="border-t border-gray-200"></div>
+                                <x-dropdown-link :href="route('grupos.index')" wire:navigate>{{ __('Dossier de Grupos') }}</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -120,6 +124,13 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-dcs-blue-800 hover:bg-dcs-blue-700 focus:outline-none transition">
+                            @if(Auth::user()->foto)
+                                <img class="w-8 h-8 rounded-full object-cover mr-2" src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto de {{ Auth::user()->nombreUsuario }}">
+                            @else
+                                <div class="w-8 h-8 rounded-full bg-dcs-blue-600 flex items-center justify-center text-white mr-2">
+                                    <span class="text-sm font-semibold">{{ substr(Auth::user()->nombreUsuario ?? Auth::user()->name, 0, 1) }}{{ substr(Auth::user()->apellidoPaterno ?? '', 0, 1) }}</span>
+                                </div>
+                            @endif
                             <div>{{ Auth::user()->nombreUsuario ?? Auth::user()->name }}</div>
                             <div class="ml-1"><svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
                         </button>
@@ -149,8 +160,8 @@
             </x-responsive-nav-link>
 
             @canany(['alumnos.read', 'docentes.read', 'carreras.read', 'sede-carrera.read'])
-            <div class="border-t border-gray-200 pt-2">
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <div class="border-t border-dcs-blue-700 pt-2">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                     {{ __('Gestión Académica') }}
                 </div>
                 
@@ -179,8 +190,8 @@
 
             {{-- CAMBIO: Añadidos los permisos de sede y convenios al @canany --}}
             @canany(['centros-formadores.read', 'tipos-centro-formador.read', 'sede.read', 'convenios.read'])
-                <div class="border-t border-gray-200 pt-2">
-                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div class="border-t border-dcs-blue-700 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión CF') }}
                     </div>
                     @can('centros-formadores.read')
@@ -207,11 +218,21 @@
             @endcanany
 
             {{-- CAMBIO: Añadido @canany y @can individuales --}}
-            @canany(['centro-salud.read', 'unidad-clinicas.read'])
-            <div class="border-t border-gray-200 pt-2">
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    {{ __('Gestión de Salud') }}
+            @canany(['ciudades.read', 'tipos-centro-salud.read', 'centro-salud.read', 'unidad-clinicas.read'])
+            <div class="border-t border-dcs-blue-700 pt-2">
+                <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
+                    {{ __('Gestión CS') }}
                 </div>
+                @can('ciudades.read')
+                <x-responsive-nav-link :href="route('ciudad.index')" :active="request()->routeIs('ciudad.*')" class="pl-6" wire:navigate>
+                    {{ __('Ciudades') }}
+                </x-responsive-nav-link>
+                @endcan
+                @can('tipos-centro-salud.read')
+                <x-responsive-nav-link :href="route('tipo-centro-salud.index')" :active="request()->routeIs('tipo-centro-salud.*')" class="pl-6" wire:navigate>
+                    {{ __('Tipos de Centro de Salud') }}
+                </x-responsive-nav-link>
+                @endcan
                 @can('centro-salud.read')
                 <x-responsive-nav-link :href="route('centro-salud.index')" :active="request()->routeIs('centro-salud.*')" class="pl-6" wire:navigate>
                     {{ __('Centros de Salud') }}
@@ -226,9 +247,9 @@
             @endcanany
 
             {{-- CAMBIO: Añadido @canany --}}
-            @canany(['periodos.read', 'cupo-ofertas.read', 'tipos-practica.read'])
-                <div class="border-t border-gray-200 pt-2">
-                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            @canany(['periodos.read', 'cupo-demandas.read', 'cupo-ofertas.read', 'cupo-distribuciones.read', 'tipos-practica.read'])
+                <div class="border-t border-dcs-blue-700 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión de Prácticas') }}
                     </div>
                     @can('periodos.read')
@@ -236,9 +257,19 @@
                         {{ __('Períodos') }}
                     </x-responsive-nav-link>
                     @endcan
+                    @can('cupo-demandas.read')
+                    <x-responsive-nav-link :href="route('cupo-demandas.index')" :active="request()->routeIs('cupo-demandas.*')" class="pl-6" wire:navigate>
+                        {{ __('Demanda de Cupos') }}
+                    </x-responsive-nav-link>
+                    @endcan
                     @can('cupo-ofertas.read')
                     <x-responsive-nav-link :href="route('cupo-ofertas.index')" :active="request()->routeIs('cupo-ofertas.*')" class="pl-6" wire:navigate>
                         {{ __('Oferta de Cupos') }}
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('cupo-distribuciones.read')
+                    <x-responsive-nav-link :href="route('cupo-distribuciones.index')" :active="request()->routeIs('cupo-distribuciones.*')" class="pl-6" wire:navigate>
+                        {{ __('Distribución de Cupos') }}
                     </x-responsive-nav-link>
                     @endcan
                     @can('tipos-practica.read')
@@ -246,12 +277,15 @@
                         {{ __('Tipos de Práctica') }}
                     </x-responsive-nav-link>
                     @endcan
+                    <x-responsive-nav-link :href="route('grupos.index')" :active="request()->routeIs('grupos.*')" class="pl-6" wire:navigate>
+                        {{ __('Dossier de Grupos') }}
+                    </x-responsive-nav-link>
                 </div>
             @endcanany
 
             @canany(['usuarios.read', 'roles.read'])
-                <div class="border-t border-gray-200 pt-2">
-                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <div class="border-t border-dcs-blue-700 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-300 uppercase tracking-wide">
                         {{ __('Gestión de Usuarios') }}
                     </div>
                     @can('usuarios.read')
@@ -277,9 +311,18 @@
         </div>
 
         <div class="pt-4 pb-1 border-t border-dcs-blue-700">
-            <div class="px-4">
-                <div class="font-medium text-base text-white">{{ Auth::user()->nombreUsuario ?? Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-400">{{ Auth::user()->correo }}</div>
+            <div class="px-4 flex items-center">
+                @if(Auth::user()->foto)
+                    <img class="w-10 h-10 rounded-full object-cover mr-3" src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto de {{ Auth::user()->nombreUsuario }}">
+                @else
+                    <div class="w-10 h-10 rounded-full bg-dcs-blue-600 flex items-center justify-center text-white mr-3">
+                        <span class="text-base font-semibold">{{ substr(Auth::user()->nombreUsuario ?? Auth::user()->name, 0, 1) }}{{ substr(Auth::user()->apellidoPaterno ?? '', 0, 1) }}</span>
+                    </div>
+                @endif
+                <div>
+                    <div class="font-medium text-base text-white">{{ Auth::user()->nombreUsuario ?? Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-gray-400">{{ Auth::user()->correo }}</div>
+                </div>
             </div>
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')" class="text-gray-300" wire:navigate>{{ __('Profile') }}</x-responsive-nav-link>

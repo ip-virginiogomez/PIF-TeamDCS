@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MallaCurricular extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'malla_curricular';
 
     protected $primaryKey = 'idMallaCurricular';
@@ -16,9 +19,33 @@ class MallaCurricular extends Model
     ];
 
     // Relación con las mallas específicas por sede
-    public function mallasSedeCarrera()
+    public function asignaturas()
+    {
+        return $this->hasMany(Asignatura::class, 'idMalla', 'idMalla');
+    }
+
+    public function mallaSedeCarreras()
     {
         return $this->hasMany(MallaSedeCarrera::class, 'idMallaCurricular', 'idMallaCurricular');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($mallaCurricular) {
+            $mallaCurricular->asignaturas()->each(function ($asignatura) {
+                $asignatura->delete();
+            });
+            $mallaCurricular->mallaSedeCarreras()->each(function ($mallaSedeCarrera) {
+                $mallaSedeCarrera->delete();
+            });
+        });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 
     // Método estático para obtener o crear un año

@@ -13,9 +13,65 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
         @csrf
         @method('patch')
+
+        {{-- Foto de Perfil --}}
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Foto de Perfil</label>
+            <div class="flex items-center space-x-6">
+                {{-- Vista previa de la foto --}}
+                <div class="shrink-0">
+                    @if($user->foto)
+                        <img id="foto-preview" class="h-24 w-24 object-cover rounded-full border-2 border-gray-300" src="{{ asset('storage/' . $user->foto) }}" alt="Foto de {{ $user->nombreUsuario }}">
+                    @else
+                        <div id="foto-preview" class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 border-2 border-gray-300">
+                            <span class="text-3xl font-medium">{{ substr($user->nombreUsuario, 0, 1) }}{{ substr($user->apellidoPaterno, 0, 1) }}</span>
+                        </div>
+                    @endif
+                </div>
+                
+                {{-- Controles de foto --}}
+                <div class="flex-1">
+                    <input 
+                        type="file" 
+                        id="foto" 
+                        name="foto" 
+                        accept="image/*"
+                        class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100
+                            cursor-pointer"
+                        onchange="previewFoto(event)"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">Se recomienda a la hora de subir una foto, que sea de mitad de cuerpo hacia arriba o formal, en formato JPG, PNG (máx. 2MB)</p>
+                    @error('foto')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function previewFoto(event) {
+                const file = event.target.files[0];
+                const preview = document.getElementById('foto-preview');
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" class="h-24 w-24 object-cover rounded-full border-2 border-gray-300" alt="Vista previa">`;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+        </script>
+
+        <hr class="my-6 border-gray-200">
 
         {{-- Fila 1: RUN y Nombre --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -158,19 +214,6 @@
             </div>
             @endif
 
-            {{-- Fecha de Creación (No editable) --}}
-            <div>
-                <label for="fechaCreacion" class="block text-sm font-medium text-gray-700">Fecha de Registro</label>
-                <input 
-                    id="fechaCreacion" 
-                    type="text" 
-                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm cursor-not-allowed" 
-                    value="{{ $user->fechaCreacion ? \Carbon\Carbon::parse($user->fechaCreacion)->format('d/m/Y H:i') : 'No disponible' }}" 
-                    disabled
-                />
-            </div>
-        </div>
-
         {{-- Roles Asignados (No editable) --}}
         @if($user->roles->isNotEmpty())
         <div>
@@ -220,7 +263,6 @@
         </div>
         @endif
 
-        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
             <div class="flex items-center gap-4">
                 <button 
                     type="submit"
@@ -241,6 +283,5 @@
                     </p>
                 @endif
             </div>
-        </div>
     </form>
 </section>

@@ -22,51 +22,151 @@ class GrupoController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $periodo = $request->input('periodo');
+        $sortBy = $request->input('sort_by');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
-        $query = CupoDistribucion::with([
-            'sedeCarrera.sede',
-            'cupoOferta.unidadClinica.centroSalud',
-        ]);
+        $periodosDisponibles = \App\Models\CupoOferta::selectRaw('YEAR(fechaEntrada) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        $query = CupoDistribucion::select('cupo_distribucion.*')
+            ->join('cupo_demanda', 'cupo_distribucion.idDemandaCupo', '=', 'cupo_demanda.idDemandaCupo')
+            ->join('sede_carrera', 'cupo_demanda.idSedeCarrera', '=', 'sede_carrera.idSedeCarrera')
+            ->join('sede', 'sede_carrera.idSede', '=', 'sede.idSede')
+            ->join('centro_formador', 'sede.idCentroFormador', '=', 'centro_formador.idCentroFormador')
+            ->join('cupo_oferta', 'cupo_distribucion.idCupoOferta', '=', 'cupo_oferta.idCupoOferta')
+            ->join('tipo_practica', 'cupo_oferta.idTipoPractica', '=', 'tipo_practica.idTipoPractica')
+            ->join('unidad_clinica', 'cupo_oferta.idUnidadClinica', '=', 'unidad_clinica.idUnidadClinica')
+            ->join('centro_salud', 'unidad_clinica.idCentroSalud', '=', 'centro_salud.idCentroSalud')
+            ->with([
+                'cupoDemanda.sedeCarrera.sede.centroFormador',
+                'cupoOferta.unidadClinica.centroSalud',
+                'cupoOferta.horarios',
+            ]);
 
         if ($search) {
-            $query->whereHas('sedeCarrera', function ($q) use ($search) {
-                $q->where('nombreSedeCarrera', 'like', "%{$search}%");
-            })
-                ->orWhereHas('unidadClinica', function ($q) use ($search) {
-                    $q->where('nombreUnidad', 'like', "%{$search}%");
-                })
-                ->orWhereHas('cupoOferta.unidadClinica.centroSalud', function ($q) use ($search) {
-                    $q->where('nombreCentroSalud', 'like', "%{$search}%");
-                });
+            $query->where(function ($q) use ($search) {
+                // A. Buscar por Centro Formador
+                $q->where('centro_formador.nombreCentroFormador', 'like', "%{$search}%")
+                // B. Buscar por Sede / Carrera
+                    ->orWhere('sede_carrera.nombreSedeCarrera', 'like', "%{$search}%")
+                // C. Buscar por Centro de Salud
+                    ->orWhere('centro_salud.nombreCentro', 'like', "%{$search}%")
+                // D. Buscar por Unidad Clínica
+                    ->orWhere('unidad_clinica.nombreUnidad', 'like', "%{$search}%");
+            });
         }
 
-        $distribuciones = $query->orderBy('idCupoDistribucion', 'desc')->paginate(5);
-        $listaDocentesCarrera = DocenteCarrera::with(['docente', 'sedeCarrera'])->get();
+        if ($periodo) {
+            $query->whereYear('cupo_oferta.fechaEntrada', $periodo);
+        }
+
+        // Ordenamiento
+        if ($sortBy) {
+            switch ($sortBy) {
+                case 'centro_formador':
+                    $query->orderBy('centro_formador.nombreCentroFormador', $sortDirection);
+                    break;
+                case 'sede_carrera':
+                    $query->orderBy('sede_carrera.nombreSedeCarrera', $sortDirection);
+                    break;
+                case 'centro_salud':
+                    $query->orderBy('centro_salud.nombreCentro', $sortDirection);
+                    break;
+                case 'unidad_clinica':
+                    $query->orderBy('unidad_clinica.nombreUnidad', $sortDirection);
+                    break;
+                case 'tipo_practica':
+                    $query->orderBy('tipo_practica.nombrePractica', $sortDirection);
+                    break;
+                default:
+                    $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('cupo_distribucion.idCupoDistribucion', 'desc');
+        }
+
+        $distribuciones = $query->paginate(5);
+
+        $distribuciones->appends([
+            'search' => $search,
+            'periodo' => $periodo,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ]);
+
+        // Cargar docentes con sus relaciones necesarias
+        $listaDocentesCarrera = DocenteCarrera::with(['docente' => function ($q) {
+            $q->withTrashed();
+        }, 'sedeCarrera.sede.centroFormador', 'sedeCarrera.carrera'])
+            ->withTrashed()
+            ->whereHas('docente', function ($q) {
+                $q->withTrashed();
+            })
+            ->get()
+            ->sortBy(function ($dc) {
+                return $dc->docente->apellidoPaterno.' '.$dc->docente->nombresDocente;
+            });
 
         $listaAsignaturas = Asignatura::orderBy('nombreAsignatura')->get();
 
         if ($request->ajax() && ! $request->has('get_grupos')) {
-            return view('grupos._tabla_distribuciones', compact('distribuciones'))->render();
+            return view('grupos._tabla_distribuciones', compact('distribuciones', 'sortBy', 'sortDirection'))->render();
         }
 
-        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas'));
+        return view('grupos.index', compact('distribuciones', 'listaDocentesCarrera', 'listaAsignaturas', 'periodosDisponibles', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)
     {
+        // 1. VALIDACIÓN
         $validator = Validator::make($request->all(), [
             'nombreGrupo' => 'required|string|max:45',
             'idAsignatura' => 'required|exists:asignatura,idAsignatura',
             'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
+            'idCupoDistribucion' => 'required|exists:cupo_distribucion,idCupoDistribucion',
+            'fechaInicio' => 'nullable|date',
+            'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $grupo = Grupo::create($request->all());
+        // 2. VALIDAR FECHAS CONTRA LA OFERTA DE CUPO
+        $distribucion = CupoDistribucion::with('cupoOferta')->find($request->idCupoDistribucion);
 
-        return response()->json(['success' => true, 'message' => 'Grupo creado exitosamente.', 'data' => $grupo]);
+        if ($distribucion && $distribucion->cupoOferta) {
+            $fechaEntradaOferta = $distribucion->cupoOferta->fechaEntrada;
+            $fechaSalidaOferta = $distribucion->cupoOferta->fechaSalida;
+
+            if ($request->fechaInicio && $fechaEntradaOferta && $request->fechaInicio < $fechaEntradaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaInicio' => ['La fecha de inicio no puede ser anterior a la fecha de entrada de la oferta ('.date('d/m/Y', strtotime($fechaEntradaOferta)).')']],
+                ], 422);
+            }
+
+            if ($request->fechaFin && $fechaSalidaOferta && $request->fechaFin > $fechaSalidaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaFin' => ['La fecha de fin no puede ser posterior a la fecha de salida de la oferta ('.date('d/m/Y', strtotime($fechaSalidaOferta)).')']],
+                ], 422);
+            }
+        }
+
+        try {
+            // 4. CREAR EN BD
+            $grupo = Grupo::create($request->all());
+
+            return response()->json(['success' => true, 'message' => 'Grupo creado exitosamente.', 'data' => $grupo]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar: '.$e->getMessage()], 500);
+        }
     }
 
     public function edit(Grupo $grupo)
@@ -76,19 +176,50 @@ class GrupoController extends Controller
 
     public function update(Request $request, Grupo $grupo)
     {
+        // 1. VALIDACIÓN
         $validator = Validator::make($request->all(), [
             'nombreGrupo' => 'required|string|max:45',
             'idAsignatura' => 'required|exists:asignatura,idAsignatura',
             'idDocenteCarrera' => 'required|exists:docente_carrera,idDocenteCarrera',
+            'fechaInicio' => 'nullable|date',
+            'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $grupo->update($request->all());
+        // 2. VALIDAR FECHAS CONTRA LA OFERTA DE CUPO
+        $distribucion = $grupo->cupoDistribucion()->with('cupoOferta')->first();
 
-        return response()->json(['success' => true, 'message' => 'Grupo actualizado exitosamente.', 'data' => $grupo]);
+        if ($distribucion && $distribucion->cupoOferta) {
+            $fechaEntradaOferta = $distribucion->cupoOferta->fechaEntrada;
+            $fechaSalidaOferta = $distribucion->cupoOferta->fechaSalida;
+
+            if ($request->fechaInicio && $fechaEntradaOferta && $request->fechaInicio < $fechaEntradaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaInicio' => ['La fecha de inicio no puede ser anterior a la fecha de entrada de la oferta ('.date('d/m/Y', strtotime($fechaEntradaOferta)).')']],
+                ], 422);
+            }
+
+            if ($request->fechaFin && $fechaSalidaOferta && $request->fechaFin > $fechaSalidaOferta) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['fechaFin' => ['La fecha de fin no puede ser posterior a la fecha de salida de la oferta ('.date('d/m/Y', strtotime($fechaSalidaOferta)).')']],
+                ], 422);
+            }
+        }
+
+        try {
+            // 4. ACTUALIZAR EN BD
+            $grupo->update($request->all());
+
+            return response()->json(['success' => true, 'message' => 'Grupo actualizado exitosamente.', 'data' => $grupo]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar: '.$e->getMessage()], 500);
+        }
     }
 
     public function destroy(Grupo $grupo)
@@ -98,14 +229,41 @@ class GrupoController extends Controller
         return response()->json(['success' => true, 'message' => 'Grupo eliminado exitosamente.']);
     }
 
-    public function getGruposByDistribucion($idDistribucion)
+    public function getGruposByDistribucion(Request $request, $idDistribucion)
     {
-        $grupos = Grupo::with(['docenteCarrera.docente', 'asignatura'])
-            ->where('idCupoDistribucion', $idDistribucion)
-            ->paginate(5);
+        $sortBy = $request->input('sort_by');
+        $sortDirection = $request->input('sort_direction', 'asc');
+
+        $query = Grupo::with(['docenteCarrera.docente', 'asignatura'])
+            ->where('idCupoDistribucion', $idDistribucion);
+
+        if ($sortBy) {
+            switch ($sortBy) {
+                case 'nombre_grupo':
+                    $query->orderBy('nombreGrupo', $sortDirection);
+                    break;
+                case 'asignatura':
+                    $query->join('asignatura', 'grupo.idAsignatura', '=', 'asignatura.idAsignatura')
+                        ->orderBy('asignatura.nombreAsignatura', $sortDirection)
+                        ->select('grupo.*');
+                    break;
+                default:
+                    $query->orderBy('idGrupo', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('idGrupo', 'desc');
+        }
+
+        $grupos = $query->paginate(5);
+
+        $grupos->appends([
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ]);
 
         $distribucion = CupoDistribucion::with([
-            'sedeCarrera.sede',
+            'cupoDemanda.sedeCarrera.sede',
             'cupoOferta.unidadClinica',
         ])->find($idDistribucion);
 
@@ -113,7 +271,7 @@ class GrupoController extends Controller
             return response()->json(['error' => 'Distribución no encontrada'], 404);
         }
 
-        return view('grupos._tabla_grupos', compact('grupos', 'distribucion'))->render();
+        return view('grupos._tabla_grupos', compact('grupos', 'distribucion', 'sortBy', 'sortDirection'))->render();
     }
 
     public function generarDossier($idGrupo)
@@ -121,12 +279,72 @@ class GrupoController extends Controller
         $grupo = Grupo::with([
             'asignatura',
             'docenteCarrera.docente',
-            'cupoDistribucion.sedeCarrera.sede.centroFormador',
+            'cupoDistribucion.cupoDemanda.sedeCarrera.sede.centroFormador',
             'cupoDistribucion.cupoOferta.unidadClinica.centroSalud',
             'cupoDistribucion.cupoOferta.tipoPractica',
             'alumnos',
         ])->findOrFail($idGrupo);
 
         return view('grupos.dossier', compact('grupo'));
+    }
+
+    public function validarDossier(Grupo $grupo)
+    {
+        $grupo->estadoDossier = 'Validado';
+        $grupo->save();
+
+        // Notificar al Coordinador de Campo Clínico
+        $grupo->load('cupoDistribucion.cupoDemanda.sedeCarrera.sede');
+
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->cupoDemanda && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede->idCentroFormador;
+
+            $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
+
+            foreach ($coordinadores as $coord) {
+                if ($coord->usuario) {
+                    $coord->usuario->notify(new \App\Notifications\DossierValidado($grupo));
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Dossier validado correctamente.');
+    }
+
+    public function revertirDossier(Grupo $grupo)
+    {
+        $grupo->estadoDossier = 'Pendiente';
+        $grupo->motivoRechazo = null; // Limpiar motivo si se revierte
+        $grupo->save();
+
+        return redirect()->back()->with('success', 'Validación del dossier revertida correctamente.');
+    }
+
+    public function rechazarDossier(Request $request, Grupo $grupo)
+    {
+        $request->validate([
+            'motivo' => 'required|string|max:1000',
+        ]);
+
+        $grupo->estadoDossier = 'Rechazado';
+        $grupo->motivoRechazo = $request->input('motivo');
+        $grupo->save();
+
+        // Notificar al Coordinador de Campo Clínico
+        $grupo->load('cupoDistribucion.cupoDemanda.sedeCarrera.sede');
+
+        if ($grupo->cupoDistribucion && $grupo->cupoDistribucion->cupoDemanda && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera && $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede) {
+            $idCentroFormador = $grupo->cupoDistribucion->cupoDemanda->sedeCarrera->sede->idCentroFormador;
+
+            $coordinadores = \App\Models\CoordinadorCampoClinico::where('idCentroFormador', $idCentroFormador)->with('usuario')->get();
+
+            foreach ($coordinadores as $coord) {
+                if ($coord->usuario) {
+                    $coord->usuario->notify(new \App\Notifications\DossierRechazado($grupo, $request->input('motivo')));
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Dossier rechazado correctamente.');
     }
 }

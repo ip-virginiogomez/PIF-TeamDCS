@@ -18,8 +18,15 @@ class RoleController extends Controller
     {
         $sortBy = $request->get('sortBy', 'name');
         $sortDirection = $request->get('sortDirection', 'asc');
+        $search = $request->get('search');
 
-        $roles = Role::orderBy($sortBy, $sortDirection)->paginate(10);
+        $query = Role::query();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $roles = $query->orderBy($sortBy, $sortDirection)->paginate(10);
 
         // Esta es la comprobación correcta y robusta
         if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
@@ -78,9 +85,7 @@ class RoleController extends Controller
         // ¡CAMBIO AQUÍ! Usamos wantsJson()
         // =======================================================
         if (request()->wantsJson()) {
-            return response()->json([
-                'role' => $role,
-            ]);
+            return response()->json($role);
         }
 
         return view('roles.edit', compact('role'));
@@ -188,7 +193,7 @@ class RoleController extends Controller
 
     public function getUsersByRole(Role $role)
     {
-        $users = $role->users()->select('runUsuario', 'nombreUsuario', 'apellidoPaterno')->get();
+        $users = $role->users()->select('runUsuario', 'nombreUsuario', 'apellidoPaterno', 'apellidoMaterno')->get();
 
         return response()->json($users);
     }

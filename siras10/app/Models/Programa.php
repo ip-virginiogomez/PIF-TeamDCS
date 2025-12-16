@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Programa extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'programa';
 
@@ -21,9 +24,20 @@ class Programa extends Model
         'fechaSubida',
     ];
 
+    protected $casts = [
+        'fechaSubida' => 'datetime',
+    ];
+
     // Relación inversa con Asignatura
     public function asignatura()
     {
         return $this->belongsTo(Asignatura::class, 'idAsignatura', 'idAsignatura');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

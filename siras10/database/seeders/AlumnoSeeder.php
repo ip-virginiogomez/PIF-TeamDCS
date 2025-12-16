@@ -130,7 +130,7 @@ class AlumnoSeeder extends Seeder
         ];
 
         foreach ($alumnos as $alumno) {
-            Alumno::create($alumno);
+            Alumno::firstOrCreate(['runAlumno' => $alumno['runAlumno']], $alumno);
         }
     }
 }

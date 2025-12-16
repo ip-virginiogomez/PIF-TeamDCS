@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Personal extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'personal';
 
@@ -19,6 +22,8 @@ class Personal extends Model
         'idCentroSalud',
         'runUsuario',
         'fechaCreacion',
+        'fechaInicio',
+        'fechaFin',
     ];
 
     // Relación inversa con CentroSalud
@@ -31,5 +36,12 @@ class Personal extends Model
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'runUsuario', 'runUsuario');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

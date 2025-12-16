@@ -7,7 +7,9 @@ use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\CentroFormadorController;
 use App\Http\Controllers\CentroSaludController;
+use App\Http\Controllers\CiudadController;
 use App\Http\Controllers\ConvenioController;
+use App\Http\Controllers\CupoDemandaController;
 use App\Http\Controllers\CupoDistribucionController;
 use App\Http\Controllers\CupoOfertaController;
 use App\Http\Controllers\DashboardController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SedeCarreraController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\TipoCentroFormadorController;
+use App\Http\Controllers\TipoCentroSaludController;
 use App\Http\Controllers\TipoPracticaController;
 use App\Http\Controllers\UnidadClinicaController;
 use App\Http\Controllers\UsuarioController;
@@ -42,6 +45,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/notifications', [DashboardController::class, 'notifications'])->name('dashboard.notifications');
+    Route::post('/dashboard/activity/{id}/restore', [DashboardController::class, 'restoreActivity'])->name('dashboard.activity.restore');
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
@@ -72,25 +77,53 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- GESTIÓN ACADÉMICA ---
     Route::resource('carreras', CarreraController::class);
+    Route::get('cupo-demandas/asignaturas/{idSedeCarrera}', [CupoDemandaController::class, 'getAsignaturasBySedeCarrera']);
+    Route::resource('cupo-demandas', CupoDemandaController::class);
+    Route::get('/alumnos/sedes-carreras-by-centro', [AlumnoController::class, 'getSedesCarrerasByCentro'])->name('alumnos.sedes-carreras');
     Route::resource('alumnos', AlumnoController::class);
+    Route::get('/alumnos/{run}/documentos', [App\Http\Controllers\AlumnoController::class, 'getDocumentos'])->name('alumnos.documentos');
     Route::resource('periodos', PeriodoController::class);
+
+    // Gestión de Vacunas de Alumnos
+    Route::get('/alumnos/{run}/vacunas', [App\Http\Controllers\AlumnoController::class, 'getVacunas'])->name('alumnos.vacunas.index');
+    Route::post('/alumnos/{run}/vacunas', [App\Http\Controllers\AlumnoController::class, 'storeVacuna'])->name('alumnos.vacunas.store');
+    Route::delete('/vacunas/{id}', [App\Http\Controllers\AlumnoController::class, 'destroyVacuna'])->name('alumnos.vacunas.destroy');
+    Route::patch('/vacunas/{id}/estado', [App\Http\Controllers\AlumnoController::class, 'updateVacunaStatus'])->name('alumnos.vacunas.updateStatus');
+
     // --- GESTIÓN DE DOCENTES ---
+    Route::get('/docentes/sedes-carreras-by-centro', [DocentesController::class, 'getSedesCarrerasByCentro'])->name('docentes.sedes-carreras');
+
     Route::prefix('docentes')->name('docentes.')->middleware('can:docentes.read')->group(function () {
         Route::get('/', [DocentesController::class, 'index'])->name('index');
         Route::post('/', [DocentesController::class, 'store'])->name('store')->middleware('can:docentes.create');
+
+        // Vacunas
+        Route::get('/{run}/vacunas', [DocentesController::class, 'getVacunas'])->name('vacunas.index');
+        Route::post('/{run}/vacunas', [DocentesController::class, 'storeVacuna'])->name('vacunas.store');
+
         Route::get('{docente}/edit', [DocentesController::class, 'edit'])->name('edit')->middleware('can:docentes.update');
         Route::put('{docente}', [DocentesController::class, 'update'])->name('update')->middleware('can:docentes.update');
         Route::delete('{docente}', [DocentesController::class, 'destroy'])->name('destroy')->middleware('can:docentes.delete');
-        Route::get('{docente}/documentos', [DocentesController::class, 'showDocumentos'])->name('documentos');
+
+        // Documentos
+        Route::get('{docente}/documentos', [DocentesController::class, 'getDocumentos'])->name('documentos');
         Route::post('{docente}/upload-document', [DocentesController::class, 'uploadDocument'])->name('uploadDocument')->middleware('can:docentes.update');
     });
 
+    // Rutas extra para vacunas docentes
+    Route::delete('/docentes/vacunas/{id}', [DocentesController::class, 'destroyVacuna'])->name('docentes.vacunas.destroy');
+    Route::patch('/docentes/vacunas/{id}/status', [DocentesController::class, 'updateVacunaStatus'])->name('docentes.vacunas.updateStatus');
+
     // --- GESTIÓN DE CENTROS DE SALUD Y UNIDADES ---
+    Route::resource('ciudad', CiudadController::class);
+    Route::resource('tipo-centro-salud', TipoCentroSaludController::class);
     Route::resource('centro-salud', CentroSaludController::class);
     Route::resource('unidad-clinicas', UnidadClinicaController::class);
     Route::resource('tipos-practica', TipoPracticaController::class);
 
     // --- GESTIÓN DE CUPOS ---
+    Route::get('cupo-demandas/asignaturas/{idSedeCarrera}', [CupoDemandaController::class, 'getAsignaturasBySedeCarrera'])->name('cupo-demandas.asignaturas');
+    Route::resource('cupo-demandas', CupoDemandaController::class);
     Route::resource('cupo-ofertas', CupoOfertaController::class);
     Route::resource('cupo-distribuciones', CupoDistribucionController::class);
 
@@ -128,6 +161,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('asignaturas/{asignatura}/programas', [SedeCarreraController::class, 'showProgramas'])->name('asignaturas.programas.list');
         // Descargar un programa específico por id
         Route::get('programas/{programa}/descargar', [SedeCarreraController::class, 'descargarProgramaEspecifico'])->name('programas.download');
+        // Eliminar un programa específico
+        Route::delete('programas/{programa}', [SedeCarreraController::class, 'destroyPrograma'])->name('programas.destroy');
+
+        // Rutas de Pauta de Evaluación
+        Route::post('asignaturas/{asignatura}/pauta', [SedeCarreraController::class, 'uploadPautaEvaluacion'])->name('asignaturas.pauta.upload');
+        Route::get('asignaturas/{asignatura}/pauta/descargar', [SedeCarreraController::class, 'descargarPautaEvaluacion'])->name('asignaturas.pauta.download');
+        Route::delete('asignaturas/{asignatura}/pauta', [SedeCarreraController::class, 'destroyPautaEvaluacion'])->name('asignaturas.pauta.destroy');
     });
 
     // --- GESTIÓN DE ASIGNACIONES ---
@@ -144,7 +184,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/asignaciones/campo-clinico/{usuario}/centros/{centro}', [AsignacionController::class, 'quitarCentroCampoClinico'])
         ->name('asignaciones.quitarCC');
 
-    // --- RUTAS AJAX PARA RAD (ESTAS YA ESTÁN BIEN) ---
+    // --- RUTAS AJAX PARA RAD ---
     Route::get('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'getCentrosRad'])
         ->name('asignaciones.getCentrosRAD');
     Route::post('/asignaciones/rad/{usuario}/centros', [AsignacionController::class, 'asignarCentroRad'])
@@ -154,6 +194,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- GESTIÓN DE GRUPOS ---
     Route::resource('grupos', GrupoController::class);
+    Route::post('/grupos/{grupo}/validar-dossier', [GrupoController::class, 'validarDossier'])->name('grupos.validarDossier');
+    Route::post('/grupos/{grupo}/revertir-dossier', [GrupoController::class, 'revertirDossier'])->name('grupos.revertirDossier');
+    Route::post('/grupos/{grupo}/rechazar-dossier', [GrupoController::class, 'rechazarDossier'])->name('grupos.rechazarDossier');
     Route::get('/grupos/por-distribucion/{idDistribucion}', [GrupoController::class, 'getGruposByDistribucion'])
         ->name('grupos.by-distribucion');
 

@@ -33,9 +33,12 @@ class InitialSetupSeeder extends Seeder
             'Gestión de Salud' => [
                 'centro-salud' => ['create', 'read', 'update', 'delete'],
                 'unidad-clinicas' => ['create', 'read', 'update', 'delete'],
+                'tipos-centro-salud' => ['create', 'read', 'update', 'delete'],
+                'ciudades' => ['create', 'read', 'update', 'delete'],
             ],
             'Gestión de Prácticas' => [
                 'periodos' => ['create', 'read', 'update', 'delete'],
+                'cupo-demandas' => ['create', 'read', 'update', 'delete'],
                 'cupo-ofertas' => ['create', 'read', 'update', 'delete'],
                 'tipos-practica' => ['create', 'read', 'update', 'delete'],
                 'cupo-distribuciones' => ['create', 'read', 'update', 'delete'],
@@ -62,10 +65,10 @@ class InitialSetupSeeder extends Seeder
         }
 
         // 3. Crear Roles
-        $rolCoordinador = Role::create(['name' => 'Coordinador Campo Clínico']);
-        $rolEncargado = Role::create(['name' => 'Encargado Campo Clínico']);
-        $rolTecnicoRAD = Role::create(['name' => 'Técnico RAD']);
-        $rolAdmin = Role::create(['name' => 'Admin']);
+        $rolCoordinador = Role::firstOrCreate(['name' => 'Coordinador Campo Clínico']);
+        $rolEncargado = Role::firstOrCreate(['name' => 'Encargado Campo Clínico']);
+        $rolTecnicoRAD = Role::firstOrCreate(['name' => 'Técnico RAD']);
+        $rolAdmin = Role::firstOrCreate(['name' => 'Admin']);
 
         // 4. Asignar todos los permisos existentes al rol de Admin
         $rolAdmin->givePermissionTo(Permission::all());

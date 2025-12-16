@@ -19,13 +19,31 @@ class TipoPracticaController extends Controller
 
     public function index(Request $request)
     {
-        $tiposPractica = TipoPractica::orderBy('idTipoPractica', 'desc')->paginate(10);
+        $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'idTipoPractica');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
-        if ($request->ajax()) {
-            return View::make('tipos-practica._tabla', compact('tiposPractica'))->render();
+        $query = TipoPractica::query();
+
+        if ($search) {
+            $query->where('nombrePractica', 'like', "%{$search}%");
         }
 
-        return view('tipos-practica.index', compact('tiposPractica'));
+        $query->orderBy($sortBy, $sortDirection);
+
+        $tiposPractica = $query->paginate(10);
+
+        $tiposPractica->appends([
+            'search' => $search,
+            'sort_by' => $sortBy,
+            'sort_direction' => $sortDirection,
+        ]);
+
+        if ($request->ajax()) {
+            return View::make('tipos-practica._tabla', compact('tiposPractica', 'sortBy', 'sortDirection'))->render();
+        }
+
+        return view('tipos-practica.index', compact('tiposPractica', 'sortBy', 'sortDirection'));
     }
 
     public function store(Request $request)

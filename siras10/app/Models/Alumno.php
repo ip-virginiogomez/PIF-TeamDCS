@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Models\Scopes\CentroFormadorScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Alumno extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'alumno';
 
@@ -39,7 +42,7 @@ class Alumno extends Model
     }
 
     // Relación uno a muchos con VacunaAlumno
-    public function vacunaAlumnos()
+    public function vacunas()
     {
         return $this->hasMany(VacunaAlumno::class, 'runAlumno', 'runAlumno');
     }
@@ -73,5 +76,27 @@ class Alumno extends Model
     protected static function booted()
     {
         static::addGlobalScope(new CentroFormadorScope);
+
+        static::deleted(function ($alumno) {
+            // Borrado en cascada de relaciones
+            $alumno->vacunas()->each(function ($vacuna) {
+                $vacuna->delete();
+            });
+
+            $alumno->alumnoCarreras()->each(function ($alumnoCarrera) {
+                $alumnoCarrera->delete();
+            });
+
+            $alumno->dossierGrupos()->each(function ($dossierGrupo) {
+                $dossierGrupo->delete();
+            });
+        });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

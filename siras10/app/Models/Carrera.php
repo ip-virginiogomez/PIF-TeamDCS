@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Carrera extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'carrera';
 
@@ -30,5 +33,25 @@ class Carrera extends Model
     public function cupoOfertas()
     {
         return $this->hasMany(CupoOferta::class, 'idCarrera', 'idCarrera');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($carrera) {
+            $carrera->sedeCarreras()->each(function ($sedeCarrera) {
+                $sedeCarrera->delete();
+            });
+
+            $carrera->cupoOfertas()->each(function ($cupoOferta) {
+                $cupoOferta->delete();
+            });
+        });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

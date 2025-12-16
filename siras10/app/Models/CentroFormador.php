@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class CentroFormador extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'centro_formador';
 
@@ -43,5 +46,29 @@ class CentroFormador extends Model
     public function convenios()
     {
         return $this->hasMany(Convenio::class, 'idCentroFormador', 'idCentroFormador');
+    }
+
+    protected static function booted()
+    {
+        static::deleted(function ($centroFormador) {
+            $centroFormador->sedes()->each(function ($sede) {
+                $sede->delete();
+            });
+
+            $centroFormador->convenios()->each(function ($convenio) {
+                $convenio->delete();
+            });
+
+            $centroFormador->coordinadorCampoClinicos()->each(function ($coordinador) {
+                $coordinador->delete();
+            });
+        });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty();
     }
 }

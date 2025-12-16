@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -29,15 +30,27 @@ class ProfileController extends Controller
             'nombreUsuario' => ['required', 'string', 'max:255'],
             'apellidoPaterno' => ['required', 'string', 'max:255'],
             'apellidoMaterno' => ['required', 'string', 'max:255'],
-            'correo' => ['required', 'string', 'email', 'max:255', 'unique:usuarios,correo,'.$request->user()->runUsuario.',runUsuario'],
+            'correo' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('usuarios', 'correo')->ignore($request->user()->runUsuario, 'runUsuario')->whereNull('deleted_at'),
+            ],
             'telefono' => ['nullable', 'string', 'max:20'],
+            'foto' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
 
         $user = $request->user();
 
-        // Si el correo cambió, marcar como no verificado
-        if ($user->correo !== $validated['correo']) {
-            $user->email_verified_at = null;
+        // Manejar la foto si se subió una nueva
+        if ($request->hasFile('foto')) {
+            // Eliminar la foto anterior si existe
+            if ($user->foto) {
+                Storage::disk('public')->delete($user->foto);
+            }
+            // Guardar la nueva foto
+            $validated['foto'] = $request->file('foto')->store('fotos/usuarios', 'public');
         }
 
         $user->fill($validated);

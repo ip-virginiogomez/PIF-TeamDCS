@@ -14,21 +14,20 @@ return new class extends Migration
         Schema::create('coordinador_campo_clinico', function (Blueprint $table) {
             $table->id('idCoordinador');
             $table->unsignedBigInteger('idCentroFormador');
-            $table->string('runUsuario', 10)->nullable();
+            $table->string('runUsuario', 10);
             $table->date('fechaCreacion')->nullable();
-            $table->timestamps();
 
             $table->foreign('idCentroFormador')
                 ->references('idCentroFormador')
                 ->on('centro_formador')
-                ->onUpdate('no action')
-                ->onDelete('no action');
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
 
             $table->foreign('runUsuario')
                 ->references('runUsuario')
                 ->on('usuarios')
-                ->onUpdate('no action')
-                ->onDelete('no action');
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
         });
     }
 

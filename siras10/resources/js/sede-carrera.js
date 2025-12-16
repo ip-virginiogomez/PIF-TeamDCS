@@ -66,6 +66,7 @@ class SedeCarreraManager extends BaseModalManager {
 
         this.centros = JSON.parse(this.selectionContainer.dataset.centros || '[]');
         this.carreras = JSON.parse(this.selectionContainer.dataset.carreras || '[]');
+        this.coordinadorCentro = JSON.parse(this.selectionContainer.dataset.coordinadorCentro || 'null');
         this.currentSedeId = null;
 
         this.mallasListModal = document.getElementById('mallasListModal');
@@ -86,6 +87,7 @@ class SedeCarreraManager extends BaseModalManager {
         this.populateSelectors();
         this.attachSedeEvents();
         this.attachMallasModalEvents();
+        this.loadFromUrlParams(); // Cargar datos desde URL si existen
     }
 
     createSelectors() {
@@ -115,12 +117,57 @@ class SedeCarreraManager extends BaseModalManager {
             this.centroSelector.add(new Option(c.nombreCentroFormador, c.idCentroFormador));
         });
 
+        // Si es coordinador, preseleccionar y deshabilitar el centro
+        if (this.coordinadorCentro) {
+            this.centroSelector.value = this.coordinadorCentro.idCentroFormador;
+            this.centroSelector.disabled = true;
+
+            // Agregar estilo visual para indicar que está deshabilitado
+            this.centroSelector.classList.add('bg-gray-100', 'cursor-not-allowed');
+
+            // Cargar automáticamente las sedes del centro
+            this.updateSedeSelector(this.coordinadorCentro.idCentroFormador);
+        }
+
         const carreraSelect = this.form.querySelector('#idCarrera');
         if (carreraSelect) {
             carreraSelect.innerHTML = '<option value="">-- Seleccione Perfil --</option>';
             this.carreras.forEach(c => {
                 carreraSelect.add(new Option(c.nombreCarrera, c.idCarrera));
             });
+        }
+    }
+
+    loadFromUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const centroId = urlParams.get('centro');
+        const sedeId = urlParams.get('sede');
+
+        if (centroId && sedeId) {
+            // Si es coordinador, verificar que el centro coincida
+            if (this.coordinadorCentro && centroId != this.coordinadorCentro.idCentroFormador) {
+                console.warn('El coordinador no tiene acceso a este centro formador');
+                return;
+            }
+
+            // Establecer el centro (solo si no es coordinador o si coincide)
+            if (!this.coordinadorCentro) {
+                this.centroSelector.value = centroId;
+            }
+
+            // Actualizar sedes disponibles
+            this.updateSedeSelector(centroId);
+
+            // Esperar a que se actualicen las sedes y luego seleccionar
+            setTimeout(() => {
+                this.sedeSelector.value = sedeId;
+                // Disparar el evento change para cargar la tabla
+                this.handleSedeChange();
+
+                // Limpiar los parámetros de la URL (opcional, mantiene limpia la URL)
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
+            }, 100);
         }
     }
 
@@ -173,26 +220,47 @@ class SedeCarreraManager extends BaseModalManager {
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json'
                 }
             });
 
-            const result = await res.json();
+            // Intentar parsear la respuesta como JSON
+            let result;
+            try {
+                result = await res.json();
+            } catch (parseError) {
+                throw new Error('Error de comunicación con el servidor. Por favor, intente nuevamente.');
+            }
 
             if (res.ok && result.success) {
                 this.onSuccess(result);
+            } else if (res.status === 422) {
+                // Errores de validación
+                this.showValidationErrors(result.errors);
+
+                // Mostrar también un mensaje general con todos los errores
+                const errorMessages = Object.values(result.errors).flat();
+                if (errorMessages.length > 0) {
+                    this.showAlert(
+                        'Error de validación',
+                        errorMessages.join('\n'),
+                        'error'
+                    );
+                }
             } else {
-                this.handleError(result);
+                // Otros errores del servidor
+                this.showAlert('Error', result.message || 'Ocurrió un error en el servidor', 'error');
             }
         } catch (err) {
-            console.error(err);
-            this.showAlert('Error', 'Error de red', 'error');
+            console.error('Error en handleFormSubmit:', err);
+            this.showAlert('Error', err.message || 'Error de conexión con el servidor', 'error');
         }
     }
 
     async handleSedeChange() {
         const selectedValue = this.sedeSelector.value;
-        
+
         // Ignorar si el valor está vacío o no ha cambiado
         if (!selectedValue || selectedValue === this.currentSedeId) {
             if (!selectedValue) this.hideGestion();
@@ -202,14 +270,14 @@ class SedeCarreraManager extends BaseModalManager {
         this.currentSedeId = selectedValue;
         this.updateSedeName();
         this.showGestion();
-        
+
         // Re-obtener tableContainer después de mostrar gestion-container
         await this.$nextTick();
         this.tableContainer = document.getElementById('tabla-container');
-        
+
         await this.loadTable();
     }
-    
+
     // Helper para esperar el próximo tick del DOM
     $nextTick() {
         return new Promise(resolve => setTimeout(resolve, 0));
@@ -1791,9 +1859,63 @@ function initArchivosPage() {
         }
     });
 
+    // Inicializar manejadores de paginación
+    initPaginationHandlers();
+
+
+    // Manejar paginación sin recarga de página
+    function initPaginationHandlers() {
+        document.addEventListener('click', async (e) => {
+            const link = e.target.closest('a[href*="mallas_page"], a[href*="asignaturas_page"]');
+            if (!link) return;
+
+            e.preventDefault();
+            const url = link.href;
+            const isMallasPagination = url.includes('mallas_page');
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Error al cargar la página');
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Encontrar las secciones por su contenido específico
+                const sections = document.querySelectorAll('section.bg-white');
+                const newSections = doc.querySelectorAll('section.bg-white');
+
+                if (isMallasPagination && sections[0] && newSections[0]) {
+                    // Actualizar sección de mallas (primera sección)
+                    sections[0].innerHTML = newSections[0].innerHTML;
+                } else if (!isMallasPagination && sections[1] && newSections[1]) {
+                    // Actualizar sección de asignaturas (segunda sección)
+                    sections[1].innerHTML = newSections[1].innerHTML;
+                }
+
+                // Actualizar URL sin recargar
+                window.history.pushState({}, '', url);
+
+            } catch (error) {
+                console.error('Error en paginación:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar la página',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
 
     function initArchivosPreview() {
-        const pdfModal = document.getElementById('pdfPreviewModal');
+        const pdfModal = document.getElementById('pdfModal');
         if (!pdfModal) return;
 
         const pdfViewer = document.getElementById('pdfViewer');
@@ -1841,8 +1963,26 @@ function initArchivosPage() {
 
             pdfModal.classList.remove('hidden');
         });
+    }
 
-        // Cerrar modal
+
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('selection-container')) {
+        window.sedeCarreraManager = new SedeCarreraManager();
+    }
+
+    initArchivosPage();
+    initPautaEvaluacion();
+
+    // Event listeners globales para cerrar el modal de PDF
+    const pdfModal = document.getElementById('pdfModal');
+    if (pdfModal) {
+        const pdfViewer = document.getElementById('pdfViewer');
+
+        // Cerrar con botón X
         const closeBtn = pdfModal.querySelector('[data-action="close-pdf-modal"]');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -1867,17 +2007,353 @@ function initArchivosPage() {
             }
         });
     }
+});
 
+// Manejar paginación en el modal de programas
+document.addEventListener('click', async (e) => {
+    const link = e.target.closest('#programasModalContent a[href*="page="]');
+    if (!link) return;
 
-}
+    e.preventDefault();
+    const url = link.href;
+    const programasModalContent = document.getElementById('programasModalContent');
 
+    if (!programasModalContent) return;
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('selection-container')) {
-        window.sedeCarreraManager = new SedeCarreraManager();
+    programasModalContent.innerHTML = '<div class="p-8 text-center text-gray-400">Cargando...</div>';
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        });
+
+        if (!response.ok) throw new Error('Error al cargar la página');
+
+        const html = await response.text();
+        programasModalContent.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error en paginación:', error);
+        programasModalContent.innerHTML = '<div class="p-8 text-center text-red-400">Error al cargar la página</div>';
+    }
+});
+
+// Manejar clic en botones de previsualización dentro del historial de programas
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="preview-programa-modal"]');
+    if (!btn) return;
+
+    e.preventDefault();
+    const pdfModal = document.getElementById('pdfModal');
+    if (!pdfModal) return;
+
+    const url = btn.dataset.url;
+    const title = btn.dataset.title || 'Programa de Asignatura';
+    const asignatura = btn.dataset.asignatura || '';
+    const fecha = btn.dataset.fecha || '';
+    const info = `${asignatura} · Subida el ${fecha}`;
+
+    const pdfViewer = document.getElementById('pdfViewer');
+    const pdfModalTitle = document.getElementById('pdfModalTitle');
+    const pdfModalInfo = document.getElementById('pdfModalInfo');
+    const pdfDownloadBtn = document.getElementById('pdfDownloadBtn');
+    const pdfFallbackLink = document.getElementById('pdfFallbackLink');
+
+    if (pdfViewer) pdfViewer.src = url;
+    if (pdfModalTitle) pdfModalTitle.textContent = title;
+    if (pdfModalInfo) pdfModalInfo.textContent = info;
+    if (pdfDownloadBtn) pdfDownloadBtn.href = url;
+    if (pdfFallbackLink) pdfFallbackLink.href = url;
+
+    pdfModal.classList.remove('hidden');
+});
+
+// Manejar eliminación de programas del historial
+document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action="delete-programa"]');
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const url = btn.dataset.url;
+    const asignatura = btn.dataset.asignatura;
+    const reloadUrl = btn.dataset.reloadUrl;
+
+    const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Se eliminará el programa de ${asignatura}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Eliminado!',
+                text: data.message || 'Programa eliminado correctamente',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Recargar el contenido del modal
+            const asignaturaId = btn.closest('[data-asignatura-id]')?.dataset.asignaturaId;
+            if (asignaturaId) {
+                const programasUrl = reloadUrl || `/gestion-carreras/asignaturas/${asignaturaId}/programas`;
+                const programasModalContent = document.getElementById('programasModalContent');
+
+                if (programasModalContent) {
+                    try {
+                        const reloadResponse = await fetch(programasUrl, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html'
+                            }
+                        });
+
+                        if (reloadResponse.ok) {
+                            const html = await reloadResponse.text();
+                            programasModalContent.innerHTML = html;
+                        } else {
+                            throw new Error('No se pudo recargar el historial');
+                        }
+                    } catch (err) {
+                        console.error('Error recargando programas:', err);
+                        programasModalContent.innerHTML = '<div class="p-8 text-center text-red-400">Error al actualizar el historial</div>';
+                    }
+                }
+            }
+        } else {
+            throw new Error(data.message || 'Error al eliminar el programa');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Error al eliminar el programa',
+            confirmButtonColor: '#3085d6'
+        });
+    }
+});
+
+// ================================================================================
+// FUNCIONES DE PAUTA DE EVALUACIÓN
+// ================================================================================
+function initPautaEvaluacion() {
+    const pautaModal = document.getElementById('pautaModal');
+    if (!pautaModal) return;
+
+    const pautaViewer = document.getElementById('pautaViewer');
+    const pautaViewerContainer = document.getElementById('pautaViewerContainer');
+    const pautaUploadContainer = document.getElementById('pautaUploadContainer');
+    const pautaModalTitle = document.getElementById('pautaModalTitle');
+    const pautaModalSubtitle = document.getElementById('pautaModalSubtitle');
+    const pautaDeleteBtn = document.getElementById('pautaDeleteBtn');
+    const pautaFallbackLink = document.getElementById('pautaFallbackLink');
+    const pautaUploadForm = document.getElementById('pautaUploadForm');
+    const pautaAsignaturaId = document.getElementById('pautaAsignaturaId');
+
+    let currentAsignaturaId = null;
+    let currentAsignaturaNombre = null;
+
+    // Abrir modal de pauta
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="view-pauta"]');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        currentAsignaturaId = btn.dataset.id;
+        currentAsignaturaNombre = btn.dataset.nombre;
+        const tienePauta = btn.dataset.tienePauta === 'true';
+        const url = btn.dataset.url;
+
+        pautaModalTitle.textContent = 'Pauta de Evaluación';
+        pautaModalSubtitle.textContent = currentAsignaturaNombre;
+
+        if (pautaAsignaturaId) {
+            pautaAsignaturaId.value = currentAsignaturaId;
+        }
+
+        if (tienePauta && url) {
+            // Mostrar visor PDF
+            pautaViewerContainer.classList.remove('hidden');
+            pautaUploadContainer.classList.add('hidden');
+            pautaDeleteBtn.classList.remove('hidden');
+
+            if (pautaViewer) pautaViewer.src = url;
+            if (pautaFallbackLink) pautaFallbackLink.href = url;
+        } else {
+            // Mostrar formulario de subida
+            pautaViewerContainer.classList.add('hidden');
+            pautaUploadContainer.classList.remove('hidden');
+            pautaDeleteBtn.classList.add('hidden');
+        }
+
+        pautaModal.classList.remove('hidden');
+    });
+
+    // Cerrar modal
+    const closeBtn = pautaModal.querySelector('[data-action="close-pauta-modal"]');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            pautaModal.classList.add('hidden');
+            if (pautaViewer) pautaViewer.src = '';
+            if (pautaUploadForm) pautaUploadForm.reset();
+        });
     }
 
-    initArchivosPage();
-});
+    // Cerrar al hacer clic en el fondo
+    pautaModal.addEventListener('click', (e) => {
+        if (e.target === pautaModal) {
+            pautaModal.classList.add('hidden');
+            if (pautaViewer) pautaViewer.src = '';
+            if (pautaUploadForm) pautaUploadForm.reset();
+        }
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !pautaModal.classList.contains('hidden')) {
+            pautaModal.classList.add('hidden');
+            if (pautaViewer) pautaViewer.src = '';
+            if (pautaUploadForm) pautaUploadForm.reset();
+        }
+    });
+
+    // Eliminar pauta
+    if (pautaDeleteBtn) {
+        pautaDeleteBtn.addEventListener('click', async () => {
+            if (!currentAsignaturaId) return;
+
+            const result = await Swal.fire({
+                title: '¿Eliminar pauta de evaluación?',
+                text: `Se eliminará la pauta de evaluación de ${currentAsignaturaNombre}`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/gestion-carreras/asignaturas/${currentAsignaturaId}/pauta`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminada!',
+                        text: data.message || 'Pauta eliminada correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Cerrar modal y recargar página
+                    pautaModal.classList.add('hidden');
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Error al eliminar la pauta');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al eliminar la pauta',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
+
+    // Subir pauta
+    if (pautaUploadForm) {
+        pautaUploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!currentAsignaturaId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo identificar la asignatura',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            const formData = new FormData(pautaUploadForm);
+
+            try {
+                const response = await fetch(`/gestion-carreras/asignaturas/${currentAsignaturaId}/pauta`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Subida exitosa!',
+                        text: data.message || 'Pauta subida correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Cerrar modal y recargar página
+                    pautaModal.classList.add('hidden');
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Error al subir la pauta');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al subir la pauta',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
+}
 
 export default SedeCarreraManager;

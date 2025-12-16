@@ -12,12 +12,12 @@ class TipoVacunaSeeder extends Seeder
         $tipos = [
             [
                 'nombreVacuna' => 'Influenza',
-                'duracion' => 1,
+                'duracion' => 365,
                 'fechaCreacion' => now(),
             ],
             [
                 'nombreVacuna' => 'Hepatitis B',
-                'duracion' => 3,
+                'duracion' => 3650,
                 'fechaCreacion' => now(),
             ],
         ];
