@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class ProfileController extends Controller
 {
@@ -57,7 +58,8 @@ class ProfileController extends Controller
             if (! file_exists(storage_path('app/public/fotos/usuarios'))) {
                 mkdir(storage_path('app/public/fotos/usuarios'), 0755, true);
             }
-            Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+            $manager = new ImageManager(new Driver);
+            $manager->read($image)->scaleDown(width: 1024)->save($path, 90);
             $validated['foto'] = 'fotos/usuarios/'.$filename;
         }
 

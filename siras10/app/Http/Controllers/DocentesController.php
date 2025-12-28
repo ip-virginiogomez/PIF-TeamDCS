@@ -11,7 +11,8 @@ use App\Models\TipoVacuna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class DocentesController extends Controller
 {
@@ -180,7 +181,8 @@ class DocentesController extends Controller
                 if (! file_exists(storage_path('app/public/docentes/fotos'))) {
                     mkdir(storage_path('app/public/docentes/fotos'), 0755, true);
                 }
-                Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+                $manager = new ImageManager(new Driver);
+                $manager->read($image)->scaleDown(width: 1024)->save($path, 90);
                 $data['foto'] = 'docentes/fotos/'.$filename;
             }
 
@@ -330,7 +332,8 @@ class DocentesController extends Controller
                 if (! file_exists(storage_path('app/public/docentes/fotos'))) {
                     mkdir(storage_path('app/public/docentes/fotos'), 0755, true);
                 }
-                Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+                $manager = new ImageManager(new Driver);
+                $manager->read($image)->scaleDown(width: 1024)->save($path, 90);
                 $data['foto'] = 'docentes/fotos/'.$filename;
             }
 
