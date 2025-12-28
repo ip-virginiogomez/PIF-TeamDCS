@@ -145,13 +145,13 @@ class AlumnoController extends Controller
 
             if ($request->hasFile('foto')) {
                 $image = $request->file('foto');
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = storage_path('app/public/fotos/' . $filename);
-                if (!file_exists(storage_path('app/public/fotos'))) {
+                $filename = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $path = storage_path('app/public/fotos/'.$filename);
+                if (! file_exists(storage_path('app/public/fotos'))) {
                     mkdir(storage_path('app/public/fotos'), 0755, true);
                 }
                 Image::read($image)->scaleDown(width: 1024)->save($path, 90);
-                $alumnoData['foto'] = 'fotos/' . $filename;
+                $alumnoData['foto'] = 'fotos/'.$filename;
             }
 
             if ($request->hasFile('acuerdo')) {
@@ -236,13 +236,13 @@ class AlumnoController extends Controller
                     Storage::disk('public')->delete($alumno->foto);
                 }
                 $image = $request->file('foto');
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = storage_path('app/public/fotos/' . $filename);
-                if (!file_exists(storage_path('app/public/fotos'))) {
+                $filename = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $path = storage_path('app/public/fotos/'.$filename);
+                if (! file_exists(storage_path('app/public/fotos'))) {
                     mkdir(storage_path('app/public/fotos'), 0755, true);
                 }
                 Image::read($image)->scaleDown(width: 1024)->save($path, 90);
-                $data['foto'] = 'fotos/' . $filename;
+                $data['foto'] = 'fotos/'.$filename;
             }
 
             if ($request->hasFile('acuerdo')) {

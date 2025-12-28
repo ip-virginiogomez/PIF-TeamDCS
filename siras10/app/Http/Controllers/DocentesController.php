@@ -175,13 +175,13 @@ class DocentesController extends Controller
 
             if ($request->hasFile('foto')) {
                 $image = $request->file('foto');
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = storage_path('app/public/docentes/fotos/' . $filename);
-                if (!file_exists(storage_path('app/public/docentes/fotos'))) {
+                $filename = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $path = storage_path('app/public/docentes/fotos/'.$filename);
+                if (! file_exists(storage_path('app/public/docentes/fotos'))) {
                     mkdir(storage_path('app/public/docentes/fotos'), 0755, true);
                 }
                 Image::read($image)->scaleDown(width: 1024)->save($path, 90);
-                $data['foto'] = 'docentes/fotos/' . $filename;
+                $data['foto'] = 'docentes/fotos/'.$filename;
             }
 
             if ($request->hasFile('curriculum')) {
@@ -325,13 +325,13 @@ class DocentesController extends Controller
                     Storage::disk('public')->delete($docente->foto);
                 }
                 $image = $request->file('foto');
-                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $path = storage_path('app/public/docentes/fotos/' . $filename);
-                if (!file_exists(storage_path('app/public/docentes/fotos'))) {
+                $filename = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $path = storage_path('app/public/docentes/fotos/'.$filename);
+                if (! file_exists(storage_path('app/public/docentes/fotos'))) {
                     mkdir(storage_path('app/public/docentes/fotos'), 0755, true);
                 }
                 Image::read($image)->scaleDown(width: 1024)->save($path, 90);
-                $data['foto'] = 'docentes/fotos/' . $filename;
+                $data['foto'] = 'docentes/fotos/'.$filename;
             }
 
             if ($request->hasFile('curriculum')) {
