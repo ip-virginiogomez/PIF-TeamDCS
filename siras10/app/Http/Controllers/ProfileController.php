@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ProfileController extends Controller
 {
@@ -50,7 +51,14 @@ class ProfileController extends Controller
                 Storage::disk('public')->delete($user->foto);
             }
             // Guardar la nueva foto
-            $validated['foto'] = $request->file('foto')->store('fotos/usuarios', 'public');
+            $image = $request->file('foto');
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = storage_path('app/public/fotos/usuarios/' . $filename);
+            if (!file_exists(storage_path('app/public/fotos/usuarios'))) {
+                mkdir(storage_path('app/public/fotos/usuarios'), 0755, true);
+            }
+            Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+            $validated['foto'] = 'fotos/usuarios/' . $filename;
         }
 
         $user->fill($validated);

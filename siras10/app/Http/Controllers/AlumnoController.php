@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Intervention\Image\Laravel\Facades\Image;
 
 class AlumnoController extends Controller
 {
@@ -143,7 +144,14 @@ class AlumnoController extends Controller
             }
 
             if ($request->hasFile('foto')) {
-                $alumnoData['foto'] = $request->file('foto')->store('fotos', 'public');
+                $image = $request->file('foto');
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = storage_path('app/public/fotos/' . $filename);
+                if (!file_exists(storage_path('app/public/fotos'))) {
+                    mkdir(storage_path('app/public/fotos'), 0755, true);
+                }
+                Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+                $alumnoData['foto'] = 'fotos/' . $filename;
             }
 
             if ($request->hasFile('acuerdo')) {
@@ -227,7 +235,14 @@ class AlumnoController extends Controller
                 if ($alumno->foto) {
                     Storage::disk('public')->delete($alumno->foto);
                 }
-                $data['foto'] = $request->file('foto')->store('fotos', 'public');
+                $image = $request->file('foto');
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = storage_path('app/public/fotos/' . $filename);
+                if (!file_exists(storage_path('app/public/fotos'))) {
+                    mkdir(storage_path('app/public/fotos'), 0755, true);
+                }
+                Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+                $data['foto'] = 'fotos/' . $filename;
             }
 
             if ($request->hasFile('acuerdo')) {

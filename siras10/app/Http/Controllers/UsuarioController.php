@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
+use Intervention\Image\Laravel\Facades\Image;
 
 class UsuarioController extends Controller
 {
@@ -95,8 +96,14 @@ class UsuarioController extends Controller
 
         // Manejo de foto
         if ($request->hasFile('foto')) {
-            $rutafoto = $request->file('foto')->store('fotos/usuarios', 'public');
-            $usuarioData['foto'] = $rutafoto;
+            $image = $request->file('foto');
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = storage_path('app/public/fotos/usuarios/' . $filename);
+            if (!file_exists(storage_path('app/public/fotos/usuarios'))) {
+                mkdir(storage_path('app/public/fotos/usuarios'), 0755, true);
+            }
+            Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+            $usuarioData['foto'] = 'fotos/usuarios/' . $filename;
         }
 
         // Verificar si existe un usuario eliminado (Soft Delete)
@@ -174,7 +181,14 @@ class UsuarioController extends Controller
             if ($usuario->foto) {
                 Storage::disk('public')->delete($usuario->foto);
             }
-            $data['foto'] = $request->file('foto')->store('fotos/usuarios', 'public');
+            $image = $request->file('foto');
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $path = storage_path('app/public/fotos/usuarios/' . $filename);
+            if (!file_exists(storage_path('app/public/fotos/usuarios'))) {
+                mkdir(storage_path('app/public/fotos/usuarios'), 0755, true);
+            }
+            Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+            $data['foto'] = 'fotos/usuarios/' . $filename;
         }
 
         if ($request->filled('contrasenia')) {

@@ -11,6 +11,7 @@ use App\Models\TipoVacuna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Laravel\Facades\Image;
 
 class DocentesController extends Controller
 {
@@ -173,8 +174,14 @@ class DocentesController extends Controller
             }
 
             if ($request->hasFile('foto')) {
-                $rutafoto = $request->file('foto')->store('docentes/fotos', 'public');
-                $data['foto'] = $rutafoto;
+                $image = $request->file('foto');
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = storage_path('app/public/docentes/fotos/' . $filename);
+                if (!file_exists(storage_path('app/public/docentes/fotos'))) {
+                    mkdir(storage_path('app/public/docentes/fotos'), 0755, true);
+                }
+                Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+                $data['foto'] = 'docentes/fotos/' . $filename;
             }
 
             if ($request->hasFile('curriculum')) {
@@ -317,8 +324,14 @@ class DocentesController extends Controller
                 if ($docente->foto) {
                     Storage::disk('public')->delete($docente->foto);
                 }
-                $rutafoto = $request->file('foto')->store('docentes/fotos', 'public');
-                $data['foto'] = $rutafoto;
+                $image = $request->file('foto');
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = storage_path('app/public/docentes/fotos/' . $filename);
+                if (!file_exists(storage_path('app/public/docentes/fotos'))) {
+                    mkdir(storage_path('app/public/docentes/fotos'), 0755, true);
+                }
+                Image::read($image)->scaleDown(width: 1024)->save($path, 90);
+                $data['foto'] = 'docentes/fotos/' . $filename;
             }
 
             if ($request->hasFile('curriculum')) {
